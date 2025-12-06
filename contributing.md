@@ -1,5 +1,5 @@
 <div align="center">
-<h1 align="center">Mining Fracture Analyser (MFA) v5.15</h1>
+<h1 align="center">Mining Fracture Analyser (MFA) v5.17</h1>
 <p align="center">
 <strong>A real-time cooperative mining calculator for Star Citizen.</strong>
 <br />
@@ -31,7 +31,7 @@ First off, thanks for taking the time to contribute! 🎉
 
 The Mining Fracture Analyser is a community tool built for Star Citizen players. We welcome contributions from developers of all skill levels.
 
-## **📂 Project Structure (v5.15)**
+## **📂 Project Structure (v5.17)**
 
 The project has been refactored for stability and modularity:
 
