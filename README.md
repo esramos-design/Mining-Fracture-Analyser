@@ -1,5 +1,5 @@
 <div align="center">
-<h1 align="center">Mining Fracture Analyser (MFA) v5.15</h1>
+<h1 align="center">Mining Fracture Analyser (MFA) v5.17</h1>
 <p align="center">
 <strong>A real-time cooperative mining calculator for Star Citizen.</strong>
 <br />
@@ -27,9 +27,9 @@ Stop Guessing. Start Fracturing.
 
 The **Mining Fracture Analyser (MFA)** is a web-based tool designed to remove guesswork from high-stakes mining operations. It calculates **Total Combined Effective Laser Power (MW)** in real-time, accounting for ship hulls, laser heads, active/passive modules, gadgets, and rock resistance.
 
-**Version 5.15** introduces a rock-solid **Upload-Only OCR Scanner**, **Reactive Loadout Strategies**, and a strictly typed **Fleet Configuration** engine.
+**Version 5.17** introduces a rock-solid **Upload-Only OCR Scanner**, **Reactive Loadout Strategies**, and a strictly typed **Fleet Configuration** engine.
 
-## **🚀 Key Features (v5.15)**
+## **🚀 Key Features (v5.17)**
 
 ### **🧠 Reactive Dynamic Loadouts**
 The **Optimized Fleet Loadouts** panel (Column 2) reacts instantly to changes in Mass, Resistance, or Instability:
