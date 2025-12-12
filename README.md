@@ -1,5 +1,5 @@
 <div align="center">
-<h1 align="center">Mining Fracture Analyser (MFA) v5.17</h1>
+<h1 align="center">Mining Fracture Analyser (MFA) v5.18</h1>
 <p align="center">
 <strong>A real-time cooperative mining calculator for Star Citizen.</strong>
 <br />
@@ -29,7 +29,7 @@ The **Mining Fracture Analyser (MFA)** is a web-based tool designed to remove gu
 
 **Version 5.17** introduces a rock-solid **Upload-Only OCR Scanner**, **Reactive Loadout Strategies**, and a strictly typed **Fleet Configuration** engine.
 
-## **🚀 Key Features (v5.17)**
+## **🚀 Key Features (v5.18)**
 
 ### **🧠 Reactive Dynamic Loadouts**
 The **Optimized Fleet Loadouts** panel (Column 2) reacts instantly to changes in Mass, Resistance, or Instability:
