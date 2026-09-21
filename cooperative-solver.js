@@ -60,8 +60,15 @@
                 var toggle=el(card.id+"-mod"+i+"-active-toggle");
                 if(m && (m.activation!=="Active" || (toggle && toggle.checked))) modules.push(m.name);
             }
+            var vesselCard=card.closest(".fleet-vessel-card");
+            var vesselKey=vesselCard?vesselCard.dataset.vesselKey:(card.dataset.ship||"unknown");
+            var vesselName=vesselCard&&vesselCard.querySelector(".vessel-card-head h3")
+                ? vesselCard.querySelector(".vessel-card-head h3").textContent.trim()
+                : LABEL[card.dataset.ship]||card.dataset.ship||"Vessel";
+            var siblingArms=vesselCard?[].slice.call(vesselCard.querySelectorAll(".ship-arm-card")):[];
+            var armIndex=siblingArms.length?siblingArms.indexOf(card)+1:1;
             out.push({
-                shipId:card.dataset.ship||"unknown", role:"Current",
+                shipId:card.dataset.ship||"unknown", vesselKey:vesselKey, vesselName:vesselName, armIndex:armIndex, role:"Head "+armIndex,
                 laser:(opt.textContent||"Current").split("(")[0].trim(),
                 basePower:n(ls.value), resistanceEffect:n(opt.dataset.resistance),
                 instabilityEffect:n(opt.dataset.instability), modules:modules
@@ -218,9 +225,35 @@
     function armLine(a){return esc(a.laser)+((a.modules||[]).length?" + "+esc(a.modules.join(" + ")):"");}
     function vesselHtml(id,count,v){
         if(!count||!v)return"";
-        var title=count>1?count+"× "+LABEL[id]+" — EACH VESSEL":LABEL[id];
-        return '<div class="solver-vessel"><div class="solver-vessel-title">'+esc(title)+'</div>'+
-            v.arms.map(function(a,i){return '<div class="solver-arm"><span>'+esc(a.role||("Arm "+(i+1)))+'</span><strong>'+armLine(a)+'</strong></div>';}).join("")+'</div>';
+        var rows=[];
+        for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
+            rows.push('<div class="solver-vessel solver-required-vessel">'+
+                '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
+                v.arms.map(function(a,i){return '<div class="solver-arm"><span>'+esc(a.role||("Head "+(i+1)))+'</span><strong>'+armLine(a)+'</strong></div>';}).join("")+
+                '</div>');
+        }
+        return rows.join("");
+    }
+
+    function currentFleetLoadoutHtml(arms){
+        if(!arms.length)return"";
+        var groups={},order=[];
+        arms.forEach(function(a){
+            var key=a.vesselKey||a.shipId||"vessel";
+            if(!groups[key]){groups[key]={name:a.vesselName||LABEL[a.shipId]||"Vessel",arms:[]};order.push(key);}
+            groups[key].arms.push(a);
+        });
+        return '<div class="solver-current-loadouts">'+
+            '<div class="solver-loadout-heading"><span>ACTIVE VESSEL LOADOUTS</span><strong>Exact configuration currently producing this verdict</strong></div>'+
+            '<div class="solver-vessels">'+order.map(function(key,index){
+                var g=groups[key];
+                return '<div class="solver-vessel solver-current-vessel">'+
+                    '<div class="solver-vessel-title"><span>'+esc(g.name)+' #'+(index+1)+'</span><em>CURRENT FITTED</em></div>'+
+                    g.arms.sort(function(a,b){return n(a.armIndex)-n(b.armIndex);}).map(function(a,i){
+                        return '<div class="solver-arm"><span>'+esc(a.role||("Head "+(i+1)))+'</span><strong>'+armLine(a)+'</strong></div>';
+                    }).join("")+
+                    '</div>';
+            }).join("")+'</div></div>';
     }
 
     function alternativeHtml(o,vars,baseArms,s){
@@ -246,8 +279,22 @@
             '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,baseArms,s)+'</article>';
     }
 
+    function fleetCountText(counts){
+        var parts=[];
+        ORDER.forEach(function(id){
+            var count=Math.max(0,Math.floor(n(counts[id])));
+            if(count>0)parts.push(count+" "+LABEL[id]);
+        });
+        return parts.join(" · ");
+    }
+
     function snapshot(t,d,s){
-        return '<div class="solver-fleet-snapshot"><div><span>Operation fleet</span><strong>'+t.mole+' MOLE · '+t.prospector+' Prospector · '+t.golem+' Golem</strong></div><div><span>Already deployed</span><strong>'+d.mole+' MOLE · '+d.prospector+' Prospector · '+d.golem+' Golem</strong></div><div><span>Available to assist</span><strong>'+s.mole+' MOLE · '+s.prospector+' Prospector · '+s.golem+' Golem</strong></div></div>';
+        var rows=[];
+        var operation=fleetCountText(t), deployed=fleetCountText(d), assist=fleetCountText(s);
+        if(operation)rows.push('<div><span>Operation fleet</span><strong>'+esc(operation)+'</strong></div>');
+        if(deployed)rows.push('<div><span>Already deployed</span><strong>'+esc(deployed)+'</strong></div>');
+        if(assist)rows.push('<div><span>Available to assist</span><strong>'+esc(assist)+'</strong></div>');
+        return rows.length?'<div class="solver-fleet-snapshot snapshot-'+rows.length+'">'+rows.join("")+'</div>':"";
     }
 
     function render(ctx){
@@ -263,8 +310,23 @@
         var current=evaluate(ctx.baseResistance,ctx.baseInstability,ctx.mass,baseArms,selected);
         var state={mass:ctx.mass,baseResistance:ctx.baseResistance,baseInstability:ctx.baseInstability,currentPower:ctx.currentPower,deficit:Math.max(0,n(ctx.legacyRequiredPower)-n(ctx.currentPower))};
         var snap=snapshot(totals,d,support);
-        if(current.success){box.innerHTML=snap+'<div class="solver-current-ok"><strong>CURRENT DEPLOYED FLEET IS SUFFICIENT</strong><span>'+(current.marginPct>=0?"+":"")+current.marginPct.toFixed(1)+'% deterministic fracture margin.</span></div>';return;}
-        if(support.mole+support.prospector+support.golem===0){box.innerHTML=snap+'<div class="solver-no-option"><strong>NO UNDEPLOYED SUPPORT VESSELS ARE AVAILABLE</strong><span>Increase Operational Fleet totals or revise the current loadout.</span></div>';return;}
+        if(current.success){
+            box.innerHTML=snap+
+                '<div class="solver-current-ok solver-status-banner"><strong>CURRENT DEPLOYED FLEET IS SUFFICIENT</strong><span>'+(current.marginPct>=0?"+":"")+current.marginPct.toFixed(1)+'% deterministic fracture margin · no additional vessel required.</span></div>'+
+                currentFleetLoadoutHtml(baseArms)+
+                '<div class="solver-method-note">This is the exact active configuration currently producing the viable verdict. MFA has not replaced your fitted equipment.</div>';
+            return;
+        }
+
+        var currentShort=Number.isFinite(current.marginPct)?Math.abs(current.marginPct).toFixed(1)+"% below required fracture capability":"fracture requirement not met";
+        var insufficient='<div class="solver-current-insufficient solver-status-banner"><strong>CURRENT DEPLOYED FLEET IS INSUFFICIENT</strong><span>'+esc(currentShort)+' · support or a loadout change is required.</span></div>';
+
+        if(support.mole+support.prospector+support.golem===0){
+            box.innerHTML=snap+insufficient+
+                currentFleetLoadoutHtml(baseArms)+
+                '<div class="solver-no-option"><strong>NO UNDEPLOYED SUPPORT VESSELS ARE AVAILABLE</strong><span>Change one or more active vessel loadouts, or mark another selected vessel as Available.</span></div>';
+            return;
+        }
         var strat=strategy(state), solved=solve(state,baseArms,support,p,strat);
         if(!solved.options.length){box.innerHTML=snap+'<div class="solver-no-option"><strong>NO SOLUTION FOUND WITH THE AVAILABLE OPERATION FLEET</strong></div>';return;}
         var viable=solved.options.filter(function(o){return o.evaluation.success;}).length;
@@ -275,8 +337,8 @@
               others.map(function(o,i){return optionHtml(o,i+1,solved.variants,baseArms,state);}).join('<div class="solver-or-divider"><span>OR</span></div>')+
               '</div></details>'
             : '';
-        box.innerHTML=snap+'<div class="solver-portfolio-head"><div><span>BEST MATCH FOR THIS OPERATION</span><strong>'+(best.evaluation.success?'RECOMMENDED SUPPORT PLAN':'CLOSEST AVAILABLE PLAN')+'</strong></div><div>'+esc(strat.name)+'</div></div>'+
-            '<div class="solver-or-note">The first plan is MFA’s best match for the fleet you selected. Open alternatives only if the preferred ship or equipment is unavailable.</div>'+
+        box.innerHTML=snap+insufficient+'<div class="solver-portfolio-head"><div><span>BEST MATCH FOR THIS OPERATION</span><strong>'+(best.evaluation.success?'RECOMMENDED SUPPORT PLAN':'CLOSEST AVAILABLE PLAN')+'</strong></div><div>'+esc(strat.name)+'</div></div>'+
+            '<div class="solver-or-note">MFA lists every support vessel separately with the exact laser/head and module configuration required. Open alternatives only if the preferred ship or equipment is unavailable.</div>'+
             '<div class="solver-best-option">'+optionHtml(best,0,solved.variants,baseArms,state)+'</div>'+
             alternatives+
             '<div class="solver-method-note">Your Fleet Planner loadouts are the actual fitted state and are never overwritten. Every recommendation is calculated separately with MFA’s existing deterministic power/resistance/instability mechanics. Secondary recommended loadouts are tested against the same formula. Other preserved mining attributes are not invented into the fracture formula until separately validated.</div>';
