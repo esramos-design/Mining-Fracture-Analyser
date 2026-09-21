@@ -109,3 +109,14 @@ Until then:
 ```text
 verified live telemetry > OCR > manual input
 ```
+
+
+## Action markers
+
+For controlled tests, use:
+
+```powershell
+.\mark-action.ps1 -Action "SCAN_ROCK" -Notes "mass 23922, resistance 16%, instability 20%"
+```
+
+This writes a timestamped record to `markers.jsonl` in the most recent probe session. See `FIRST_TEST_PROTOCOL.md` for the full test sequence.
