@@ -11,11 +11,12 @@ on:
       - "scripts/validate-operations-console.mjs"
   push:
     branches:
-      - "feature/operations-console"
+      - "feature/**"
     paths:
       - "index.html"
       - "style.css"
       - "operations-console.js"
+      - "cooperative-solver.js"
       - "scanner.js"
       - "scripts/validate-operations-console.mjs"
 
