@@ -1951,39 +1951,39 @@ select optgroup {
    This block intentionally comes last and owns final presentation.
    ========================================================= */
 html[data-theme="day"] {
-    /* Arctic Command — cool canvas, warm work surfaces, navy structure */
-    --theme-page:#DCE7F1;
-    --theme-page-2:#C9D8E6;
-    --theme-panel:#F7F1E8;
-    --theme-card:#FFFDF8;
-    --theme-card-alt:#EDF3F8;
+    /* Planner Day — muted daylight, strong navy structure, warm amber controls */
+    --theme-page:#D5DADE;
+    --theme-page-2:#C7CED4;
+    --theme-panel:#E9E4DC;
+    --theme-card:#F5F2EC;
+    --theme-card-alt:#E1E6EA;
     --theme-input:#FFFFFF;
-    --theme-input-focus:#F5FAFE;
-    --theme-text:#334A5F;
-    --theme-strong:#102D46;
-    --theme-muted:#65798C;
-    --theme-border:#B7C8D7;
-    --theme-border-strong:#879EAF;
-    --theme-primary:#E78626;
-    --theme-secondary:#2F6F9E;
-    --theme-tertiary:#7557C8;
-    --theme-success:#24815C;
-    --theme-warning:#C97813;
-    --theme-danger:#BD4F43;
-    --theme-header-1:#173B5A;
-    --theme-header-2:#245E88;
-    --theme-header-text:#F8FBFE;
-    --theme-select-menu:#173B5A;
-    --theme-select-menu-text:#F8FBFE;
-    --theme-optgroup:#D9E7F2;
-    --theme-optgroup-text:#173B5A;
-    --theme-shadow:rgba(28,61,88,.20);
-    --theme-console:#173B5A;
-    --theme-console-text:#F8FBFE;
-    --theme-surface-0:#DCE7F1;
-    --theme-surface-1:#F7F1E8;
-    --theme-surface-2:#FFFDF8;
-    --theme-surface-3:#EDF3F8;
+    --theme-input-focus:#F8FAFC;
+    --theme-text:#334556;
+    --theme-strong:#152B3D;
+    --theme-muted:#667686;
+    --theme-border:#A9B4BE;
+    --theme-border-strong:#7D8C99;
+    --theme-primary:#C78632;
+    --theme-secondary:#3E6F96;
+    --theme-tertiary:#7564A8;
+    --theme-success:#2E8B68;
+    --theme-warning:#C98C2E;
+    --theme-danger:#B85C4F;
+    --theme-header-1:#263746;
+    --theme-header-2:#314B61;
+    --theme-header-text:#F7F3EC;
+    --theme-select-menu:#263746;
+    --theme-select-menu-text:#F7F3EC;
+    --theme-optgroup:#D8DEE4;
+    --theme-optgroup-text:#263746;
+    --theme-shadow:rgba(32,47,61,.22);
+    --theme-console:#263746;
+    --theme-console-text:#F7F3EC;
+    --theme-surface-0:#D5DADE;
+    --theme-surface-1:#E9E4DC;
+    --theme-surface-2:#F5F2EC;
+    --theme-surface-3:#FFFFFF;
     --bg-main:var(--theme-page);
     --bg-panel:var(--theme-panel);
     --bg-card:var(--theme-card);
@@ -1993,49 +1993,49 @@ html[data-theme="day"] {
     --text-main:var(--theme-text);
     --text-strong:var(--theme-strong);
     --text-muted:var(--theme-muted);
-    --ops-line:rgba(47,111,158,.23);
+    --ops-line:rgba(49,75,97,.22);
     --ops-blue:var(--theme-secondary);
     --ops-green:var(--theme-success);
     --ops-red:var(--theme-danger);
     --ops-amber:var(--theme-warning);
-    --chart-grid:rgba(47,111,158,.15);
+    --chart-grid:rgba(49,75,97,.14);
     --chart-text:var(--theme-text);
 }
 
 html[data-theme="dusk"] {
-    /* Bronze Horizon — dark graphite canvas, warmer cards, bronze/gold accents */
-    --theme-page:#161B22;
-    --theme-page-2:#222A35;
-    --theme-panel:#262F3A;
-    --theme-card:#343D49;
-    --theme-card-alt:#202833;
-    --theme-input:#151C24;
-    --theme-input-focus:#1B2530;
-    --theme-text:#E9E0D4;
-    --theme-strong:#FFF6E8;
-    --theme-muted:#B8B0A6;
-    --theme-border:#515D6B;
-    --theme-border-strong:#7B8794;
-    --theme-primary:#D89A3D;
-    --theme-secondary:#6FA6C9;
-    --theme-tertiary:#B38AD9;
-    --theme-success:#4DB987;
-    --theme-warning:#E0AB4C;
-    --theme-danger:#D46D5F;
-    --theme-header-1:#1A2531;
-    --theme-header-2:#33445A;
-    --theme-header-text:#FFF7EA;
-    --theme-select-menu:#111821;
-    --theme-select-menu-text:#F5EEE6;
-    --theme-optgroup:#4C3924;
-    --theme-optgroup-text:#F7D99A;
-    --theme-shadow:rgba(0,0,0,.48);
-    --theme-console:#111821;
-    --theme-console-text:#F4EBDD;
-    --theme-surface-0:#161B22;
-    --theme-surface-1:#262F3A;
-    --theme-surface-2:#343D49;
-    --theme-surface-3:#151C24;
+    /* Planner Dusk — matched to vNATO Flight Planning Suite */
+    --theme-page:#2B2927;
+    --theme-page-2:#242220;
+    --theme-panel:#35312E;
+    --theme-card:#302D2A;
+    --theme-card-alt:#3A3531;
+    --theme-input:#272522;
+    --theme-input-focus:#302D2A;
+    --theme-text:#EEE7DC;
+    --theme-strong:#F5EEE5;
+    --theme-muted:#B9AEA2;
+    --theme-border:#5A5048;
+    --theme-border-strong:#7A695A;
+    --theme-primary:#C78632;
+    --theme-secondary:#5E87A8;
+    --theme-tertiary:#9A7ABB;
+    --theme-success:#3FA47C;
+    --theme-warning:#D4933D;
+    --theme-danger:#C96858;
+    --theme-header-1:#3B2E27;
+    --theme-header-2:#2D2926;
+    --theme-header-text:#F5EEE5;
+    --theme-select-menu:#272522;
+    --theme-select-menu-text:#F5EEE5;
+    --theme-optgroup:#4A3A2F;
+    --theme-optgroup-text:#F1C27D;
+    --theme-shadow:rgba(0,0,0,.44);
+    --theme-console:#272522;
+    --theme-console-text:#F5EEE5;
+    --theme-surface-0:#2B2927;
+    --theme-surface-1:#35312E;
+    --theme-surface-2:#302D2A;
+    --theme-surface-3:#272522;
     --bg-main:var(--theme-page);
     --bg-panel:var(--theme-panel);
     --bg-card:var(--theme-card);
@@ -2045,49 +2045,49 @@ html[data-theme="dusk"] {
     --text-main:var(--theme-text);
     --text-strong:var(--theme-strong);
     --text-muted:var(--theme-muted);
-    --ops-line:rgba(216,154,61,.20);
+    --ops-line:rgba(212,147,61,.18);
     --ops-blue:var(--theme-secondary);
     --ops-green:var(--theme-success);
     --ops-red:var(--theme-danger);
     --ops-amber:var(--theme-warning);
-    --chart-grid:rgba(233,224,212,.11);
+    --chart-grid:rgba(238,231,220,.10);
     --chart-text:var(--theme-text);
 }
 
 html[data-theme="night"] {
-    /* Deep Ops — blue-black operations room with cyan instrumentation */
-    --theme-page:#07111B;
-    --theme-page-2:#0D1B29;
-    --theme-panel:#10243A;
-    --theme-card:#183450;
-    --theme-card-alt:#0B1B2A;
-    --theme-input:#06101A;
-    --theme-input-focus:#0A1A29;
-    --theme-text:#DDEAF5;
-    --theme-strong:#F7FBFF;
-    --theme-muted:#8FA8BD;
-    --theme-border:#274B67;
-    --theme-border-strong:#447696;
-    --theme-primary:#F0A33A;
-    --theme-secondary:#4FC3F7;
-    --theme-tertiary:#9C7CF3;
-    --theme-success:#37C78B;
-    --theme-warning:#F3BC45;
-    --theme-danger:#E46D63;
-    --theme-header-1:#07131F;
-    --theme-header-2:#123453;
-    --theme-header-text:#F5FAFF;
-    --theme-select-menu:#050D15;
-    --theme-select-menu-text:#EAF5FF;
-    --theme-optgroup:#173754;
-    --theme-optgroup-text:#EAF5FF;
-    --theme-shadow:rgba(0,0,0,.58);
-    --theme-console:#050D15;
-    --theme-console-text:#E9F5FF;
-    --theme-surface-0:#07111B;
-    --theme-surface-1:#10243A;
-    --theme-surface-2:#183450;
-    --theme-surface-3:#06101A;
+    /* Planner Night — same structure, deeper blue-black operational palette */
+    --theme-page:#0B1117;
+    --theme-page-2:#0F1820;
+    --theme-panel:#15212C;
+    --theme-card:#1D2C39;
+    --theme-card-alt:#14202A;
+    --theme-input:#091118;
+    --theme-input-focus:#0D1821;
+    --theme-text:#DDE8F1;
+    --theme-strong:#F3F8FC;
+    --theme-muted:#91A4B4;
+    --theme-border:#2F4658;
+    --theme-border-strong:#4D6A80;
+    --theme-primary:#C78632;
+    --theme-secondary:#4BA3D1;
+    --theme-tertiary:#8C78C7;
+    --theme-success:#36B482;
+    --theme-warning:#D89B3D;
+    --theme-danger:#D76A5D;
+    --theme-header-1:#0C1822;
+    --theme-header-2:#173149;
+    --theme-header-text:#F3F8FC;
+    --theme-select-menu:#081017;
+    --theme-select-menu-text:#EAF3FA;
+    --theme-optgroup:#183247;
+    --theme-optgroup-text:#F1C27D;
+    --theme-shadow:rgba(0,0,0,.56);
+    --theme-console:#081017;
+    --theme-console-text:#EAF3FA;
+    --theme-surface-0:#0B1117;
+    --theme-surface-1:#15212C;
+    --theme-surface-2:#1D2C39;
+    --theme-surface-3:#091118;
     --bg-main:var(--theme-page);
     --bg-panel:var(--theme-panel);
     --bg-card:var(--theme-card);
@@ -2097,12 +2097,12 @@ html[data-theme="night"] {
     --text-main:var(--theme-text);
     --text-strong:var(--theme-strong);
     --text-muted:var(--theme-muted);
-    --ops-line:rgba(79,195,247,.21);
+    --ops-line:rgba(75,163,209,.18);
     --ops-blue:var(--theme-secondary);
     --ops-green:var(--theme-success);
     --ops-red:var(--theme-danger);
     --ops-amber:var(--theme-warning);
-    --chart-grid:rgba(143,168,189,.14);
+    --chart-grid:rgba(145,164,180,.13);
     --chart-text:var(--theme-text);
 }
 
@@ -3601,3 +3601,202 @@ html[data-theme="night"] .mission-input { background:#0D2234 !important; }
 .theme-menu button[data-theme-choice="day"] .theme-swatch { background:#DCE7F1; }
 .theme-menu button[data-theme-choice="dusk"] .theme-swatch { background:#161B22; }
 .theme-menu button[data-theme-choice="night"] .theme-swatch { background:#07111B; }
+
+
+/* =========================================================
+   PLANNER SUITE THEME FAMILY
+   Sharper surfaces, low haze, strong hierarchy.
+   ========================================================= */
+html[data-theme="day"] body,
+html[data-theme="dusk"] body,
+html[data-theme="night"] body {
+    background-color:var(--theme-page) !important;
+    background-image:linear-gradient(180deg,var(--theme-page),var(--theme-page-2)) !important;
+}
+
+html[data-theme="day"] .glass-panel,
+html[data-theme="dusk"] .glass-panel,
+html[data-theme="night"] .glass-panel {
+    background:var(--theme-panel) !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    border:1px solid var(--theme-border) !important;
+    box-shadow:0 10px 22px var(--theme-shadow) !important;
+}
+
+html[data-theme="day"] .ops-topbar,
+html[data-theme="dusk"] .ops-topbar,
+html[data-theme="night"] .ops-topbar {
+    background:linear-gradient(90deg,var(--theme-header-1),var(--theme-header-2)) !important;
+    border-color:var(--theme-border-strong) !important;
+    box-shadow:0 8px 18px var(--theme-shadow) !important;
+}
+
+html[data-theme="day"] :is(.mission-input,.fleet-panel,.solution-panel,.foreman-panel,.verdict-panel),
+html[data-theme="dusk"] :is(.mission-input,.fleet-panel,.solution-panel,.foreman-panel,.verdict-panel),
+html[data-theme="night"] :is(.mission-input,.fleet-panel,.solution-panel,.foreman-panel,.verdict-panel) {
+    background:var(--theme-panel) !important;
+    border-color:var(--theme-border) !important;
+    outline:none !important;
+}
+
+html[data-theme="day"] :is(.target-field,.subpanel,.metric,.ship-deploy-card,.fleet-presence-row,.solver-option,.solver-vessel,.solver-backup,.solver-method-note,.solver-target-basis>div,.solver-assist-availability,.solver-availability-summary,.fleet-vessel-card,.vessel-card),
+html[data-theme="dusk"] :is(.target-field,.subpanel,.metric,.ship-deploy-card,.fleet-presence-row,.solver-option,.solver-vessel,.solver-backup,.solver-method-note,.solver-target-basis>div,.solver-assist-availability,.solver-availability-summary,.fleet-vessel-card,.vessel-card),
+html[data-theme="night"] :is(.target-field,.subpanel,.metric,.ship-deploy-card,.fleet-presence-row,.solver-option,.solver-vessel,.solver-backup,.solver-method-note,.solver-target-basis>div,.solver-assist-availability,.solver-availability-summary,.fleet-vessel-card,.vessel-card) {
+    background:var(--theme-card) !important;
+    border-color:var(--theme-border) !important;
+    box-shadow:none !important;
+}
+
+html[data-theme="day"] :is(.solver-option-head,.solver-option-metrics span,.solver-fleet-snapshot>div,.target-capture,.solver-or-note,.scenario-actions button),
+html[data-theme="dusk"] :is(.solver-option-head,.solver-option-metrics span,.solver-fleet-snapshot>div,.target-capture,.solver-or-note,.scenario-actions button),
+html[data-theme="night"] :is(.solver-option-head,.solver-option-metrics span,.solver-fleet-snapshot>div,.target-capture,.solver-or-note,.scenario-actions button) {
+    background:var(--theme-card-alt) !important;
+    border-color:var(--theme-border) !important;
+}
+
+html[data-theme="day"] :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+html[data-theme="dusk"] :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+html[data-theme="night"] :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+    background:var(--theme-input) !important;
+    color:var(--theme-strong) !important;
+    border:1px solid var(--theme-border-strong) !important;
+    box-shadow:none !important;
+}
+
+html[data-theme="day"] :is(input,select,textarea):focus,
+html[data-theme="dusk"] :is(input,select,textarea):focus,
+html[data-theme="night"] :is(input,select,textarea):focus {
+    background:var(--theme-input-focus) !important;
+    border-color:var(--theme-primary) !important;
+    box-shadow:0 0 0 2px color-mix(in srgb,var(--theme-primary) 20%,transparent) !important;
+}
+
+html[data-theme="day"] :is(.input-mode-tabs,.segmented,.advanced-tabs),
+html[data-theme="dusk"] :is(.input-mode-tabs,.segmented,.advanced-tabs),
+html[data-theme="night"] :is(.input-mode-tabs,.segmented,.advanced-tabs) {
+    background:var(--theme-input) !important;
+    border-color:var(--theme-border-strong) !important;
+}
+
+html[data-theme="day"] :is(.mode-tab.active,.segmented button.active,.advanced-tabs button.active),
+html[data-theme="dusk"] :is(.mode-tab.active,.segmented button.active,.advanced-tabs button.active),
+html[data-theme="night"] :is(.mode-tab.active,.segmented button.active,.advanced-tabs button.active) {
+    background:var(--theme-primary) !important;
+    color:#fff !important;
+    box-shadow:none !important;
+}
+
+html[data-theme="day"] .primary-action,
+html[data-theme="dusk"] .primary-action,
+html[data-theme="night"] .primary-action {
+    background:var(--theme-primary) !important;
+    color:#fff !important;
+    border-color:color-mix(in srgb,var(--theme-primary) 72%,black) !important;
+    box-shadow:none !important;
+}
+
+html[data-theme="day"] .verdict-main,
+html[data-theme="dusk"] .verdict-main,
+html[data-theme="night"] .verdict-main {
+    background:var(--theme-card-alt) !important;
+    border-color:var(--theme-border-strong) !important;
+}
+
+html[data-theme="dusk"] .section-heading h2,
+html[data-theme="dusk"] .solver-portfolio-head strong,
+html[data-theme="dusk"] .solver-option-label,
+html[data-theme="dusk"] .solver-alternatives summary,
+html[data-theme="dusk"] .subpanel-title {
+    color:#F1C27D !important;
+}
+
+html[data-theme="day"] .section-heading h2,
+html[data-theme="night"] .section-heading h2 {
+    color:var(--theme-strong) !important;
+}
+
+html[data-theme="day"] .step-number,
+html[data-theme="dusk"] .step-number,
+html[data-theme="night"] .step-number {
+    background:color-mix(in srgb,var(--theme-primary) 14%,var(--theme-card)) !important;
+    border-color:var(--theme-primary) !important;
+    color:var(--theme-primary) !important;
+}
+
+/* Cleaner semantic badges */
+html[data-theme="day"] .verdict-badge.success,
+html[data-theme="dusk"] .verdict-badge.success,
+html[data-theme="night"] .verdict-badge.success,
+html[data-theme="day"] .solver-option-status,
+html[data-theme="dusk"] .solver-option-status,
+html[data-theme="night"] .solver-option-status {
+    color:#fff !important;
+    background:var(--theme-success) !important;
+    border-color:var(--theme-success) !important;
+    box-shadow:none !important;
+}
+
+html[data-theme="day"] .verdict-badge.failure,
+html[data-theme="dusk"] .verdict-badge.failure,
+html[data-theme="night"] .verdict-badge.failure,
+html[data-theme="day"] .solver-option.short .solver-option-status,
+html[data-theme="dusk"] .solver-option.short .solver-option-status,
+html[data-theme="night"] .solver-option.short .solver-option-status {
+    color:#fff !important;
+    background:var(--theme-danger) !important;
+    border-color:var(--theme-danger) !important;
+}
+
+/* Recommended solution gets clean amber edge, not glow */
+html[data-theme="day"] .solver-best-option .solver-option,
+html[data-theme="dusk"] .solver-best-option .solver-option,
+html[data-theme="night"] .solver-best-option .solver-option {
+    border:2px solid var(--theme-primary) !important;
+    box-shadow:none !important;
+}
+
+/* Planner-suite style controls in top bar */
+html[data-theme="day"] .ops-topbar .ops-button.secondary,
+html[data-theme="dusk"] .ops-topbar .ops-button.secondary,
+html[data-theme="night"] .ops-topbar .ops-button.secondary,
+html[data-theme="day"] .theme-picker>summary,
+html[data-theme="dusk"] .theme-picker>summary,
+html[data-theme="night"] .theme-picker>summary {
+    background:color-mix(in srgb,var(--theme-header-1) 72%,var(--theme-card)) !important;
+    color:var(--theme-header-text) !important;
+    border-color:var(--theme-border-strong) !important;
+}
+
+/* Theme menu */
+html[data-theme="day"] .theme-menu,
+html[data-theme="dusk"] .theme-menu,
+html[data-theme="night"] .theme-menu {
+    background:var(--theme-panel) !important;
+    border-color:var(--theme-border-strong) !important;
+    box-shadow:0 12px 24px var(--theme-shadow) !important;
+}
+html[data-theme="day"] .theme-menu button:hover,
+html[data-theme="dusk"] .theme-menu button:hover,
+html[data-theme="night"] .theme-menu button:hover,
+html[data-theme="day"] .theme-menu button.active,
+html[data-theme="dusk"] .theme-menu button.active,
+html[data-theme="night"] .theme-menu button.active {
+    background:var(--theme-card-alt) !important;
+    border-color:var(--theme-primary) !important;
+}
+
+/* Native menu colors */
+html[data-theme="day"] select option,
+html[data-theme="dusk"] select option,
+html[data-theme="night"] select option {
+    background:var(--theme-select-menu) !important;
+    color:var(--theme-select-menu-text) !important;
+}
+
+/* Remove previous theme-specific panel hue overrides */
+html[data-theme="day"] :is(.solution-panel,.fleet-panel,.mission-input),
+html[data-theme="dusk"] :is(.solution-panel,.fleet-panel,.mission-input),
+html[data-theme="night"] :is(.solution-panel,.fleet-panel,.mission-input) {
+    background:var(--theme-panel) !important;
+}
