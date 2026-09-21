@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFA | Fleet Roster v5.35</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="p-4 sm:p-6 flex justify-center items-start selection:bg-blue-500/30">
+
+    <div class="main-container">
+        
+        <div class="col-span-1 lg:col-span-4 w-full rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between mb-4 gap-6 glass-panel relative overflow-hidden" style="min-height: 100px;">
+             <div class="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-blue-900/20 to-transparent pointer-events-none"></div>
+
+             <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left z-10">
+                 <div class="flex-shrink-0 w-20 h-20 relative group bg-gradient-to-br from-blue-900 to-orange-900 rounded-lg border border-gray-700 flex items-center justify-center overflow-hidden shadow-lg">
+                    <img src="https://github.com/esramos-design/mfa.github.io/blob/main/mfa.jpg?raw=true" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition" onerror="this.style.display='none'">
+                    <span class="absolute text-[10px] font-bold text-white drop-shadow-md z-0">MFA</span>
+                 </div>
+                 <div>
+                     <h1 class="text-2xl font-bold mb-1 tracking-wider font-tech uppercase text-chrome">
+                        Technical Fleet Manifest
+                     </h1>
+                     <p class="text-xs text-gray-400 max-w-3xl leading-relaxed font-mono">
+                         Advanced telemetry and component analysis for registered industrial vessels. System Version: 5.35
+                     </p>
+                 </div>
+             </div>
+
+             <div class="flex flex-col gap-2 items-end z-10">
+                 <div class="flex gap-2">
+                     <a href="index.html" class="px-3 py-1.5 bg-blue-900/40 border border-blue-500/40 text-xs font-bold text-blue-200 rounded hover:bg-blue-800/60 transition uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Return to Analyzer
+                     </a>
+                     <button onclick="toggleTheme()" class="px-3 py-1.5 bg-[#181f29] border border-[#2d3642] text-xs font-bold text-white rounded hover:bg-[#252e3d] transition uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-sun"></i> Theme
+                     </button>
+                 </div>
+             </div>
+        </div>
+
+        <div class="col-span-1 lg:col-span-4 mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="glass-panel p-4 rounded-xl border-t-2 border-blue-500 flex flex-col items-center justify-center">
+                    <span class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest mb-1">Total Cargo Capacity</span>
+                    <span class="text-3xl font-black text-white font-tech" id="total-cargo">0 <span class="text-sm text-gray-500">SCU</span></span>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border-t-2 border-green-500 flex flex-col items-center justify-center">
+                    <span class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest mb-1">Active Mining Heads</span>
+                    <span class="text-3xl font-black text-white font-tech" id="total-lasers">0 <span class="text-sm text-gray-500">UNITS</span></span>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border-t-2 border-orange-500 flex flex-col items-center justify-center">
+                    <span class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest mb-1">Fleet Mass</span>
+                    <span class="text-3xl font-black text-white font-tech" id="total-mass">0 <span class="text-sm text-gray-500">T</span></span>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border-t-2 border-purple-500 flex flex-col items-center justify-center">
+                    <span class="text-[10px] uppercase text-[var(--text-muted)] tracking-widest mb-1">Avg Quantum Range</span>
+                    <span class="text-3xl font-black text-white font-tech" id="avg-range">0 <span class="text-sm text-gray-500">M km</span></span>
+                </div>
+            </div>
+
+            <div class="glass-panel p-2 rounded-xl flex items-center gap-4">
+                <div class="relative flex-grow">
+                    <i class="fa-solid fa-search absolute left-4 top-3 text-[var(--text-muted)] text-xs"></i>
+                    <input type="text" id="fleet-search" onkeyup="filterFleet()" placeholder="Search manifest by name, manufacturer or ID..." 
+                           class="w-full bg-[var(--bg-input)] border border-[var(--border-main)] rounded-lg py-2 pl-10 pr-4 text-xs font-mono text-[var(--text-main)] focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterFleet('all')" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase rounded transition">All</button>
+                    <button onclick="filterFleet('ARGO')" class="px-3 py-2 bg-orange-900/40 border border-orange-500/30 text-orange-200 hover:bg-orange-800/50 text-[10px] font-bold uppercase rounded transition">ARGO</button>
+                    <button onclick="filterFleet('MISC')" class="px-3 py-2 bg-gray-700/40 border border-gray-500/30 text-gray-200 hover:bg-gray-600/50 text-[10px] font-bold uppercase rounded transition">MISC</button>
+                    <button onclick="filterFleet('DRAK')" class="px-3 py-2 bg-yellow-900/40 border border-yellow-500/30 text-yellow-200 hover:bg-yellow-800/50 text-[10px] font-bold uppercase rounded transition">DRAKE</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="fleet-container" class="col-span-1 lg:col-span-4 grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
+            </div>
+
+    </div>
+    
+    <script src="fleet.js"></script>
+    <script>
+        function initTheme() {
+            const t = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        }
+        function toggleTheme() {
+            const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
+        }
+        initTheme();
+    </script>
+</body>
+</html>
