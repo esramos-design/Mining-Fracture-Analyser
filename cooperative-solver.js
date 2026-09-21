@@ -213,7 +213,16 @@
             var laser=allLaserHeads.find(function(h){return h.name===laserName;})||eligibleLasers(id)[0];
             if(!laser) return null;
             mods=mods.slice(0,Math.max(0,n(laser.moduleSlots)));
-            return {shipId:id,role:role,laser:laser.name,basePower:n(laser.power),resistanceEffect:n(laser.resistanceEffect),instabilityEffect:n(laser.instabilityEffect),modules:mods};
+            return {
+                shipId:id,
+                role:role,
+                laser:laser.name,
+                moduleSlots:Math.max(0,Math.floor(n(laser.moduleSlots))),
+                basePower:n(laser.power),
+                resistanceEffect:n(laser.resistanceEffect),
+                instabilityEffect:n(laser.instabilityEffect),
+                modules:mods
+            };
         }).filter(Boolean);
     }
 
