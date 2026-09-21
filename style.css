@@ -3800,3 +3800,30 @@ html[data-theme="dusk"] :is(.solution-panel,.fleet-panel,.mission-input),
 html[data-theme="night"] :is(.solution-panel,.fleet-panel,.mission-input) {
     background:var(--theme-panel) !important;
 }
+
+
+/* Recommended solution reproduction audit note */
+.solver-reproduction-note {
+    margin:10px 11px 0;
+    padding:9px 10px;
+    border:1px solid var(--theme-primary);
+    border-radius:8px;
+    background:color-mix(in srgb,var(--theme-primary) 10%,var(--theme-card));
+}
+.solver-reproduction-note strong,
+.solver-reproduction-note span {
+    display:block;
+}
+.solver-reproduction-note strong {
+    color:var(--theme-primary);
+    font:900 8px var(--font-tech);
+    letter-spacing:.07em;
+}
+.solver-reproduction-note span {
+    margin-top:4px;
+    color:var(--theme-text);
+    font:600 9px/1.45 var(--font-tech);
+}
+.solver-reproduction-note b {
+    color:var(--theme-strong);
+}
