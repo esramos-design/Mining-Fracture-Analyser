@@ -490,8 +490,10 @@ window.addShipLoadout = function() {
 
 // --- UPDATE SHIP IMAGE (GLOBAL) ---
 window.updateShipImage = function() {
-    const shipId = document.getElementById('shipSelectToAdd').value;
+    const shipSelect = document.getElementById('shipSelectToAdd');
     const img = document.getElementById('selectedShipImage');
+    if (!shipSelect || !img) return;
+    const shipId = shipSelect.value;
     if(img) {
         if(shipId === 'mole') img.src = "https://raw.githubusercontent.com/esramos-design/mfa.github.io/main/mole.jpg";
         else if(shipId === 'prospector') img.src = "https://raw.githubusercontent.com/esramos-design/mfa.github.io/main/prospector.jpg";
@@ -594,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sel = document.getElementById('shipSelectToAdd');
     if(sel) sel.innerHTML = ships.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
     populateGadgetList();
-    updateShipImage();
+    if (document.getElementById('shipSelectToAdd')) updateShipImage();
     calculate();
     
     window.calculate = calculate;
