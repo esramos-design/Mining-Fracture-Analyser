@@ -605,4 +605,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.askAI = askAI;
     window.toggleTheme = toggleTheme; 
     window.updateModuleSlots = updateModuleSlots; // Expose to global scope for HTML inline calls
+    window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
 });
