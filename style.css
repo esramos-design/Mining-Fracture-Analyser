@@ -954,8 +954,8 @@ footer { display:flex; justify-content:space-between; gap:10px; padding:16px 4px
 }
 .fleet-qty {
     display:grid;
-    grid-template-columns:auto 28px 42px 28px;
-    gap:4px;
+    grid-template-columns:auto 64px;
+    gap:6px;
     align-items:center;
 }
 .fleet-qty em {
@@ -964,22 +964,13 @@ footer { display:flex; justify-content:space-between; gap:10px; padding:16px 4px
     font-style:normal;
     text-transform:uppercase;
 }
-.fleet-qty button {
-    height:28px;
-    border:1px solid var(--ops-line);
-    border-radius:6px;
-    background:rgba(30,41,59,.55);
-    color:var(--text-main);
-    font:800 14px var(--font-tech);
-    cursor:pointer;
-}
 .fleet-qty input {
-    width:42px;
-    height:28px;
-    padding:2px 4px;
+    width:64px;
+    height:32px;
+    padding:3px 6px;
     border-radius:6px;
     text-align:center;
-    font:800 10px var(--font-tech);
+    font:800 11px var(--font-tech);
 }
 [data-theme="light"] .fleet-presence-row {
     background:rgba(255,255,255,.86);
