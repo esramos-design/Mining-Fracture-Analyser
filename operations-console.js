@@ -25,6 +25,67 @@
         return value.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " MW";
     }
 
+
+    function ensureFloatingVerdict() {
+        let panel = byId("floating-verdict");
+        if (panel) return panel;
+
+        panel = document.createElement("aside");
+        panel.id = "floating-verdict";
+        panel.className = "floating-verdict hidden";
+        panel.setAttribute("aria-live", "polite");
+        panel.innerHTML = `
+            <button type="button" class="floating-verdict-jump" title="Return to full Fracture Verdict">
+                <span class="floating-verdict-kicker">FRACTURE VERDICT</span>
+                <strong id="floating-verdict-status">AWAITING FLEET</strong>
+            </button>
+            <div class="floating-verdict-metrics">
+                <span>Required <strong id="floating-required">—</strong></span>
+                <span>Available <strong id="floating-available">—</strong></span>
+                <span>Margin <strong id="floating-margin">—</strong></span>
+            </div>
+        `;
+
+        panel.querySelector(".floating-verdict-jump")?.addEventListener("click", () => {
+            document.querySelector(".verdict-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        document.body.appendChild(panel);
+        return panel;
+    }
+
+    function updateFloatingVerdict(required, available, marginText, statusText, stateClass) {
+        const panel = ensureFloatingVerdict();
+        setText("floating-required", required === Infinity ? "IMPOSSIBLE" : formatPower(required));
+        setText("floating-available", formatPower(available));
+        setText("floating-margin", marginText || "—");
+        setText("floating-verdict-status", statusText || "AWAITING FLEET");
+
+        panel.classList.remove("state-success", "state-failure", "state-neutral");
+        panel.classList.add("state-" + (stateClass || "neutral"));
+    }
+
+    function installFloatingVerdictObserver() {
+        const fullVerdict = document.querySelector(".verdict-panel");
+        const panel = ensureFloatingVerdict();
+        if (!fullVerdict || !panel) return;
+
+        const syncVisibility = visible => {
+            const desktop = window.matchMedia("(min-width: 1350px)").matches;
+            panel.classList.toggle("hidden", visible || !desktop);
+        };
+
+        const observer = new IntersectionObserver(entries => {
+            for (const entry of entries) syncVisibility(entry.isIntersecting);
+        }, { threshold: 0.18 });
+
+        observer.observe(fullVerdict);
+
+        window.addEventListener("resize", () => {
+            if (!window.matchMedia("(min-width: 1350px)").matches) panel.classList.add("hidden");
+        });
+    }
+
     function deriveRequiredPower() {
         if (typeof currentSimState === "undefined") return 0;
         if (!Number.isFinite(currentSimState.mass) || !Number.isFinite(currentSimState.resistance)) return 0;
@@ -63,6 +124,7 @@
             marginValue.textContent = "—";
             fill.style.width = "0%";
             if (scaleLabel) scaleLabel.textContent = required === Infinity ? "Resistance ≥100%" : "Required " + formatPower(required);
+            updateFloatingVerdict(required, available, "—", "AWAITING FLEET", "neutral");
             return;
         }
 
@@ -75,6 +137,7 @@
             fill.style.width = "4%";
             fill.classList.add("short");
             if (scaleLabel) scaleLabel.textContent = "Resistance ≥100%";
+            updateFloatingVerdict(required, available, "N/A", "RESISTANCE BLOCK", "failure");
             return;
         }
 
@@ -91,12 +154,14 @@
             status.textContent = "FRACTURE VIABLE";
             title.textContent = "This deployed fleet can fracture the target.";
             subtitle.textContent = "Review the recommended configuration and operational margin below.";
+            updateFloatingVerdict(required, available, (marginPct >= 0 ? "+" : "") + marginPct.toFixed(1) + "%", "FRACTURE VIABLE", "success");
         } else {
             status.className = "verdict-badge failure";
             status.textContent = "SUPPORT REQUIRED";
             title.textContent = "Current deployed power is insufficient.";
             subtitle.textContent = "MFA loadout and cooperative-fleet guidance below identifies the required support.";
             fill.classList.add("short");
+            updateFloatingVerdict(required, available, (marginPct >= 0 ? "+" : "") + marginPct.toFixed(1) + "%", "SUPPORT REQUIRED", "failure");
         }
     }
 
@@ -344,6 +409,7 @@
     function init() {
         loadPreferences();
         installCalculationObserver();
+        installFloatingVerdictObserver();
         updateRockSourceSummary();
 
         // Mark a successful OCR parse without coupling OCR to UI internals.
