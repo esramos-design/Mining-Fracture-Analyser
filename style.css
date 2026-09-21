@@ -558,7 +558,7 @@ body { padding: 18px; }
 .resource-links { display:flex; flex-wrap:wrap; gap:8px; }
 .resource-links a { padding:9px 12px; border:1px solid var(--ops-line); border-radius:8px; color:#bae6fd; text-decoration:none; font:700 10px var(--font-tech); }
 
-footer { display:flex; justify-content:space-between; gap:10px; padding:16px 4px 6px; color:var(--text-muted); font:600 8px var(--font-tech); text-transform:uppercase; letter-spacing:.06em; }
+footer { display:flex; justify-content:flex-start; align-items:center; gap:28px; padding:16px 4px 6px; color:var(--text-muted); font:600 8px var(--font-tech); text-transform:uppercase; letter-spacing:.06em; }
 
 [data-theme="light"] .status-chip,[data-theme="light"] .target-field,[data-theme="light"] .subpanel,[data-theme="light"] .metric,[data-theme="light"] .ship-deploy-card,[data-theme="light"] .telemetry-cards>div,[data-theme="light"] .audit-grid a {
     background:rgba(255,255,255,.82);
