@@ -1686,3 +1686,261 @@ select optgroup {
         margin-top:7px;
     }
 }
+
+
+/* =========================================================
+   CONTRAST POLISH + FLOATING VERDICT
+   ========================================================= */
+
+/* Stronger verdict badges */
+.verdict-badge.success {
+    background:#1F7A58 !important;
+    border-color:#165F45 !important;
+    color:#FFFFFF !important;
+    box-shadow:0 4px 12px rgba(31,122,88,.20);
+}
+.verdict-badge.failure {
+    background:#B84E3B !important;
+    border-color:#8F3729 !important;
+    color:#FFFFFF !important;
+    box-shadow:0 4px 12px rgba(184,78,59,.18);
+}
+.verdict-badge.neutral {
+    background:#E8DCCB !important;
+    border-color:#BFAE95 !important;
+    color:#17324D !important;
+}
+
+/* Dropdowns: closed control remains light; expanded options intentionally dark for reliable contrast. */
+select {
+    background:#FFFFFF !important;
+    color:#17324D !important;
+    border:1px solid #B8A68C !important;
+    font-weight:700;
+}
+select:hover {
+    border-color:#D67A24 !important;
+}
+select:focus {
+    outline:none !important;
+    border-color:#E67E22 !important;
+    box-shadow:0 0 0 3px rgba(230,126,34,.18) !important;
+}
+select:disabled {
+    background:#E9E1D5 !important;
+    color:#718096 !important;
+    border-color:#CFC3B2 !important;
+    opacity:1 !important;
+}
+select option {
+    background:#17324D !important;
+    color:#FFF8EE !important;
+}
+select option:checked {
+    background:#E8A857 !important;
+    color:#102A43 !important;
+}
+select optgroup {
+    background:#F2D7B5 !important;
+    color:#17324D !important;
+    font-weight:900 !important;
+}
+
+/* General control/button contrast */
+.ops-button,
+.status-link,
+.scenario-actions button,
+.fleet-loadout-heading button {
+    font-weight:900 !important;
+}
+.scenario-actions button {
+    background:#D8DDE3 !important;
+    color:#17324D !important;
+    border:1px solid #9EABB8 !important;
+}
+.scenario-actions button:hover {
+    background:#C5CFD8 !important;
+    border-color:#2E5D88 !important;
+}
+.status-link {
+    background:#2E5D88 !important;
+    color:#FFFFFF !important;
+    border-color:#244E72 !important;
+}
+.status-link:hover {
+    background:#17324D !important;
+    color:#FFFFFF !important;
+}
+
+/* Foreman */
+.foreman-panel {
+    border-color:rgba(31,58,95,.22) !important;
+}
+.foreman-actions {
+    gap:10px !important;
+}
+.foreman-actions button {
+    min-height:42px;
+    padding:10px 15px !important;
+    color:#FFFFFF !important;
+    border-width:1px !important;
+    box-shadow:0 4px 10px rgba(23,50,77,.12);
+    letter-spacing:.03em;
+}
+.foreman-actions button:nth-child(1) {
+    background:#6D3BC2 !important;
+    border-color:#55299F !important;
+}
+.foreman-actions button:nth-child(2) {
+    background:#C87812 !important;
+    border-color:#9D5C08 !important;
+}
+.foreman-actions button:nth-child(3) {
+    background:#23689C !important;
+    border-color:#194F79 !important;
+}
+.foreman-actions button:hover {
+    filter:brightness(.93);
+}
+.foreman-panel .status-link {
+    min-height:38px;
+    padding:9px 13px !important;
+    background:#314D68 !important;
+    color:#FFFFFF !important;
+    border-color:#223A50 !important;
+}
+.foreman-output {
+    background:#17324D !important;
+    color:#FFF8EE !important;
+    border:1px solid #2E5D88 !important;
+    font-weight:600;
+}
+.foreman-output * {
+    color:inherit !important;
+}
+.foreman-custom summary {
+    color:#30465F !important;
+    font-weight:800;
+}
+.custom-query input {
+    background:#FFFFFF !important;
+    color:#17324D !important;
+    border-color:#B8A68C !important;
+}
+
+/* Solver / recommendation contrast */
+.solver-option-status {
+    background:#1F7A58 !important;
+    color:#FFFFFF !important;
+    border-color:#165F45 !important;
+    font-weight:900 !important;
+}
+.solver-option.short .solver-option-status {
+    background:#B84E3B !important;
+    color:#FFFFFF !important;
+    border-color:#8F3729 !important;
+}
+.solver-or-note {
+    background:#E4EFF7 !important;
+    color:#21384F !important;
+}
+.solver-or-note strong {
+    color:#17324D !important;
+}
+.solver-method-note {
+    background:#FFF9F0;
+    color:#52677E;
+    border-color:#CBB99F;
+}
+
+/* Top status chips */
+.ops-topbar .status-chip {
+    color:#FFFFFF !important;
+    border-color:rgba(255,255,255,.26) !important;
+    background:rgba(255,255,255,.12) !important;
+}
+.ops-topbar .status-chip strong {
+    color:#FFFFFF !important;
+}
+
+/* Compact floating verdict */
+.floating-verdict {
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    width:min(500px, calc(100vw - 44px));
+    z-index:120;
+    display:grid;
+    grid-template-columns:minmax(180px,1fr) auto;
+    gap:14px;
+    align-items:center;
+    padding:12px 14px;
+    border:2px solid #2E5D88;
+    border-radius:14px;
+    background:#FFF9F0;
+    box-shadow:0 18px 42px rgba(23,50,77,.28);
+    transition:opacity .18s ease, transform .18s ease;
+}
+.floating-verdict.hidden {
+    display:none !important;
+}
+.floating-verdict-jump {
+    border:0;
+    background:transparent;
+    text-align:left;
+    cursor:pointer;
+    min-width:0;
+    padding:0;
+}
+.floating-verdict-kicker {
+    display:block;
+    color:#64748B;
+    font:800 9px var(--font-tech);
+    letter-spacing:.10em;
+}
+.floating-verdict-jump strong {
+    display:block;
+    margin-top:3px;
+    color:#17324D;
+    font:900 18px var(--font-ui);
+}
+.floating-verdict-metrics {
+    display:grid;
+    grid-template-columns:repeat(3,auto);
+    gap:10px;
+}
+.floating-verdict-metrics span {
+    display:block;
+    color:#64748B;
+    font:800 8px var(--font-tech);
+    text-transform:uppercase;
+    white-space:nowrap;
+}
+.floating-verdict-metrics strong {
+    display:block;
+    margin-top:3px;
+    color:#17324D;
+    font:900 11px var(--font-tech);
+}
+.floating-verdict.state-success {
+    border-color:#1F7A58;
+    background:#F0FAF5;
+}
+.floating-verdict.state-success .floating-verdict-jump strong,
+.floating-verdict.state-success .floating-verdict-metrics strong {
+    color:#165F45;
+}
+.floating-verdict.state-failure {
+    border-color:#B84E3B;
+    background:#FFF3F0;
+}
+.floating-verdict.state-failure .floating-verdict-jump strong,
+.floating-verdict.state-failure .floating-verdict-metrics strong {
+    color:#8F3729;
+}
+
+@media (max-width:1349px) {
+    .floating-verdict {
+        display:none !important;
+    }
+}
