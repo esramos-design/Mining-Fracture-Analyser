@@ -1,161 +1,152 @@
 /**
- * MODULE: AI FOREMAN (GEMINI UPLINK)
- * Version: 5.35
+ * MODULE: AI FOREMAN (OPENAI)
+ * Revision foundation for MFA after v5.35.
+ *
+ * Security model:
+ * - No API keys are accepted or stored in the browser.
+ * - Browser calls a maintainer-controlled backend endpoint.
+ * - Backend owns OPENAI_API_KEY and calls the OpenAI Responses API.
  */
 
-// --- MODEL CONFIGURATION ---
-// Priority list: Newest -> Oldest. The app will try them in order.
-const MODEL_PRIORITY_LIST = [
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash-002",
-    "gemini-1.5-flash"
-];
+const MFA_AI_ENDPOINT =
+    (window.MFA_CONFIG && window.MFA_CONFIG.aiEndpoint) ||
+    window.MFA_AI_ENDPOINT ||
+    "";
 
-let currentModelIndex = 0;
+function getAIContent() {
+    return document.getElementById("ai-content");
+}
 
-// --- API KEY MANAGEMENT ---
+function getAILoading() {
+    return document.getElementById("ai-loading");
+}
+
+function setAIMessage(html) {
+    const el = getAIContent();
+    if (el) el.innerHTML = html;
+}
+
 function openApiModal() {
-    const modal = document.getElementById('api-modal');
-    const input = document.getElementById('api-key-input');
-    const currentKey = localStorage.getItem('gemini_api_key');
-    if(currentKey) input.value = currentKey;
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10);
+    // Compatibility shim for existing v5.35 inline handler.
+    // API credentials are no longer entered in the browser.
+    setAIMessage(
+        '<span class="text-blue-300 font-bold">// OPENAI FOREMAN</span><br>' +
+        '<span class="text-purple-100/80">Credentials are managed securely by the MFA backend. No browser API key is required.</span>'
+    );
 }
 
 function closeApiModal() {
-    const m = document.getElementById('api-modal');
-    m.classList.remove('show');
-    setTimeout(() => m.style.display = 'none', 200);
+    const m = document.getElementById("api-modal");
+    if (m) m.style.display = "none";
 }
 
 function saveApiKey() {
-    const key = document.getElementById('api-key-input').value.trim();
-    if(key) { 
-        localStorage.setItem('gemini_api_key', key); 
-        closeApiModal(); 
-        const aiContent = document.getElementById('ai-content');
-        if(aiContent) aiContent.innerHTML = `<span class="text-green-400 font-bold">// KEY AUTHENTICATED. UPLINK ESTABLISHED.</span>`;
-    } else {
-        alert("Please enter a valid API key.");
-    }
+    // Compatibility shim. Deliberately does not persist secrets.
+    openApiModal();
 }
 
-// --- AI INTERACTION ---
+function buildPrompt(mode) {
+    const customInput = document.getElementById("ai-custom-input");
+
+    if (typeof currentSimState === "undefined") {
+        throw new Error("Simulation state is unavailable.");
+    }
+
+    if (currentSimState.power === 0 && mode !== "custom") {
+        throw new Error("No telemetry data. Run the simulation first.");
+    }
+
+    const rockDetails =
+        `Rock Mass: ${currentSimState.mass} kg, Resistance: ${currentSimState.resistance.toFixed(1)}%, Instability: ${currentSimState.instability.toFixed(1)}%.`;
+    const crewDetails =
+        `Crew Power: ${currentSimState.power.toFixed(0)} MW from ${currentSimState.activeArms} active laser heads.`;
+    const status = currentSimState.success
+        ? "FRACTURE POSSIBLE"
+        : "FRACTURE IMPOSSIBLE (insufficient calculated power)";
+
+    if (mode === "strategy") {
+        return `Act as an expert Star Citizen mining foreman. Analyze this MFA telemetry: ${rockDetails} ${crewDetails} Status: ${status}. Give concise operational guidance and clearly distinguish calculator facts from tactical judgement.`;
+    }
+    if (mode === "briefing") {
+        return `Generate a short crew tactical order for a Star Citizen mining operation. ${rockDetails} ${crewDetails} Status: ${status}.`;
+    }
+    if (mode === "risk") {
+        return `Act as a mining safety officer. Assess operational risk from this MFA telemetry: ${rockDetails} ${crewDetails}. Do not invent an exact explosion probability unless supplied by the calculator.`;
+    }
+    if (mode === "optimize") {
+        return `Act as a Star Citizen mining loadout engineer. Review this MFA telemetry: ${rockDetails} ${crewDetails}. Suggest loadout considerations while treating MFA's deterministic calculations as authoritative input.`;
+    }
+    if (mode === "custom") {
+        const query = customInput ? customInput.value.trim() : "";
+        if (!query) throw new Error("Enter a question for the Foreman.");
+        return `MFA mining context: ${rockDetails} ${crewDetails} Status: ${status}. User question: ${query}`;
+    }
+
+    throw new Error("Unknown Foreman mode.");
+}
+
 async function askAI(mode) {
-    const apiKey = localStorage.getItem('gemini_api_key');
-    
-    if (!apiKey) { 
-        openApiModal(); 
-        return; 
+    const loading = getAILoading();
+    const customInput = document.getElementById("ai-custom-input");
+
+    if (!MFA_AI_ENDPOINT) {
+        setAIMessage(
+            '<span class="text-yellow-400 font-bold">// OPENAI BACKEND NOT CONFIGURED</span><br>' +
+            '<span class="text-purple-100/80">Set <code>window.MFA_CONFIG.aiEndpoint</code> to the deployed MFA Foreman endpoint.</span>'
+        );
+        return;
     }
 
-    const aiLoading = document.getElementById('ai-loading');
-    const aiContent = document.getElementById('ai-content');
-    const customInput = document.getElementById('ai-custom-input');
-    
-    // Check if simulation data exists (reads from global variable in script.js)
-    if (typeof currentSimState === 'undefined' || currentSimState.power === 0) {
-        if (mode !== 'custom') {
-            if(aiContent) aiContent.innerHTML = `<span class="text-yellow-500">// ERROR: No telemetry data. Run simulation first.</span>`;
-            return;
-        }
-    }
-
-    // UI Updates
-    if(aiLoading) aiLoading.classList.remove('hidden');
-    if(aiContent) aiContent.innerHTML = ''; 
-
-    // Prompt Construction
-    let prompt = "";
-    const rockDetails = `Rock Mass: ${currentSimState.mass}kg, Resistance: ${currentSimState.resistance.toFixed(1)}%, Instability: ${currentSimState.instability.toFixed(1)}%.`;
-    const crewDetails = `Crew Power: ${currentSimState.power.toFixed(0)} MW from ${currentSimState.activeArms} active laser heads.`;
-    const status = currentSimState.success ? "FRACTURE POSSIBLE" : "FRACTURE IMPOSSIBLE (Low Power)";
-
-    if (mode === 'strategy') prompt = `You are a Mining Foreman in Star Citizen. Analyze: ${rockDetails} ${crewDetails} Status: ${status}. Keep it brief. 1. Is it safe? 2. Modules?`;
-    else if (mode === 'briefing') prompt = `You are a Commander. Generate a short tactical order for crew chat. Scenario: ${rockDetails} ${crewDetails}`;
-    else if (mode === 'risk') prompt = `Safety Officer. Analyze risk for: ${rockDetails}. Assess explosion probability. Keep it brief.`;
-    else if (mode === 'optimize') prompt = `Loadout Engineer. ${rockDetails} Power: ${currentSimState.power.toFixed(0)} MW. Suggest optimal modules.`;
-    else if (mode === 'custom') {
-        const query = customInput.value;
-        if (!query) { 
-            if(aiLoading) aiLoading.classList.add('hidden'); 
-            if(aiContent) aiContent.innerHTML = `<span class="text-purple-500/50 italic">// SYSTEM READY. AWAITING INPUT.</span>`;
-            return; 
-        }
-        prompt = `Context: Mining. Rock: ${rockDetails} Crew: ${crewDetails} Question: "${query}"`;
-    }
-
-    // Recursive Call wrapper to handle Model Fallback
-    attemptGeneration(apiKey, prompt, aiContent, aiLoading);
-    
-    if(mode === 'custom') customInput.value = '';
-}
-
-async function attemptGeneration(key, prompt, displayElement, loadingElement) {
-    const modelName = MODEL_PRIORITY_LIST[currentModelIndex];
-    
+    let prompt;
     try {
-        const text = await callGemini(key, prompt, modelName);
-        if(typeof marked !== 'undefined') displayElement.innerHTML = marked.parse(text);
-        else displayElement.innerText = text;
-        
-        if(loadingElement) loadingElement.classList.add('hidden');
-        
+        prompt = buildPrompt(mode);
     } catch (error) {
-        console.warn(`Model ${modelName} failed: ${error.message}`);
-        
-        // If 404 (Model not found) and we have more models to try:
-        if (error.message.includes("404") && currentModelIndex < MODEL_PRIORITY_LIST.length - 1) {
-            currentModelIndex++; // Switch to next older model
-            const nextModel = MODEL_PRIORITY_LIST[currentModelIndex];
-            if(displayElement) displayElement.innerHTML = `<span class="text-yellow-500 text-[10px]">// REROUTING UPLINK TO ${nextModel.toUpperCase()}...</span>`;
-            
-            // Retry immediately with new model
-            return attemptGeneration(key, prompt, displayElement, loadingElement);
+        setAIMessage(`<span class="text-yellow-400">// ${error.message}</span>`);
+        return;
+    }
+
+    if (loading) loading.classList.remove("hidden");
+    setAIMessage("");
+
+    try {
+        const response = await fetch(MFA_AI_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                prompt,
+                mode,
+                telemetry: currentSimState,
+                gameVersion:
+                    (window.MFA_CONFIG && window.MFA_CONFIG.gameVersion) ||
+                    "4.10.1-live.12660092"
+            })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || `Foreman backend returned HTTP ${response.status}`);
         }
 
-        // If all failed or other error:
-        if(loadingElement) loadingElement.classList.add('hidden');
-        if(displayElement) displayElement.innerHTML = `<span class="text-red-500 font-bold">// UPLINK FAILURE</span><br><span class="text-red-400 text-[10px]">${error.message}</span><br><br><button onclick="openApiModal()" class="text-blue-400 underline">Update API Key</button>`;
+        const text = typeof data.text === "string" ? data.text : "";
+        if (!text) throw new Error("Foreman returned no content.");
+
+        // Render as plain text. Do not inject model-generated HTML into the DOM.
+        const el = getAIContent();
+        if (el) el.textContent = text;
+    } catch (error) {
+        setAIMessage(
+            `<span class="text-red-400 font-bold">// OPENAI FOREMAN FAILURE</span><br><span class="text-red-300">${error.message}</span>`
+        );
+    } finally {
+        if (loading) loading.classList.add("hidden");
+        if (mode === "custom" && customInput) customInput.value = "";
     }
 }
 
-async function callGemini(key, prompt, model) {
-    // Standard v1beta endpoint which supports modern models like 2.5
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-    
-    const payload = { 
-        contents: [{ parts: [{ text: prompt }] }] 
-    };
-
-    const response = await fetch(url, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify(payload) 
-    });
-
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        let msg = `Error ${response.status}`;
-        if(errData.error && errData.error.message) msg += `: ${errData.error.message}`;
-        throw new Error(msg);
-    }
-
-    const data = await response.json();
-    if(data.candidates && data.candidates.length > 0) {
-        return data.candidates[0].content.parts[0].text;
-    } else {
-        throw new Error("AI returned no content.");
-    }
-}
-
-// Auto-check for key on load
-document.addEventListener('DOMContentLoaded', () => {
-    const key = localStorage.getItem('gemini_api_key');
-    const aiContent = document.getElementById('ai-content');
-    if(key && aiContent) {
-        aiContent.innerHTML = `<span class="text-purple-500/50 italic">// SYSTEM READY. KEY LOADED.</span>`;
-    }
+document.addEventListener("DOMContentLoaded", () => {
+    setAIMessage(
+        MFA_AI_ENDPOINT
+            ? '<span class="text-purple-400/70 italic">// OPENAI FOREMAN READY.</span>'
+            : '<span class="text-purple-500/50 italic">// OPENAI FOREMAN AWAITING BACKEND CONFIGURATION.</span>'
+    );
 });
