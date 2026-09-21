@@ -508,25 +508,79 @@ window.updateShipImage = function() {
 };
 
 function populateGadgetList() {
-    const c = document.getElementById('gadget-list-container');
-    if(!c) return;
-    c.innerHTML = gadgets.map((g,i) => `
-        <div class="flex justify-between p-3 mb-2 bg-[var(--bg-input)] rounded border border-[var(--border-main)] hover:border-blue-500/50 transition-all cursor-pointer group" onclick="document.getElementById('gr-${i}').click()">
-            <div class="flex-grow">
-                <div class="flex items-center gap-2 mb-1">
-                     <span class="text-sm font-black tracking-wider uppercase ${g.name==='None'?'text-[var(--text-muted)]': (g.type==='Additive'?'text-blue-400':(g.type==='Utility'?'text-green-400':'text-purple-400'))}">${g.name}</span>
-                     ${g.name !== 'None' ? `<span class="px-1.5 py-0.5 text-[9px] uppercase border rounded border-gray-500/30 text-gray-400">${g.type}</span>` : ''}
+    const container = document.getElementById('gadget-list-container');
+    if(!container) return;
+
+    container.innerHTML = gadgets.map((g,i) => `
+        <label class="gadget-choice ${g.name === 'None' ? 'gadget-none' : ''}" for="gr-${i}">
+            <div class="gadget-choice-copy">
+                <div class="gadget-choice-title">
+                    <strong>${g.name}</strong>
+                    ${g.name !== 'None' ? `<span>${g.type}</span>` : ''}
                 </div>
-                <div class="text-[10px] text-[var(--text-muted)] font-mono leading-tight opacity-90 pr-8">${g.desc || ''}</div>
-                <div class="mt-1 pt-1 border-t border-white/5 text-[10px] font-mono text-blue-300/90 font-bold">${getFormattedStats(g,'gadget')}</div>
+                <small>${g.desc || ''}</small>
+                <code>${getFormattedStats(g,'gadget').replace(/^\\s*\\(|\\)$/g,'') || 'No modifiers'}</code>
             </div>
-            <div class="ml-2">
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="radio" name="gadg" id="gr-${i}" value="${g.name}" ${g.name==='None'?'checked':''} class="sr-only peer" onchange="document.getElementById('gadgetSelect').value=this.value;calculate()">
-                    <div class="w-9 h-5 bg-slate-700/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-            </div>
-        </div>`).join('');
+            <input type="radio" name="gadg" id="gr-${i}" value="${g.name}" ${g.name==='None'?'checked':''}
+                onchange="selectGadget(this.value)">
+            <span class="gadget-radio-ui" aria-hidden="true"></span>
+        </label>
+    `).join('');
+
+    const selected = document.getElementById('gadgetSelect')?.value || 'None';
+    const selectedRadio = [...document.querySelectorAll('input[name="gadg"]')].find(x => x.value === selected);
+    if (selectedRadio) selectedRadio.checked = true;
+    renderGadgetAttributes(selected);
+}
+
+function signedPercent(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return null;
+    return `${number > 0 ? '+' : ''}${number.toFixed(Number.isInteger(number) ? 0 : 1)}%`;
+}
+
+function renderGadgetAttributes(gadgetName) {
+    const card = document.getElementById('gadgetAttributeCard');
+    const title = document.getElementById('gadgetAttributeTitle');
+    const type = document.getElementById('gadgetAttributeType');
+    const description = document.getElementById('gadgetAttributeDescription');
+    const grid = document.getElementById('gadgetAttributeGrid');
+    if (!card || !title || !type || !description || !grid) return;
+
+    const gadget = gadgets.find(g => g.name === gadgetName) || gadgets.find(g => g.name === 'None');
+    if (!gadget || gadget.name === 'None') {
+        card.classList.add('empty');
+        title.textContent = 'None';
+        type.textContent = 'No gadget';
+        description.textContent = 'Select a gadget to view its stored fracture attributes.';
+        grid.innerHTML = '';
+        return;
+    }
+
+    card.classList.remove('empty');
+    title.textContent = gadget.name;
+    type.textContent = gadget.type || 'Gadget';
+    description.textContent = gadget.desc || 'Stored MFA gadget attributes.';
+
+    const resistance = gadget.reduction ?? gadget.resistance ?? 0;
+    const attributes = [
+        ['Resistance', signedPercent(resistance)],
+        ['Instability', signedPercent(gadget.instabilityEffect ?? 0)]
+    ];
+
+    grid.innerHTML = attributes.map(([label,value]) => `
+        <div class="gadget-attribute-item">
+            <span>${label}</span>
+            <strong class="${String(value).startsWith('-') ? 'benefit' : String(value).startsWith('+') ? 'tradeoff' : ''}">${value}</strong>
+        </div>
+    `).join('');
+}
+
+function selectGadget(gadgetName) {
+    const hidden = document.getElementById('gadgetSelect');
+    if (hidden) hidden.value = gadgetName;
+    renderGadgetAttributes(gadgetName);
+    if (typeof calculate === 'function') calculate();
 }
 
 // --- UI GENERATION ---
@@ -572,22 +626,49 @@ function getModOptions() {
     return `<option value="None">None</option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
 }
 
-// --- THEME MANAGEMENT ---
+// --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
+const MFA_THEMES = ['day', 'dusk', 'night'];
+const MFA_THEME_META = {
+    day: { icon: '☀️', label: 'Day' },
+    dusk: { icon: '🌇', label: 'Dusk' },
+    night: { icon: '🌙', label: 'Night' }
+};
+
 function initTheme() {
-    const t = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', t);
-    updateThemeIcon(t);
+    const stored = localStorage.getItem('mfa.theme') || localStorage.getItem('theme');
+    const theme = MFA_THEMES.includes(stored) ? stored : 'dusk';
+    setTheme(theme, false);
 }
+
+function setTheme(theme, recalc = true) {
+    const next = MFA_THEMES.includes(theme) ? theme : 'dusk';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('mfa.theme', next);
+    localStorage.removeItem('theme');
+    updateThemeIcon(next);
+
+    document.querySelectorAll('[data-theme-choice]').forEach(button => {
+        button.classList.toggle('active', button.dataset.themeChoice === next);
+    });
+
+    const picker = document.getElementById('themePicker');
+    if (picker?.open) picker.open = false;
+
+    if (recalc && typeof currentSimState !== 'undefined' && currentSimState.power > 0) calculate();
+}
+
 function toggleTheme() {
-    const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', t);
-    localStorage.setItem('theme', t);
-    updateThemeIcon(t);
-    if (currentSimState.power > 0) calculate();
+    const current = document.documentElement.getAttribute('data-theme') || 'dusk';
+    const index = MFA_THEMES.indexOf(current);
+    setTheme(MFA_THEMES[(index + 1) % MFA_THEMES.length]);
 }
-function updateThemeIcon(t) {
-    const i = document.getElementById('theme-icon');
-    if(i) i.textContent = t === 'light' ? '🌙' : '☀️';
+
+function updateThemeIcon(theme) {
+    const meta = MFA_THEME_META[theme] || MFA_THEME_META.dusk;
+    const icon = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (icon) icon.textContent = meta.icon;
+    if (label) label.textContent = meta.label;
 }
 
 // --- INIT ---
@@ -605,7 +686,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.closeApiModal = closeApiModal;
     window.saveApiKey = saveApiKey;
     window.askAI = askAI;
-    window.toggleTheme = toggleTheme; 
+    window.toggleTheme = toggleTheme;
+    window.setTheme = setTheme;
+    window.selectGadget = selectGadget;
+    window.renderGadgetAttributes = renderGadgetAttributes; 
     window.updateModuleSlots = updateModuleSlots; // Expose to global scope for HTML inline calls
     window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
 });
