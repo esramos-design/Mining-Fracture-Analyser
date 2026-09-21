@@ -1,0 +1,28 @@
+name: Regression Tests
+
+on:
+  pull_request:
+    branches:
+      - alpha
+      - main
+  push:
+    branches:
+      - alpha
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  regression-tests:
+    name: Regression Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run v5.35 regression tests
+        run: npm test
