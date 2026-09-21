@@ -6,6 +6,7 @@ on:
       - "index.html"
       - "style.css"
       - "operations-console.js"
+      - "cooperative-solver.js"
       - "scanner.js"
       - "scripts/validate-operations-console.mjs"
   push:
@@ -35,5 +36,6 @@ jobs:
           node --check ai-foreman.js
           node --check scanner.js
           node --check operations-console.js
+          node --check cooperative-solver.js
       - name: Validate operations console DOM contract
         run: node scripts/validate-operations-console.mjs
