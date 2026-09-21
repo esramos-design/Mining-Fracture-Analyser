@@ -30,6 +30,14 @@ if (!renderBlock.includes("solveIdeal(state,p,strat)")) {
   fail("render(ctx) does not call solveIdeal");
 }
 
+if (renderBlock.includes("solver-more-plans") || renderBlock.includes("other ideal / closest plan")) {
+  fail("Recommended Solutions still exposes multiple fleet plans instead of the single best result");
+}
+
+if (!renderBlock.includes("var best=solved.options[0]")) {
+  fail("Recommended Solutions does not select the top-ranked result");
+}
+
 const solveStart = source.indexOf("function solveIdeal");
 const solveEnd = source.indexOf("function normalizedSlots", solveStart);
 if (solveStart < 0 || solveEnd < 0) fail("solveIdeal block not found");
