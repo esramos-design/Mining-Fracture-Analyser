@@ -3234,3 +3234,49 @@ html[data-theme="night"] .solver-module-slot strong {
         margin-left:76px;
     }
 }
+
+
+/* =========================================================
+   TARGET-DRIVEN IDEAL RECOMMENDATION BASIS
+   ========================================================= */
+.solver-target-basis {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+    margin-bottom:12px;
+}
+.solver-target-basis > div {
+    padding:9px 10px;
+    border:1px solid var(--theme-border);
+    border-radius:9px;
+    background:var(--theme-card);
+}
+.solver-target-basis span {
+    display:block;
+    color:var(--theme-muted);
+    font:800 8px var(--font-tech);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+.solver-target-basis strong {
+    display:block;
+    margin-top:4px;
+    color:var(--theme-strong);
+    font:900 11px var(--font-tech);
+}
+.solver-portfolio-head {
+    margin-top:10px;
+}
+.solver-or-note strong {
+    color:var(--theme-primary) !important;
+}
+@media (max-width:900px) {
+    .solver-target-basis {
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+@media (max-width:520px) {
+    .solver-target-basis {
+        grid-template-columns:1fr;
+    }
+}
