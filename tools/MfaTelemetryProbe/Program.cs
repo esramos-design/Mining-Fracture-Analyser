@@ -340,7 +340,7 @@ internal static class Program
         }
 
         return events
-            .GroupBy(e => new { e.Type, e.Category, e.Name, e.Value }, StringTupleComparer.Instance)
+            .GroupBy(e => $"{e.Type}\u001f{e.Category}\u001f{e.Name}\u001f{e.Value}", StringComparer.Ordinal)
             .Select(g => g.First())
             .ToList();
     }
@@ -538,14 +538,4 @@ Safety boundary:
         public string Confidence { get; init; } = "observed";
     }
 
-    private sealed class StringTupleComparer : IEqualityComparer<object>
-    {
-        public static readonly StringTupleComparer Instance = new();
-
-        public new bool Equals(object? x, object? y) =>
-            string.Equals(JsonSerializer.Serialize(x), JsonSerializer.Serialize(y), StringComparison.Ordinal);
-
-        public int GetHashCode(object obj) =>
-            JsonSerializer.Serialize(obj).GetHashCode(StringComparison.Ordinal);
-    }
 }
