@@ -16,7 +16,7 @@
     <div id="api-modal" class="modal-backdrop">
         <div class="modal-content">
             <h3 class="text-xl font-bold text-[var(--text-strong)] mb-2 font-tech">SYSTEM CONFIGURATION</h3>
-            <p class="text-sm text-[var(--text-muted)] mb-4">Initialize AI Foreman Uplink via Google Gemini API.</p>
+            <p class="text-sm text-[var(--text-muted)] mb-4">Initialize AI Foreman Uplink via OpenAI API.</p>
             <input type="password" id="api-key-input" placeholder="Paste key starting with AIza..." class="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-main)] text-[var(--text-main)] mb-4 font-mono text-sm focus:ring-1 focus:ring-blue-500 outline-none">
             <div class="flex justify-end gap-3">
                 <button onclick="closeApiModal()" class="px-4 py-2 rounded-lg text-sm font-bold text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-card)] transition">CANCEL</button>
@@ -115,7 +115,7 @@
                     <div class="relative z-10 flex flex-col h-full">
                         <div class="flex items-center justify-between mb-4 border-b border-purple-500/30 pb-3">
                             <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest">Senior Foreman AI</h3>
-                            <button onclick="openApiModal()" class="px-3 py-1 bg-purple-900/40 text-[10px] font-bold uppercase rounded border border-purple-500/40 hover:bg-purple-800/60 hover:text-white transition shadow-[0_0_10px_rgba(168,85,247,0.2)]">🔑 AUTH KEY</button>
+                            <button onclick="openApiModal()" class="px-3 py-1 bg-purple-900/40 text-[10px] font-bold uppercase rounded border border-purple-500/40 hover:bg-purple-800/60 hover:text-white transition shadow-[0_0_10px_rgba(168,85,247,0.2)]">OPENAI STATUS</button>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-4">
                             <button onclick="askAI('strategy')" class="px-3 py-2 text-[10px] font-bold text-purple-100 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/30 rounded text-left transition">🧠 STRATEGY</button>
@@ -187,7 +187,7 @@
 
         <div class="col-span-1 lg:col-span-4 w-full rounded-2xl p-4 glass-panel mt-4 text-center">
             <p class="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">
-                Developed by <a href="https://github.com/esramos-design" target="_blank" class="text-blue-400 hover:text-white transition">Esramos Design</a> | AI Co-Pilot: <span class="text-purple-400">Google Gemini</span>
+                Developed by <a href="https://github.com/esramos-design" target="_blank" class="text-blue-400 hover:text-white transition">Esramos Design</a> | AI Co-Pilot: <span class="text-purple-400">OpenAI</span>
             </p>
             <p class="text-[9px] text-[var(--text-muted)] opacity-50 font-sans">
                 Mining Fracture Analyser is a fan-made tool. Not affiliated with Cloud Imperium Games or Roberts Space Industries. 
@@ -197,6 +197,12 @@
 
     </div>
     
+    <script>
+        window.MFA_CONFIG = {
+            gameVersion: "4.10.1-live.12660092",
+            aiEndpoint: ""
+        };
+    </script>
     <script src="script.js"></script>
     <script src="ai-foreman.js"></script>
     <script src="scanner.js"></script>
