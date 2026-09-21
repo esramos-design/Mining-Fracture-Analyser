@@ -140,9 +140,7 @@
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <button type="button" onclick="MFAOps.adjustFleetCount('mole',-1)">−</button>
-                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
-                                <button type="button" onclick="MFAOps.adjustFleetCount('mole',1)">+</button>
+                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
                             </span>
                         </label>
 
@@ -154,9 +152,7 @@
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <button type="button" onclick="MFAOps.adjustFleetCount('prospector',-1)">−</button>
-                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
-                                <button type="button" onclick="MFAOps.adjustFleetCount('prospector',1)">+</button>
+                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" inputmode="numeric" onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
                             </span>
                         </label>
 
@@ -168,9 +164,7 @@
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <button type="button" onclick="MFAOps.adjustFleetCount('golem',-1)">−</button>
-                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
-                                <button type="button" onclick="MFAOps.adjustFleetCount('golem',1)">+</button>
+                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
                             </span>
                         </label>
                     </div>
