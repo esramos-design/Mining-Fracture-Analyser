@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MFA Mining Data Reference</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Segoe UI, Arial, sans-serif; }
+    body { margin: 0; background: #07131d; color: #dbeafe; }
+    header { padding: 24px; border-bottom: 1px solid #244257; position: sticky; top: 0; background: rgba(7,19,29,.96); }
+    main { padding: 24px; }
+    h1,h2 { margin: 0 0 12px; }
+    p { color: #a9c4d8; max-width: 1000px; }
+    .meta { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; }
+    .pill { border:1px solid #315a74; border-radius:999px; padding:6px 10px; font-size:12px; }
+    section { margin: 28px 0 42px; }
+    .table-wrap { overflow:auto; border:1px solid #244257; border-radius:10px; }
+    table { border-collapse:collapse; width:max-content; min-width:100%; font-size:12px; }
+    th,td { border-bottom:1px solid #173247; border-right:1px solid #173247; padding:8px 10px; white-space:nowrap; text-align:left; }
+    th { position:sticky; top:0; background:#0d2231; z-index:1; }
+    td:first-child, th:first-child { position:sticky; left:0; background:#0b1b28; z-index:2; }
+    .null { color:#6f8797; font-style:italic; }
+    .summary { color:#91b5ca; margin:0 0 8px; font-size:13px; }
+    .error { color:#ffb4ab; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>MFA Mining Data Reference</h1>
+  <p>This page renders the complete versioned tables staged for MFA calculations. Columns are generated from the union of attributes in the dataset rather than a hard-coded shortlist.</p>
+  <div id="meta" class="meta"></div>
+</header>
+<main id="content"><p>Loading versioned mining data…</p></main>
+<script>
+(async () => {
+  const content = document.getElementById("content");
+  const meta = document.getElementById("meta");
+
+  try {
+    const response = await fetch("./data/star-citizen-4.10.1.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const data = await response.json();
+
+    const metaItems = [
+      ["Target", data.targetGame],
+      ["Patch", data.targetPatch],
+      ["Build", data.launcherBuild],
+      ["Status", data.status],
+      ["Imported", data.importedAt]
+    ];
+    meta.innerHTML = metaItems.map(([k,v]) =>
+      '<span class="pill"><strong>' + escapeHtml(k) + ':</strong> ' + escapeHtml(String(v ?? "—")) + '</span>'
+    ).join("");
+
+    content.innerHTML = "";
+    const categories = [
+      ["Mining Laser Heads", "miningLaserHeads"],
+      ["Mining Modules", "miningModules"],
+      ["Mining Gadgets", "gadgets"]
+    ];
+
+    for (const [title, key] of categories) {
+      const rows = Array.isArray(data[key]) ? data[key] : [];
+      const fields = [...new Set(rows.flatMap(row => Object.keys(row || {})))];
+
+      const section = document.createElement("section");
+      section.innerHTML =
+        '<h2>' + escapeHtml(title) + '</h2>' +
+        '<p class="summary">' + rows.length + ' items · ' + fields.length + ' attributes shown</p>';
+
+      const wrap = document.createElement("div");
+      wrap.className = "table-wrap";
+
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const hr = document.createElement("tr");
+      for (const field of fields) {
+        const th = document.createElement("th");
+        th.textContent = field;
+        hr.appendChild(th);
+      }
+      thead.appendChild(hr);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        for (const field of fields) {
+          const td = document.createElement("td");
+          const value = row[field];
+          if (value === null || value === undefined) {
+            td.textContent = "—";
+            td.className = "null";
+          } else if (typeof value === "object") {
+            td.textContent = JSON.stringify(value);
+          } else {
+            td.textContent = String(value);
+          }
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      section.appendChild(wrap);
+      content.appendChild(section);
+    }
+  } catch (error) {
+    content.innerHTML = '<p class="error">Unable to load MFA data reference: ' + escapeHtml(error.message) + '</p>';
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[c]);
+  }
+})();
+</script>
+</body>
+</html>
