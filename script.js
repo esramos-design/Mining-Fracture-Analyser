@@ -701,9 +701,9 @@ function getModOptions() {
 // --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
 const MFA_THEMES = ['day', 'dusk', 'night'];
 const MFA_THEME_META = {
-    day: { icon: '☀️', label: 'Arctic Command' },
-    dusk: { icon: '🌇', label: 'Bronze Horizon' },
-    night: { icon: '🌙', label: 'Deep Ops' }
+    day: { icon: '☀️', label: 'Planner Day' },
+    dusk: { icon: '🌇', label: 'Planner Dusk' },
+    night: { icon: '🌙', label: 'Planner Night' }
 };
 
 function initTheme() {
