@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mining Fracture Analyser — Operations Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="selection:bg-blue-500/30">
+<div class="ops-shell">
+
+    <header class="ops-topbar glass-panel">
+        <div class="ops-brand">
+            <img src="https://github.com/esramos-design/mfa.github.io/blob/main/mfa.jpg?raw=true" alt="MFA" class="ops-logo" onerror="this.style.display='none'">
+            <div>
+                <div class="ops-kicker">MINING OPERATIONS CONSOLE</div>
+                <h1>Mining Fracture Analyser</h1>
+            </div>
+        </div>
+
+        <div class="ops-status-strip">
+            <span class="status-chip"><span class="status-dot status-ok"></span><strong>SC</strong>&nbsp;4.10.1 LIVE</span>
+            <span class="status-chip" id="bridge-status"><span class="status-dot status-muted"></span>Bridge Offline</span>
+            <span class="status-chip"><span class="status-dot status-ok"></span>OCR Ready</span>
+            <span class="status-chip"><span class="status-dot status-warn"></span>Data Staged</span>
+        </div>
+
+        <div class="ops-actions">
+            <a href="data-reference.html" class="ops-button secondary">Mining Database</a>
+            <a href="fleet.html" class="ops-button secondary">Fleet Roster</a>
+            <details class="theme-picker" id="themePicker">
+                <summary class="ops-button secondary"><span id="theme-icon">☀️</span><span id="theme-label">Day</span></summary>
+                <div class="theme-menu">
+                    <button type="button" data-theme-choice="day" onclick="setTheme('day')">
+                        <span>☀️</span><strong>Day</strong><small>Bright · warm · maximum clarity</small>
+                    </button>
+                    <button type="button" data-theme-choice="dusk" onclick="setTheme('dusk')">
+                        <span>🌇</span><strong>Dusk</strong><small>Cinematic · elegant · signature MFA</small>
+                    </button>
+                    <button type="button" data-theme-choice="night" onclick="setTheme('night')">
+                        <span>🌙</span><strong>Night</strong><small>Tactical · focused · high contrast</small>
+                    </button>
+                </div>
+            </details>
+            <button onclick="window.MFAOps && MFAOps.toggleAdvanced()" class="ops-button">Advanced</button>
+        </div>
+    </header>
+
+    <main class="mission-grid">
+        <aside class="mission-input glass-panel">
+            <div class="section-heading">
+                <div>
+                    <span class="step-number">01</span>
+                    <h2>Target Acquisition</h2>
+                </div>
+                <span class="mode-badge" id="input-mode-badge">MANUAL</span>
+            </div>
+
+            <div class="input-mode-tabs" role="tablist">
+                <button class="mode-tab" data-input-mode="live" onclick="MFAOps.setInputMode('live')">Live Bridge</button>
+                <button class="mode-tab" data-input-mode="ocr" onclick="MFAOps.setInputMode('ocr')">Screenshot</button>
+                <button class="mode-tab active" data-input-mode="manual" onclick="MFAOps.setInputMode('manual')">Manual</button>
+            </div>
+
+            <div class="target-capture" onclick="document.getElementById('fileInput').click()">
+                <div class="capture-icon">⌗</div>
+                <strong>Scan Mining HUD</strong>
+                <span>Drop/click a screenshot when live telemetry cannot supply the rock values.</span>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="window.handleFileSelect(this)">
+            <div id="ocr-loading" class="hidden ocr-status">ANALYSING HUD…</div>
+
+            <div class="target-field-grid">
+                <label class="target-field">
+                    <span>Rock Mass</span>
+                    <div class="value-row">
+                        <input type="number" id="rockMass" value="23922" oninput="MFAOps.markManual('mass');calculate()">
+                        <em>kg</em>
+                    </div>
+                    <small id="source-mass">MANUAL</small>
+                </label>
+
+                <label class="target-field">
+                    <span>Resistance</span>
+                    <div class="value-row">
+                        <input type="number" id="resistance" value="16.0" step="0.1" oninput="MFAOps.markManual('resistance');calculate()">
+                        <em>%</em>
+                    </div>
+                    <small id="source-resistance">MANUAL</small>
+                </label>
+
+                <label class="target-field">
+                    <span>Instability</span>
+                    <div class="value-row">
+                        <input type="number" id="instability" value="20.0" step="0.1" oninput="MFAOps.markManual('instability');calculate()">
+                        <em>%</em>
+                    </div>
+                    <small id="source-instability">MANUAL</small>
+                </label>
+
+                <label class="target-field">
+                    <span>Material</span>
+                    <div class="value-row">
+                        <input type="text" id="materialName" value="" placeholder="e.g. Quantanium" oninput="MFAOps.markManual('material')">
+                    </div>
+                    <small id="source-material">OPTIONAL</small>
+                </label>
+            </div>
+
+            <button onclick="calculate()" class="primary-action">ANALYSE ROCK</button>
+
+            <div class="subpanel">
+                <div class="subpanel-title">Active Gadget</div>
+                <div id="gadget-list-container" class="compact-gadget-list"></div>
+                <input type="hidden" id="gadgetSelect" value="None">
+                <div id="gadgetAttributeCard" class="gadget-attribute-card empty" aria-live="polite">
+                    <div class="gadget-attribute-head">
+                        <div>
+                            <span>Selected Gadget</span>
+                            <strong id="gadgetAttributeTitle">None</strong>
+                        </div>
+                        <span id="gadgetAttributeType" class="gadget-type-chip">No gadget</span>
+                    </div>
+                    <p id="gadgetAttributeDescription">Select a gadget to view its stored fracture attributes.</p>
+                    <div id="gadgetAttributeGrid" class="gadget-attribute-grid"></div>
+                </div>
+            </div>
+
+            <div class="subpanel">
+                <div class="subpanel-title">Mission Constraints</div>
+                <div class="constraint-grid">
+                    <label>Objective
+                        <select id="optimizerObjective" onchange="MFAOps.savePreferences()">
+                            <option value="minimum-ships">Minimum ships</option>
+                            <option value="maximum-margin">Maximum fracture margin</option>
+                            <option value="minimum-instability">Minimum instability</option>
+                            <option value="minimum-consumables">Minimum consumables</option>
+                        </select>
+                    </label>
+                    <label>Max fleet
+                        <input id="maxFleetSize" type="number" value="6" min="1" max="20" onchange="MFAOps.savePreferences()">
+                    </label>
+                </div>
+                <div class="toggle-list">
+                    <label><input id="allowActiveModules" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Allow active modules</label>
+                    <label><input id="allowGadgets" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Allow gadgets</label>
+                    <label><input id="preferCurrentShip" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Keep current ship primary</label>
+                </div>
+
+
+            </div>
+
+            <div class="scenario-actions">
+                <button onclick="MFAOps.saveScenario()">Save scenario</button>
+                <button onclick="MFAOps.loadScenario()">Load last</button>
+            </div>
+        </aside>
+
+        <section class="mission-output">
+            <section class="verdict-panel glass-panel">
+                <div class="section-heading">
+                    <div>
+                        <span class="step-number">02</span>
+                        <h2>Fracture Verdict</h2>
+                    </div>
+                    <span id="verdict-status" class="verdict-badge neutral">AWAITING FLEET</span>
+                </div>
+
+                <div class="verdict-main">
+                    <div>
+                        <div id="verdict-title" class="verdict-title">Deploy a mining vessel to evaluate this rock.</div>
+                        <div id="verdict-subtitle" class="verdict-subtitle">MFA uses the deterministic v5.35 calculation mechanics.</div>
+                    </div>
+                    <div class="margin-gauge">
+                        <span>Power margin</span>
+                        <strong id="margin-value">—</strong>
+                    </div>
+                </div>
+
+                <div class="metric-grid">
+                    <div class="metric"><span>Required power</span><strong id="required-power">—</strong></div>
+                    <div class="metric"><span>Available power</span><strong id="available-power">—</strong></div>
+                    <div class="metric"><span>Final resistance</span><strong id="final-resistance">—</strong></div>
+                    <div class="metric"><span>Final instability</span><strong id="final-instability">—</strong></div>
+                </div>
+
+                <div class="power-track">
+                    <div id="power-fill" class="power-fill"></div>
+                </div>
+                <div class="power-track-labels"><span>0</span><span id="power-scale-label">Required</span></div>
+
+                <!-- Legacy calculation output remains present for parity/debug but is not the primary UI. -->
+                <section id="results" class="legacy-results" aria-live="polite"></section>
+            </section>
+
+            <section class="fleet-panel glass-panel">
+                <div class="section-heading">
+                    <div>
+                        <span class="step-number">03</span>
+                        <h2>Fleet Planner</h2>
+                    </div>
+                    <div class="segmented">
+                        <button id="fleet-mode-auto" class="active" onclick="MFAOps.setFleetMode('auto')">Auto Solver</button>
+                        <button id="fleet-mode-manual" onclick="MFAOps.setFleetMode('manual')">Manual Review</button>
+                    </div>
+                </div>
+
+                <p class="fleet-planner-intro">This is the single fleet control for the operation: who is present, what each vessel actually has fitted, and whether it is currently active, available to assist, or standing by.</p>
+
+                <div class="unified-fleet-planner">
+                    <div class="fleet-roster-head">
+                        <div>
+                            <strong>Operation Fleet</strong>
+                            <span>Quantity creates one editable vessel card per ship.</span>
+                        </div>
+                        <div class="fleet-role-legend">
+                            <span><i class="role-dot active"></i> Active = lasing now</span>
+                            <span><i class="role-dot available"></i> Available = can assist</span>
+                            <span><i class="role-dot standby"></i> Standby = excluded</span>
+                        </div>
+                    </div>
+
+                    <div class="fleet-presence-list fleet-presence-grid">
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledMole" type="checkbox" checked onchange="MFAFleetPlanner.syncFromControls()">
+                            <span class="fleet-presence-name">
+                                <strong>ARGO MOLE</strong>
+                                <small>Multi-crew · 3 mining heads</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
+                            </span>
+                        </label>
+
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledProspector" type="checkbox" checked onchange="MFAFleetPlanner.syncFromControls()">
+                            <span class="fleet-presence-name">
+                                <strong>MISC PROSPECTOR</strong>
+                                <small>Solo · Size 1 mining head</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
+                            </span>
+                        </label>
+
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledGolem" type="checkbox" checked onchange="MFAFleetPlanner.syncFromControls()">
+                            <span class="fleet-presence-name">
+                                <strong>DRAKE GOLEM</strong>
+                                <small>Fixed mining system</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="fleet-loadout-heading">
+                        <div>
+                            <strong>Actual Fleet Loadouts</strong>
+                            <span>Set what each ship really has fitted. MFA recommendations are calculated separately and never overwrite these selections.</span>
+                        </div>
+                        <button type="button" onclick="MFAFleetPlanner.resetLoadouts()">Reset loadouts</button>
+                    </div>
+
+                    <div id="multiShipContainer" class="unified-vessel-list">
+                        <p id="empty-state-msg" class="empty-state">SELECT AT LEAST ONE VESSEL ABOVE…</p>
+                    </div>
+                </div>
+
+                <div id="auto-fleet-note" class="solver-note">
+                    <strong>Auto Solver:</strong> uses this fleet as the available ship pool. Active vessels contribute to the current fracture verdict; Available vessels may be recommended as support; Standby vessels are ignored.
+                </div>
+            </section>
+
+            <aside class="decision-column">
+            <section class="solution-panel glass-panel">
+                <div class="section-heading">
+                    <div>
+                        <span class="step-number">04</span>
+                        <h2>Recommended Solutions</h2>
+                    </div>
+                    <span class="mode-badge">DETERMINISTIC</span>
+                </div>
+                <p class="section-copy">MFA shows the best viable plan first. Additional viable fleet/loadout combinations stay collapsed until you need them.</p>
+                <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
+            </section>
+            <section class="foreman-panel glass-panel" id="ai-section">
+                <div class="section-heading">
+                    <div>
+                        <span class="step-number">05</span>
+                        <h2>Senior Foreman</h2>
+                    </div>
+                    <button onclick="openApiModal()" class="status-link">OpenAI status</button>
+                </div>
+
+                <div class="foreman-actions">
+                    <button onclick="askAI('strategy')">Explain Solution</button>
+                    <button onclick="askAI('risk')">Risk Analysis</button>
+                    <button onclick="askAI('briefing')">Crew Briefing</button>
+                </div>
+
+                <div id="ai-loading" class="hidden foreman-loading">FOREMAN ANALYSING VERIFIED MFA STATE…</div>
+                <div id="ai-content" class="foreman-output">// SYSTEM READY. MFA CALCULATIONS REMAIN AUTHORITATIVE.</div>
+
+                <details class="foreman-custom">
+                    <summary>Advanced Foreman query</summary>
+                    <div class="custom-query">
+                        <input type="text" id="ai-custom-input" placeholder="Ask about the current verified MFA state…">
+                        <button onclick="askAI('custom')">Send</button>
+                    </div>
+                </details>
+            </section>
+            </aside>
+        </section>
+    </main>
+
+    <section id="advanced-console" class="advanced-console glass-panel hidden">
+        <div class="section-heading">
+            <div>
+                <span class="step-number">A</span>
+                <h2>Advanced Analysis</h2>
+            </div>
+            <button onclick="MFAOps.toggleAdvanced()" class="status-link">Close</button>
+        </div>
+
+        <div class="advanced-tabs">
+            <button class="active" data-advanced-tab="telemetry" onclick="MFAOps.showAdvanced('telemetry')">Telemetry</button>
+            <button data-advanced-tab="charts" onclick="MFAOps.showAdvanced('charts')">Charts</button>
+            <button data-advanced-tab="data" onclick="MFAOps.showAdvanced('data')">Data & Audit</button>
+            <button data-advanced-tab="resources" onclick="MFAOps.showAdvanced('resources')">Resources</button>
+        </div>
+
+        <div id="advanced-telemetry" class="advanced-pane">
+            <div class="telemetry-cards">
+                <div><span>Bridge</span><strong id="telemetry-bridge">Offline</strong></div>
+                <div><span>Game</span><strong>Star Citizen LIVE</strong></div>
+                <div><span>Ship context</span><strong id="telemetry-ship">Fleet input</strong></div>
+                <div><span>Rock values</span><strong id="telemetry-rock-source">Manual / OCR</strong></div>
+            </div>
+            <p class="advanced-note">Detailed local Bridge telemetry will populate this panel when the desktop bridge endpoint is connected.</p>
+        </div>
+
+        <div id="advanced-charts" class="advanced-pane hidden">
+            <div class="chart-grid">
+                <article><h3>Power vs Required</h3><div class="chart-box"><canvas id="powerChart"></canvas></div></article>
+                <article><h3>Risk Profile</h3><div class="chart-box"><canvas id="modChart"></canvas></div></article>
+                <article><h3>Resistance Curve</h3><div class="chart-box"><canvas id="resistanceChart"></canvas></div></article>
+            </div>
+        </div>
+
+        <div id="advanced-data" class="advanced-pane hidden">
+            <div class="audit-grid">
+                <a href="data-reference.html"><strong>Complete Mining Database</strong><span>All staged laser, module and gadget attributes.</span></a>
+                <a href="docs/DATA_INTEGRITY_CONTRACT.md"><strong>Data Integrity Contract</strong><span>No shortened tables or destructive data rewrites.</span></a>
+                <a href="docs/CALCULATION_AUTHORITY.md"><strong>Calculation Authority</strong><span>Current deterministic mechanics are protected.</span></a>
+            </div>
+        </div>
+
+        <div id="advanced-resources" class="advanced-pane hidden">
+            <div class="resource-links">
+                <a href="https://uexcorp.space/" target="_blank">UEX Data</a>
+                <a href="https://regolith.rocks/" target="_blank">Regolith</a>
+                <a href="https://github.com/esramos-design/Mining-Fracture-Analyser" target="_blank">GitHub</a>
+                <a href="https://robertsspaceindustries.com/citizens/CHIRONDRAGON" target="_blank">RSI Profile</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <span>MFA · Esramos Design · OpenAI Foreman</span>
+        <span>Fan-made tool. Not affiliated with Cloud Imperium Games or Roberts Space Industries.</span>
+    </footer>
+</div>
+
+<script>
+window.MFA_CONFIG = {
+    gameVersion: "4.10.1-live.12660092",
+    aiEndpoint: ""
+};
+</script>
+<script src="script.js"></script>
+<script src="ai-foreman.js"></script>
+<script src="scanner.js"></script>
+<script src="operations-console.js"></script>
+<script src="cooperative-solver.js"></script>
+<script src="unified-fleet-planner.js"></script>
+</body>
+</html>

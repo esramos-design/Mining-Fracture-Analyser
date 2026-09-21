@@ -1,0 +1,44 @@
+name: Operations Console
+
+on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "style.css"
+      - "operations-console.js"
+      - "cooperative-solver.js"
+      - "unified-fleet-planner.js"
+      - "scanner.js"
+      - "scripts/validate-operations-console.mjs"
+  push:
+    branches:
+      - "feature/**"
+    paths:
+      - "index.html"
+      - "style.css"
+      - "operations-console.js"
+      - "cooperative-solver.js"
+      - "scanner.js"
+      - "scripts/validate-operations-console.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: |
+          node --check script.js
+          node --check ai-foreman.js
+          node --check scanner.js
+          node --check operations-console.js
+          node --check cooperative-solver.js
+          node --check unified-fleet-planner.js
+      - name: Validate operations console DOM contract
+        run: node scripts/validate-operations-console.mjs

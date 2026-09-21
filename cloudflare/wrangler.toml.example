@@ -1,0 +1,12 @@
+name = "mfa-openai-foreman"
+main = "openai-foreman-worker.js"
+compatibility_date = "2026-09-21"
+
+[vars]
+OPENAI_MODEL = "gpt-5.6-terra"
+# Set this to the production MFA web origin before deployment.
+ALLOWED_ORIGIN = "https://esramos-design.github.io"
+
+# Do NOT put OPENAI_API_KEY in this file.
+# Configure it as a Cloudflare Worker secret:
+#   npx wrangler secret put OPENAI_API_KEY
