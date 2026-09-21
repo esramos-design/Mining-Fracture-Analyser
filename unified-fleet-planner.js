@@ -171,8 +171,9 @@
         const cards = [...container.querySelectorAll(".fleet-vessel-card")];
         if (!cards.length) return;
 
-        const savedHasActive = cards.some(card => savedState[card.dataset.vesselKey]?.role === "active");
-        if (savedHasActive) return;
+        // Only choose an initial active vessel for a brand-new fleet.
+        // Once the user has saved any vessel state, preserve their roles exactly.
+        if (Object.keys(savedState || {}).length > 0) return;
 
         const first = cards[0];
         const select = first.querySelector(".vessel-role-select");
