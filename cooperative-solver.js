@@ -395,8 +395,14 @@
         if(!count||!v)return"";
         var rows=[];
         for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
+            var assistId="assist-"+id+"-"+vesselIndex;
             rows.push('<div class="solver-vessel solver-required-vessel">'+
                 '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
+                '<label class="solver-assist-availability" for="'+assistId+'">'+
+                    '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
+                    '<span class="solver-assist-box" aria-hidden="true"></span>'+
+                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small></span>'+
+                '</label>'+
                 v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
                 '</div>');
         }
@@ -444,7 +450,26 @@
         var e=o.evaluation, status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
         return '<article class="solver-option '+(e.success?'viable':'short')+'"><div class="solver-option-head"><div><span class="solver-option-label">BEST SOLUTION</span><h4>'+esc(compText(o.counts))+'</h4></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
             '<div class="solver-option-metrics"><span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span><span>Required <strong>'+(Number.isFinite(e.required)?Math.round(e.required).toLocaleString()+' MW':'Impossible')+'</strong></span><span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span><span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span><span>Gadget <strong>'+esc(o.gadget)+'</strong></span></div>'+
+            '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Ideal recommendation remains unchanged.</em></div>'+
             '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,s)+'</article>';
+    }
+
+    function updateAvailabilitySummary(){
+        var summary=el("solverAvailabilitySummary");
+        if(!summary)return;
+        var checks=[].slice.call(document.querySelectorAll("#configs .solver-assist-check"));
+        var confirmed=checks.filter(function(input){return input.checked;}).length;
+        var total=checks.length;
+        var strong=summary.querySelector("strong");
+        var note=summary.querySelector("em");
+        if(strong)strong.textContent=confirmed+" of "+total+" required vessel"+(total===1?"":"s")+" confirmed";
+        summary.classList.toggle("ready",total>0&&confirmed===total);
+        summary.classList.toggle("partial",confirmed>0&&confirmed<total);
+        if(note){
+            note.textContent=total>0&&confirmed===total
+                ?"All vessels required by the ideal solution are confirmed available."
+                :"Ideal recommendation remains unchanged.";
+        }
     }
 
     function targetBasisHtml(ctx,p){
@@ -497,8 +522,9 @@
             '</strong></div><div>'+esc(strat.name)+'</div></div>'+
             '<div class="solver-or-note"><strong>Fleet Planner independent.</strong> MFA evaluates candidate solutions internally and shows only the best result for the Target Acquisition requirements. Your actual vessels and fitted loadouts do not bias this recommendation.</div>'+
             '<div class="solver-best-option">'+optionHtml(best,solved.variants,state)+'</div>'+
-            '<div class="solver-method-note">Only the highest-ranked solution is presented. Secondary equipment alternatives remain collapsed inside the recommended card for cases where the preferred equipment is unavailable. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
+            '<div class="solver-method-note">Only the highest-ranked solution is presented. Availability checkboxes confirm whether the recommended vessels can actually assist; they do not alter the ideal calculation. Secondary equipment alternatives remain collapsed inside the recommended card for cases where preferred equipment is unavailable. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
+        updateAvailabilitySummary();
     }
 
-    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal};
+    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,updateAvailabilitySummary:updateAvailabilitySummary};
 })();
