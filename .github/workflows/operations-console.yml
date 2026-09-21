@@ -34,5 +34,7 @@ jobs:
           node --check scripts/build-pages.mjs
       - name: Validate operations console DOM contract
         run: node scripts/validate-operations-console.mjs
+      - name: Validate target-driven recommendation architecture
+        run: node scripts/validate-target-driven-solver.mjs
       - name: Validate Cloudflare Pages build
         run: npm run build:pages
