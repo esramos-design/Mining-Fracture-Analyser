@@ -24,6 +24,7 @@ jobs:
           node-version: 20
       - name: Check JavaScript syntax
         run: |
+          node --check v535-runtime.js
           node --check script.js
           node --check ai-foreman.js
           node --check scanner.js
