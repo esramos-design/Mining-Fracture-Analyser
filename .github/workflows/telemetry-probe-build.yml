@@ -1,0 +1,44 @@
+name: Build Telemetry Probe
+
+on:
+  pull_request:
+    paths:
+      - "tools/MfaTelemetryProbe/**"
+      - ".github/workflows/telemetry-probe-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build
+        run: dotnet build tools/MfaTelemetryProbe/MFA.TelemetryProbe.csproj -c Release
+
+      - name: Publish portable self-contained probe
+        run: >
+          dotnet publish tools/MfaTelemetryProbe/MFA.TelemetryProbe.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:DebugType=None
+          -o telemetry-probe-win-x64
+
+      - name: Upload probe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MFA-Telemetry-Probe-win-x64
+          path: telemetry-probe-win-x64/
+          if-no-files-found: error
