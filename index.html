@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="day">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,7 +32,20 @@
         <div class="ops-actions">
             <a href="data-reference.html" class="ops-button secondary">Mining Database</a>
             <a href="fleet.html" class="ops-button secondary">Fleet Roster</a>
-            <button onclick="toggleTheme()" class="ops-button secondary"><span id="theme-icon">☀️</span> Theme</button>
+            <details class="theme-picker" id="themePicker">
+                <summary class="ops-button secondary"><span id="theme-icon">☀️</span><span id="theme-label">Day</span></summary>
+                <div class="theme-menu">
+                    <button type="button" data-theme-choice="day" onclick="setTheme('day')">
+                        <span>☀️</span><strong>Day</strong><small>Bright · warm · maximum clarity</small>
+                    </button>
+                    <button type="button" data-theme-choice="dusk" onclick="setTheme('dusk')">
+                        <span>🌇</span><strong>Dusk</strong><small>Cinematic · elegant · signature MFA</small>
+                    </button>
+                    <button type="button" data-theme-choice="night" onclick="setTheme('night')">
+                        <span>🌙</span><strong>Night</strong><small>Tactical · focused · high contrast</small>
+                    </button>
+                </div>
+            </details>
             <button onclick="window.MFAOps && MFAOps.toggleAdvanced()" class="ops-button">Advanced</button>
         </div>
     </header>
@@ -104,6 +117,17 @@
                 <div class="subpanel-title">Active Gadget</div>
                 <div id="gadget-list-container" class="compact-gadget-list"></div>
                 <input type="hidden" id="gadgetSelect" value="None">
+                <div id="gadgetAttributeCard" class="gadget-attribute-card empty" aria-live="polite">
+                    <div class="gadget-attribute-head">
+                        <div>
+                            <span>Selected Gadget</span>
+                            <strong id="gadgetAttributeTitle">None</strong>
+                        </div>
+                        <span id="gadgetAttributeType" class="gadget-type-chip">No gadget</span>
+                    </div>
+                    <p id="gadgetAttributeDescription">Select a gadget to view its stored fracture attributes.</p>
+                    <div id="gadgetAttributeGrid" class="gadget-attribute-grid"></div>
+                </div>
             </div>
 
             <div class="subpanel">
