@@ -2,25 +2,20 @@ name: Data Integrity
 
 on:
   pull_request:
-    paths:
-      - "data/**"
-      - "scripts/validate-data-integrity.mjs"
-      - "docs/DATA_INTEGRITY_CONTRACT.md"
-      - "data-reference.html"
+    branches:
+      - alpha
+      - main
   push:
     branches:
-      - "feature/**"
-      - "develop/v5.35-revision"
-    paths:
-      - "data/**"
-      - "scripts/validate-data-integrity.mjs"
-      - "docs/DATA_INTEGRITY_CONTRACT.md"
+      - alpha
+      - main
 
 permissions:
   contents: read
 
 jobs:
-  validate:
+  data-integrity:
+    name: Data Integrity
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
