@@ -26,13 +26,42 @@ function setAIMessage(html) {
     if (el) el.innerHTML = html;
 }
 
-function openApiModal() {
-    // Compatibility shim for existing v5.35 inline handler.
-    // API credentials are no longer entered in the browser.
-    setAIMessage(
-        '<span class="text-blue-300 font-bold">// OPENAI FOREMAN</span><br>' +
-        '<span class="text-purple-100/80">Credentials are managed securely by the MFA backend. No browser API key is required.</span>'
-    );
+async function openApiModal() {
+    // Compatibility name retained for the existing button. No API key is entered in-browser.
+    if (!MFA_AI_ENDPOINT) {
+        setAIMessage(
+            '<span class="text-yellow-400 font-bold">// OPENAI FOREMAN BACKEND NOT CONFIGURED</span><br>' +
+            '<span class="text-purple-100/80">This build has no server-side Foreman endpoint configured.</span>'
+        );
+        return;
+    }
+
+    setAIMessage('<span class="text-blue-300 font-bold">// CHECKING OPENAI FOREMAN BACKEND…</span>');
+
+    try {
+        const response = await fetch(MFA_AI_ENDPOINT, {
+            method: "GET",
+            headers: { "Accept": "application/json" },
+            cache: "no-store"
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.error || `Backend health check returned HTTP ${response.status}`);
+        }
+
+        const ready = data.status === "ready";
+        const model = typeof data.model === "string" ? data.model : "unknown";
+        setAIMessage(
+            ready
+                ? `<span class="text-green-400 font-bold">// OPENAI FOREMAN READY</span><br><span class="text-purple-100/80">Server-side credentials configured · Model: ${model}</span>`
+                : `<span class="text-yellow-400 font-bold">// OPENAI FOREMAN CONFIGURATION REQUIRED</span><br><span class="text-purple-100/80">Backend reachable, but OPENAI_API_KEY is not configured · Model: ${model}</span>`
+        );
+    } catch (error) {
+        setAIMessage(
+            `<span class="text-red-400 font-bold">// OPENAI FOREMAN BACKEND UNAVAILABLE</span><br><span class="text-red-300">${error.message}</span>`
+        );
+    }
 }
 
 function closeApiModal() {
