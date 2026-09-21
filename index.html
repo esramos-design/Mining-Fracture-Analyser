@@ -127,48 +127,7 @@
                     <label><input id="preferCurrentShip" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Keep current ship primary</label>
                 </div>
 
-                <div class="ops-fleet-availability">
-                    <span>Who is in this operation?</span>
-                    <p>Select the mining vessel types actually present and set how many of each are available. MFA subtracts vessels already deployed in the current calculation.</p>
 
-                    <div class="fleet-presence-list">
-                        <label class="fleet-presence-row">
-                            <input id="fleetEnabledMole" type="checkbox" checked onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
-                            <span class="fleet-presence-name">
-                                <strong>ARGO MOLE</strong>
-                                <small>Multi-crew · 3 mining heads</small>
-                            </span>
-                            <span class="fleet-qty">
-                                <em>Qty</em>
-                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
-                            </span>
-                        </label>
-
-                        <label class="fleet-presence-row">
-                            <input id="fleetEnabledProspector" type="checkbox" checked onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
-                            <span class="fleet-presence-name">
-                                <strong>MISC PROSPECTOR</strong>
-                                <small>Solo · Size 1 mining head</small>
-                            </span>
-                            <span class="fleet-qty">
-                                <em>Qty</em>
-                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" inputmode="numeric" onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
-                            </span>
-                        </label>
-
-                        <label class="fleet-presence-row">
-                            <input id="fleetEnabledGolem" type="checkbox" checked onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
-                            <span class="fleet-presence-name">
-                                <strong>DRAKE GOLEM</strong>
-                                <small>Fixed mining system</small>
-                            </span>
-                            <span class="fleet-qty">
-                                <em>Qty</em>
-                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
-                            </span>
-                        </label>
-                    </div>
-                </div>
             </div>
 
             <div class="scenario-actions">
@@ -214,27 +173,60 @@
                 <section id="results" class="legacy-results" aria-live="polite"></section>
             </section>
 
-            <section class="solution-panel glass-panel">
-                <div class="section-heading">
-                    <div>
-                        <span class="step-number">03</span>
-                        <h2>Recommended Solution</h2>
-                    </div>
-                    <span class="mode-badge">DETERMINISTIC</span>
-                </div>
-                <p class="section-copy">MFA evaluates the deployed fleet with the existing authoritative mechanics. Optimized loadouts and additional-vessel guidance appear here.</p>
-                <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
-            </section>
-
             <section class="fleet-panel glass-panel">
                 <div class="section-heading">
                     <div>
-                        <span class="step-number">04</span>
-                        <h2>Fleet Plan</h2>
+                        <span class="step-number">03</span>
+                        <h2>Fleet Planner</h2>
                     </div>
                     <div class="segmented">
                         <button id="fleet-mode-auto" class="active" onclick="MFAOps.setFleetMode('auto')">Auto Solver</button>
                         <button id="fleet-mode-manual" onclick="MFAOps.setFleetMode('manual')">Manual Fleet</button>
+                    </div>
+                </div>
+
+                <p class="fleet-planner-intro">Select who is actually in the mining operation. This is the main fleet input used by the solver.</p>
+
+                                <div class="ops-fleet-availability">
+                    <span>Who is in this operation?</span>
+                    <p>Select the mining vessel types actually present and set how many of each are available. MFA subtracts vessels already deployed in the current calculation.</p>
+
+                    <div class="fleet-presence-list">
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledMole" type="checkbox" checked onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
+                            <span class="fleet-presence-name">
+                                <strong>ARGO MOLE</strong>
+                                <small>Multi-crew · 3 mining heads</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
+                            </span>
+                        </label>
+
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledProspector" type="checkbox" checked onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
+                            <span class="fleet-presence-name">
+                                <strong>MISC PROSPECTOR</strong>
+                                <small>Solo · Size 1 mining head</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" inputmode="numeric" onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
+                            </span>
+                        </label>
+
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledGolem" type="checkbox" checked onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
+                            <span class="fleet-presence-name">
+                                <strong>DRAKE GOLEM</strong>
+                                <small>Fixed mining system</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
+                            </span>
+                        </label>
                     </div>
                 </div>
 
@@ -258,6 +250,18 @@
                         <p id="empty-state-msg" class="empty-state">AWAITING VESSEL DEPLOYMENT…</p>
                     </div>
                 </div>
+            </section>
+
+            <section class="solution-panel glass-panel">
+                <div class="section-heading">
+                    <div>
+                        <span class="step-number">04</span>
+                        <h2>Recommended Solutions</h2>
+                    </div>
+                    <span class="mode-badge">DETERMINISTIC</span>
+                </div>
+                <p class="section-copy">MFA shows the best viable plan first. Additional viable fleet/loadout combinations stay collapsed until you need them.</p>
+                <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
             </section>
 
             <section class="foreman-panel glass-panel" id="ai-section">
