@@ -1,0 +1,44 @@
+name: Deploy Cloudflare Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_branch:
+        description: "Cloudflare branch name (alpha for preview, main for production)"
+        required: true
+        default: "alpha"
+        type: choice
+        options:
+          - alpha
+          - main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: cloudflare
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.deploy_branch }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run regression tests
+        run: npm test
+
+      - name: Build Cloudflare Pages site
+        run: npm run build:pages
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=mining-fracture-analyser --branch=${{ inputs.deploy_branch }}
