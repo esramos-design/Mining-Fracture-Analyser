@@ -1500,3 +1500,189 @@ select optgroup {
     .vessel-role-control { min-width:0; width:100%; }
     .vessel-role-badge { text-align:left; }
 }
+
+
+/* =========================================================
+   THREE-COLUMN OPERATIONS LAYOUT + COMPACT VESSEL CARDS
+   ========================================================= */
+@media (min-width: 1350px) {
+    .mission-grid {
+        grid-template-columns: minmax(300px,24%) minmax(0,76%);
+        gap:16px;
+    }
+
+    .mission-output {
+        display:grid;
+        grid-template-columns:minmax(520px,58%) minmax(380px,42%);
+        grid-template-areas:
+            "verdict verdict"
+            "fleet decision";
+        gap:16px;
+        align-items:start;
+    }
+
+    .verdict-panel {
+        grid-area:verdict;
+    }
+
+    .fleet-panel {
+        grid-area:fleet;
+        min-width:0;
+    }
+
+    .decision-column {
+        grid-area:decision;
+        display:flex;
+        flex-direction:column;
+        gap:16px;
+        position:sticky;
+        top:100px;
+        align-self:start;
+        max-height:calc(100vh - 118px);
+        overflow:auto;
+        padding-right:2px;
+    }
+
+    .decision-column .solution-panel,
+    .decision-column .foreman-panel {
+        margin:0;
+    }
+
+    .mission-input {
+        top:100px;
+        max-height:calc(100vh - 118px);
+    }
+}
+
+/* Compact fleet cards: summary-first, edit on demand. */
+.vessel-card-head {
+    grid-template-columns:auto minmax(0,1fr) minmax(220px,280px);
+    display:grid;
+    padding:10px 12px;
+}
+
+.vessel-expand-button {
+    align-self:center;
+    width:34px;
+    height:34px;
+    border:1px solid rgba(31,58,95,.18);
+    border-radius:8px;
+    background:#FFF8EE;
+    color:#2E5D88;
+    font:900 18px/1 var(--font-tech);
+    cursor:pointer;
+}
+
+.vessel-expand-button:hover {
+    border-color:#E67E22;
+    color:#A65016;
+}
+
+.vessel-title-block {
+    min-width:0;
+    cursor:pointer;
+}
+
+.vessel-loadout-summary {
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+}
+
+.fleet-vessel-card.collapsed .vessel-arms-grid {
+    display:none;
+}
+
+.fleet-vessel-card.collapsed .vessel-card-head {
+    border-bottom:0;
+}
+
+.fleet-vessel-card.collapsed {
+    min-height:0;
+}
+
+.fleet-vessel-card.expanded .vessel-card-head {
+    background:linear-gradient(90deg,#F4E2CB,#FFF9F0);
+}
+
+.fleet-vessel-card.collapsed .vessel-role-badge {
+    margin-top:3px;
+}
+
+.unified-vessel-list {
+    gap:8px;
+}
+
+.vessel-arms-grid {
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:8px;
+    padding:10px;
+}
+
+.vessel-arms-grid .ship-arm-card {
+    padding:10px !important;
+}
+
+.vessel-arms-grid select {
+    min-height:35px;
+    padding:6px 8px !important;
+}
+
+.vessel-arms-grid .ship-arm-card button {
+    display:none;
+}
+
+/* The vessel quantity controls now own vessel existence; arm removal is intentionally hidden. */
+.fleet-loadout-heading {
+    margin-bottom:9px;
+}
+
+/* Keep solver information readable in a narrower third column. */
+.decision-column .solver-fleet-snapshot {
+    grid-template-columns:1fr;
+}
+
+.decision-column .solver-option-metrics {
+    grid-template-columns:repeat(2,1fr);
+}
+
+.decision-column .solver-vessels {
+    grid-template-columns:1fr;
+}
+
+.decision-column .solver-option-head {
+    align-items:flex-start;
+}
+
+.decision-column .solver-option-head h4 {
+    font-size:18px;
+}
+
+.decision-column .solver-option-status {
+    white-space:nowrap;
+}
+
+.decision-column .solver-backup > div:first-child {
+    flex-direction:column;
+}
+
+/* Medium desktop/tablet: return to stacked decision flow. */
+@media (max-width: 1349px) {
+    .decision-column {
+        display:flex;
+        flex-direction:column;
+        gap:18px;
+    }
+}
+
+@media (max-width: 900px) {
+    .vessel-card-head {
+        grid-template-columns:auto minmax(0,1fr);
+    }
+
+    .vessel-role-control {
+        grid-column:1/-1;
+        margin-top:7px;
+    }
+}
