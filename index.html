@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mining Fracture Analyser v5.35</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="p-4 sm:p-6 flex justify-center items-start selection:bg-blue-500/30">
+
+    <div id="api-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-[var(--text-strong)] mb-2 font-tech">SYSTEM CONFIGURATION</h3>
+            <p class="text-sm text-[var(--text-muted)] mb-4">Initialize AI Foreman Uplink via Google Gemini API.</p>
+            <input type="password" id="api-key-input" placeholder="Paste key starting with AIza..." class="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-main)] text-[var(--text-main)] mb-4 font-mono text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeApiModal()" class="px-4 py-2 rounded-lg text-sm font-bold text-[var(--text-muted)] hover:text-white hover:bg-[var(--bg-card)] transition">CANCEL</button>
+                <button onclick="saveApiKey()" class="px-6 py-2 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] transition">INITIALIZE LINK</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="col-span-1 lg:col-span-4 w-full rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between mb-4 gap-6 glass-panel" 
+             style="min-height: 100px;">
+             
+             <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                 <div class="flex-shrink-0 w-20 h-20 relative group bg-gradient-to-br from-blue-900 to-orange-900 rounded-lg border border-gray-700 flex items-center justify-center overflow-hidden shadow-lg">
+                    <img src="https://github.com/esramos-design/mfa.github.io/blob/main/mfa.jpg?raw=true" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition" onerror="this.style.display='none'">
+                    <span class="absolute text-[10px] font-bold text-white drop-shadow-md z-0">MFA</span>
+                 </div>
+                 <div>
+                     <h1 class="text-2xl font-bold mb-1 tracking-wider font-tech uppercase text-chrome">
+                        Mining Fracture Analyser v5.35
+                     </h1>
+                     <p class="text-xs text-gray-400 max-w-3xl leading-relaxed font-mono">
+                         The Mining Fracture Analyser (MFA) is a single-file, web-based tool designed to remove guesswork from high-stakes mining operations. 
+                         Calculates Total Combined Effective Laser Power (MW) in real-time.
+                     </p>
+                 </div>
+             </div>
+
+             <div class="flex flex-col gap-2 items-end">
+                 <div class="flex gap-2">
+                     <a href="https://robertsspaceindustries.com/citizens/CHIRONDRAGON" target="_blank" class="px-3 py-1.5 bg-[#181f29] border border-[#2d3642] text-xs font-bold text-white rounded hover:bg-[#252e3d] transition uppercase flex items-center gap-2">🚀 RSI Profile</a>
+                     <button onclick="toggleTheme()" class="px-3 py-1.5 bg-[#181f29] border border-[#2d3642] text-xs font-bold text-white rounded hover:bg-[#252e3d] transition uppercase flex items-center gap-2">☀️ Toggle Theme Mode</button>
+                 </div>
+                 <div class="flex gap-2 flex-wrap justify-end">
+                     <a href="fleet.html" class="px-3 py-1.5 bg-[#181f29] border border-blue-500/50 text-[10px] font-bold text-blue-400 rounded hover:bg-[#252e3d] transition uppercase flex items-center gap-2 shadow-[0_0_10px_rgba(59,130,246,0.2)]"><i class="fa-solid fa-shuttle-space"></i> Fleet Roster</a>
+                     <a href="https://uexcorp.space/" target="_blank" class="px-3 py-1.5 bg-[#181f29] border border-[#2d3642] text-[10px] font-bold text-gray-300 rounded hover:bg-[#252e3d] transition uppercase">📈 UEX Data</a>
+                     <a href="https://regolith.rocks/" target="_blank" class="px-3 py-1.5 bg-[#181f29] border border-[#2d3642] text-[10px] font-bold text-gray-300 rounded hover:bg-[#252e3d] transition uppercase">💎 Regolith</a>
+                     <a href="https://github.com/esramos-design/mfa.github.io/blob/main/README.md" target="_blank" class="px-3 py-1.5 bg-[#181f29] border border-[#2d3642] text-[10px] font-bold text-gray-300 rounded hover:bg-[#252e3d] transition uppercase">📄 Readme</a>
+                 </div>
+             </div>
+        </div>
+
+        <div class="w-full">
+            <div class="sticky-column-wrapper glass-panel rounded-2xl p-6 space-y-6">
+                <h2 class="text-xl font-bold text-blue-400 text-center uppercase tracking-widest font-tech">Target Analysis</h2>
+                
+                <div class="mb-6">
+                    <div onclick="document.getElementById('fileInput').click()" class="w-full py-8 rounded-2xl border-2 border-dashed border-[var(--border-main)] bg-[var(--bg-card)] hover:bg-[var(--bg-input)] hover:border-blue-500 cursor-pointer flex flex-col items-center justify-center group mb-4 transition-all shadow-lg relative overflow-hidden">
+                        <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="text-4xl mb-2 group-hover:scale-110 transition-transform z-10">📷</div>
+                        <h3 class="text-sm font-bold text-[var(--text-strong)] group-hover:text-blue-400 uppercase tracking-wider z-10">UPLOAD SCREENSHOT</h3>
+                        <p class="text-[9px] text-[var(--text-muted)] uppercase tracking-widest mt-1 z-10">Mining or Loadout</p>
+                    </div>
+                    <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="window.handleFileSelect(this)">
+                    
+                    <div id="ocr-loading" class="hidden mt-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded text-center">
+                        <span class="text-blue-400 font-bold font-mono text-[10px] animate-pulse">ANALYZING IMAGE DATA...</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 glass-card rounded-xl col-span-1">
+                        <label class="block text-[10px] font-bold uppercase mb-1 text-[var(--text-muted)]">Resistance (%)</label>
+                        <input type="number" id="resistance" value="16.0" step="0.1" class="w-full p-2 rounded-lg text-sm font-mono text-right" oninput="calculate()">
+                    </div>
+                    <div class="p-3 glass-card rounded-xl col-span-1">
+                        <label class="block text-[10px] font-bold uppercase mb-1 text-[var(--text-muted)]">Instability (%)</label>
+                        <input type="number" id="instability" value="20.0" step="0.1" class="w-full p-2 rounded-lg text-sm font-mono text-right" oninput="calculate()">
+                    </div>
+                    <div class="p-3 glass-card rounded-xl col-span-2">
+                        <label class="block text-[10px] font-bold uppercase mb-1 text-[var(--text-muted)]">Rock Mass (kg)</label>
+                        <input type="number" id="rockMass" value="23922" class="w-full p-2 rounded-lg text-lg font-mono font-bold text-right text-blue-100" oninput="calculate()">
+                    </div>
+                </div>
+                <button onclick="calculate()" class="w-full p-4 text-sm font-bold tracking-widest rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg uppercase transition-all mt-4 border border-blue-400/50">INITIALIZE SIMULATION</button>
+
+                <div class="mt-6 p-4 glass-card rounded-xl">
+                    <label class="block text-xs font-bold uppercase mb-3 text-[var(--text-muted)] border-b border-[var(--border-main)] pb-2">Active Gadgetry</label>
+                    <div id="gadget-list-container" class="space-y-3"></div>
+                    <input type="hidden" id="gadgetSelect" value="None">
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full vertical-column">
+            
+            <div class="glass-panel p-6 rounded-2xl flex-grow-0">
+                <h2 class="text-xl font-bold text-green-400 text-center uppercase tracking-widest font-tech">Optimized Loadouts</h2>
+                <section id="configs" class="pt-2"><p class="text-center text-[var(--text-muted)] font-mono text-xs opacity-60">/// AWAITING CALCULATION ///</p></section>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl flex-grow flex flex-col">
+                <div id="ai-section" class="holo-container p-6 rounded-xl flex-grow flex flex-col">
+                    <div class="holo-scanline"></div>
+                    <div class="relative z-10 flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-4 border-b border-purple-500/30 pb-3">
+                            <h3 class="text-xs font-bold text-purple-300 uppercase tracking-widest">Senior Foreman AI</h3>
+                            <button onclick="openApiModal()" class="px-3 py-1 bg-purple-900/40 text-[10px] font-bold uppercase rounded border border-purple-500/40 hover:bg-purple-800/60 hover:text-white transition shadow-[0_0_10px_rgba(168,85,247,0.2)]">🔑 AUTH KEY</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <button onclick="askAI('strategy')" class="px-3 py-2 text-[10px] font-bold text-purple-100 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/30 rounded text-left transition">🧠 STRATEGY</button>
+                            <button onclick="askAI('risk')" class="px-3 py-2 text-[10px] font-bold text-yellow-100 bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-500/30 rounded text-left transition">⚠️ RISK REPORT</button>
+                            <button onclick="askAI('optimize')" class="px-3 py-2 text-[10px] font-bold text-green-100 bg-green-600/20 hover:bg-green-600/40 border border-green-500/30 rounded text-left transition">🔧 LOADOUT</button>
+                            <button onclick="askAI('briefing')" class="px-3 py-2 text-[10px] font-bold text-blue-100 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 rounded text-left transition">📢 ORDERS</button>
+                        </div>
+                        <div class="relative mb-4 group">
+                            <input type="text" id="ai-custom-input" placeholder="Query the mainframe..." class="w-full p-2 pr-8 rounded bg-[var(--bg-input)] border border-purple-500/30 text-xs text-[var(--text-main)] font-mono focus:border-purple-500 outline-none transition">
+                            <button onclick="askAI('custom')" class="absolute right-2 top-2 text-purple-400 hover:text-white transition">➤</button>
+                        </div>
+                        <div class="p-3 rounded bg-[#0a0e17]/80 border border-purple-500/20 font-mono text-xs overflow-hidden flex-grow relative">
+                             <div id="ai-content-wrapper" class="absolute inset-0 overflow-y-auto p-3 scrollbar-thin">
+                                <div id="ai-loading" class="hidden text-center py-4"><div class="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin inline-block"></div></div>
+                                <div id="ai-content" class="text-purple-100/90 whitespace-pre-wrap"><span class="text-purple-500/50 italic">// SYSTEM READY. AWAITING INPUT.</span></div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full vertical-column">
+            
+            <div class="glass-panel p-6 rounded-2xl flex-grow-0">
+                <h2 class="text-xl font-bold text-purple-400 text-center uppercase tracking-widest font-tech">Telemetry Data</h2>
+                <section id="results" class="pt-2"><p class="text-center text-[var(--text-muted)] font-mono text-xs opacity-60">/// WAITING FOR DATA ///</p></section>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl flex-grow">
+                <h2 class="text-xl font-bold text-blue-400 text-center uppercase tracking-widest font-tech mb-4">Visual Analysis</h2>
+                <div class="space-y-4">
+                    <div class="p-4 glass-card rounded-xl border-l-2 border-l-blue-500">
+                        <h3 class="text-[10px] font-bold text-blue-400 mb-2 text-center uppercase">Power vs. Margin</h3>
+                        <div class="h-32 w-full"><canvas id="powerChart"></canvas></div>
+                    </div>
+                    <div class="p-4 glass-card rounded-xl border-l-2 border-l-yellow-500">
+                        <h3 class="text-[10px] font-bold text-yellow-500 mb-2 text-center uppercase">Risk Profile</h3>
+                        <div class="h-48 w-full"><canvas id="modChart"></canvas></div>
+                    </div>
+                    <div class="p-4 glass-card rounded-xl border-l-2 border-l-purple-500">
+                       <h3 class="text-[10px] font-bold text-purple-400 mb-2 text-center uppercase">Resistance Curve</h3>
+                       <div class="h-48 w-full"><canvas id="resistanceChart"></canvas></div>
+                   </div>
+               </div>
+            </div>
+        </div>
+
+        <div class="w-full">
+            <div class="sticky-column-wrapper glass-panel rounded-2xl p-6 space-y-6">
+                <div class="static-header-pin p-4 rounded-t-2xl bg-[var(--bg-panel)] mb-0 border-b border-[var(--border-main)]">
+                    <h2 class="text-xl font-bold text-blue-400 text-center uppercase tracking-widest font-tech">Fleet Config</h2>
+                </div>
+                <div class="p-4 bg-blue-900/10 rounded-xl border border-blue-500/20 shadow-inner">
+                    <label class="block text-[10px] font-bold uppercase mb-2 text-blue-300 tracking-wider">Deploy Mining Vessel</label>
+                    <div class="mb-4 flex justify-center bg-black/30 rounded-lg p-2 border border-[var(--border-main)]">
+                        <img id="selectedShipImage" src="" alt="Selected Ship" class="rounded shadow-lg max-h-32 object-contain w-full opacity-90">
+                    </div>
+                    <div class="flex space-x-2">
+                        <select id="shipSelectToAdd" class="flex-grow p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-main)] text-[var(--text-main)] text-sm font-tech" onchange="updateShipImage()"></select>
+                        <button onclick="addShipLoadout()" class="p-3 px-4 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white uppercase shadow-lg">+ Deploy</button>
+                    </div>
+                </div>
+                <div id="multiShipContainer" class="space-y-4 min-h-[100px] p-2 rounded-xl">
+                    <p id="empty-state-msg" class="text-center text-[var(--text-muted)] text-xs p-8 border border-dashed border-[var(--border-main)] rounded-lg font-mono opacity-50">AWAITING VESSEL DEPLOYMENT...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-1 lg:col-span-4 w-full rounded-2xl p-4 glass-panel mt-4 text-center">
+            <p class="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest mb-1">
+                Developed by <a href="https://github.com/esramos-design" target="_blank" class="text-blue-400 hover:text-white transition">Esramos Design</a> | AI Co-Pilot: <span class="text-purple-400">Google Gemini</span>
+            </p>
+            <p class="text-[9px] text-[var(--text-muted)] opacity-50 font-sans">
+                Mining Fracture Analyser is a fan-made tool. Not affiliated with Cloud Imperium Games or Roberts Space Industries. 
+                Star Citizen® is a registered trademark of Cloud Imperium Games Corp.
+            </p>
+        </div>
+
+    </div>
+    
+    <script src="script.js"></script>
+    <script src="ai-foreman.js"></script>
+    <script src="scanner.js"></script>
+</body>
+</html>
