@@ -12,7 +12,9 @@
     function prefs(){
         return window.MFAOps && MFAOps.getPreferences ? MFAOps.getPreferences() : {
             optimizerObjective:"minimum-ships", maxFleetSize:6, allowActiveModules:true,
-            allowGadgets:true, fleetAvailableMole:1, fleetAvailableProspector:2, fleetAvailableGolem:1
+            allowGadgets:true,
+            fleetEnabledMole:true, fleetEnabledProspector:true, fleetEnabledGolem:true,
+            fleetAvailableMole:1, fleetAvailableProspector:2, fleetAvailableGolem:1
         };
     }
 
@@ -236,7 +238,11 @@
     function render(ctx){
         var box=el("configs");if(!box)return;
         var p=prefs(), d=deployedCounts();
-        var totals={mole:Math.max(0,Math.floor(n(p.fleetAvailableMole))),prospector:Math.max(0,Math.floor(n(p.fleetAvailableProspector))),golem:Math.max(0,Math.floor(n(p.fleetAvailableGolem)))};
+        var totals={
+            mole:p.fleetEnabledMole===false?0:Math.max(0,Math.floor(n(p.fleetAvailableMole))),
+            prospector:p.fleetEnabledProspector===false?0:Math.max(0,Math.floor(n(p.fleetAvailableProspector))),
+            golem:p.fleetEnabledGolem===false?0:Math.max(0,Math.floor(n(p.fleetAvailableGolem)))
+        };
         var support={mole:Math.max(0,totals.mole-d.mole),prospector:Math.max(0,totals.prospector-d.prospector),golem:Math.max(0,totals.golem-d.golem)};
         var baseArms=currentArms(), selected=el("gadgetSelect")?el("gadgetSelect").value:"None";
         var current=evaluate(ctx.baseResistance,ctx.baseInstability,ctx.mass,baseArms,selected);
