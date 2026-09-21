@@ -5,7 +5,7 @@ const requiredIds = [
   "rockMass","resistance","instability","gadget-list-container","gadgetSelect",
   "results","configs","shipSelectToAdd","selectedShipImage","multiShipContainer",
   "powerChart","modChart","resistanceChart","ai-section","ai-content","ai-loading",
-  "ai-custom-input","verdict-status","required-power","available-power","fleetAvailableMole","fleetAvailableProspector","fleetAvailableGolem"
+  "ai-custom-input","verdict-status","required-power","available-power","fleetEnabledMole","fleetEnabledProspector","fleetEnabledGolem","fleetAvailableMole","fleetAvailableProspector","fleetAvailableGolem"
 ];
 
 const missing = requiredIds.filter(id => !html.includes(`id="${id}"`));
