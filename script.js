@@ -179,6 +179,10 @@ window.updateModuleSlots = function(armId) {
 
 // --- COL 4 LOGIC: TACTICAL (STRICT SLOT COUNTS) ---
 function generateAdvancedTelemetry(mass, res, inst, reqPwr, currentPwr) {
+    if (window.MFACoopSolver && typeof window.MFACoopSolver.render === 'function') {
+        window.MFACoopSolver.render({ mass, baseResistance: res, baseInstability: inst, legacyRequiredPower: reqPwr, currentPower: currentPwr });
+        return;
+    }
     const configs = document.getElementById('configs');
     if(!configs) return;
     
