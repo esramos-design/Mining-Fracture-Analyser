@@ -122,9 +122,25 @@
                     </label>
                 </div>
                 <div class="toggle-list">
-                    <label><input id="allowActiveModules" type="checkbox" checked onchange="MFAOps.savePreferences()"> Allow active modules</label>
-                    <label><input id="allowGadgets" type="checkbox" checked onchange="MFAOps.savePreferences()"> Allow gadgets</label>
-                    <label><input id="preferCurrentShip" type="checkbox" checked onchange="MFAOps.savePreferences()"> Keep current ship primary</label>
+                    <label><input id="allowActiveModules" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Allow active modules</label>
+                    <label><input id="allowGadgets" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Allow gadgets</label>
+                    <label><input id="preferCurrentShip" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Keep current ship primary</label>
+                </div>
+
+                <div class="ops-fleet-availability">
+                    <span>Operational fleet totals</span>
+                    <p>Total vessels physically available to this mining operation. MFA subtracts vessels already deployed above.</p>
+                    <div class="fleet-count-grid">
+                        <label>MOLE
+                            <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()">
+                        </label>
+                        <label>Prospector
+                            <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" onchange="MFAOps.savePreferences();calculate()">
+                        </label>
+                        <label>Golem
+                            <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()">
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -314,5 +330,6 @@ window.MFA_CONFIG = {
 <script src="ai-foreman.js"></script>
 <script src="scanner.js"></script>
 <script src="operations-console.js"></script>
+<script src="cooperative-solver.js"></script>
 </body>
 </html>
