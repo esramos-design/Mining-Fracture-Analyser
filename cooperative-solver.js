@@ -19,15 +19,30 @@
     }
 
     function deployedCounts(){
+        if(window.MFAFleetPlanner && typeof MFAFleetPlanner.getRoleCounts==="function"){
+            return MFAFleetPlanner.getRoleCounts().active;
+        }
         var arms={mole:0,prospector:0,golem:0}, out={};
         document.querySelectorAll(".ship-arm-card").forEach(function(card){
-            if(Object.prototype.hasOwnProperty.call(arms,card.dataset.ship)) arms[card.dataset.ship]++;
+            var enabled=document.getElementById(card.id+"-enable");
+            if(enabled&&enabled.checked&&Object.prototype.hasOwnProperty.call(arms,card.dataset.ship)) arms[card.dataset.ship]++;
         });
         ORDER.forEach(function(id){
             var ship=ships.find(function(s){return s.id===id;});
             out[id]=arms[id]?Math.ceil(arms[id]/Math.max(1,ship?ship.arms:1)):0;
         });
         return out;
+    }
+
+    function availableCounts(totals,deployed){
+        if(window.MFAFleetPlanner && typeof MFAFleetPlanner.getRoleCounts==="function"){
+            return MFAFleetPlanner.getRoleCounts().available;
+        }
+        return {
+            mole:Math.max(0,totals.mole-deployed.mole),
+            prospector:Math.max(0,totals.prospector-deployed.prospector),
+            golem:Math.max(0,totals.golem-deployed.golem)
+        };
     }
 
     function currentArms(){
@@ -243,7 +258,7 @@
             prospector:p.fleetEnabledProspector===false?0:Math.max(0,Math.floor(n(p.fleetAvailableProspector))),
             golem:p.fleetEnabledGolem===false?0:Math.max(0,Math.floor(n(p.fleetAvailableGolem)))
         };
-        var support={mole:Math.max(0,totals.mole-d.mole),prospector:Math.max(0,totals.prospector-d.prospector),golem:Math.max(0,totals.golem-d.golem)};
+        var support=availableCounts(totals,d);
         var baseArms=currentArms(), selected=el("gadgetSelect")?el("gadgetSelect").value:"None";
         var current=evaluate(ctx.baseResistance,ctx.baseInstability,ctx.mass,baseArms,selected);
         var state={mass:ctx.mass,baseResistance:ctx.baseResistance,baseInstability:ctx.baseInstability,currentPower:ctx.currentPower,deficit:Math.max(0,n(ctx.legacyRequiredPower)-n(ctx.currentPower))};
@@ -264,7 +279,7 @@
             '<div class="solver-or-note">The first plan is MFA’s best match for the fleet you selected. Open alternatives only if the preferred ship or equipment is unavailable.</div>'+
             '<div class="solver-best-option">'+optionHtml(best,0,solved.variants,baseArms,state)+'</div>'+
             alternatives+
-            '<div class="solver-method-note">Every displayed plan is recalculated with MFA’s existing deterministic power/resistance/instability mechanics for the complete proposed fleet. Secondary loadouts are tested against the same formula. Other preserved mining attributes are not invented into the fracture formula until separately validated.</div>';
+            '<div class="solver-method-note">Your Fleet Planner loadouts are the actual fitted state and are never overwritten. Every recommendation is calculated separately with MFA’s existing deterministic power/resistance/instability mechanics. Secondary recommended loadouts are tested against the same formula. Other preserved mining attributes are not invented into the fracture formula until separately validated.</div>';
     }
 
     window.MFACoopSolver={render:render,evaluate:evaluate};
