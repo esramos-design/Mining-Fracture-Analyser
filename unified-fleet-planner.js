@@ -18,6 +18,7 @@
 
     const STORAGE_KEY = "mfa.actualFleet.v1";
     let restoring = false;
+    let expandedKey = null;
 
     function byId(id) { return document.getElementById(id); }
 
@@ -99,12 +100,15 @@
         }
 
         return `
-            <article class="fleet-vessel-card role-${role}" data-vessel-key="${key}" data-ship="${ship.id}">
+            <article class="fleet-vessel-card role-${role} collapsed" data-vessel-key="${key}" data-ship="${ship.id}">
                 <header class="vessel-card-head">
-                    <div>
+                    <button type="button" class="vessel-expand-button" onclick="MFAFleetPlanner.toggleVessel('${key}')" aria-label="Expand ${ship.name} loadout">
+                        <span class="vessel-chevron">▸</span>
+                    </button>
+                    <div class="vessel-title-block" onclick="MFAFleetPlanner.toggleVessel('${key}')">
                         <span class="vessel-number">VESSEL ${String(index).padStart(2, "0")}</span>
                         <h3>${ship.name}</h3>
-                        <small>Actual fitted equipment</small>
+                        <small class="vessel-loadout-summary">Actual fitted equipment</small>
                     </div>
                     <div class="vessel-role-control">
                         <label>Status</label>
@@ -152,6 +156,63 @@
                 if (active) active.checked = !!savedModule.active;
             });
         });
+    }
+
+    function summarizeCard(card) {
+        const parts = [];
+        card.querySelectorAll(".ship-arm-card").forEach(arm => {
+            const laser = byId(arm.id + "-laser");
+            if (!laser || laser.selectedIndex < 0) return;
+            const laserName = (laser.options[laser.selectedIndex].textContent || "Laser").split("(")[0].trim();
+            const modules = [];
+            for (let i = 1; i <= 3; i++) {
+                const select = byId(arm.id + "-mod" + i);
+                if (select && !select.disabled && select.value !== "None") modules.push(select.value);
+            }
+            parts.push(laserName + (modules.length ? " + " + modules.join(" + ") : ""));
+        });
+
+        const summary = card.querySelector(".vessel-loadout-summary");
+        if (summary) {
+            if (!parts.length) summary.textContent = "No mining arms configured";
+            else if (parts.length === 1) summary.textContent = parts[0];
+            else summary.textContent = parts.length + " heads · " + parts.map((p, i) => "H" + (i + 1) + " " + p).join(" · ");
+        }
+    }
+
+    function applyExpandedState(container) {
+        const cards = [...container.querySelectorAll(".fleet-vessel-card")];
+        if (!cards.length) return;
+
+        if (!expandedKey || !cards.some(card => card.dataset.vesselKey === expandedKey)) {
+            const active = cards.find(card => card.querySelector(".vessel-role-select")?.value === "active");
+            expandedKey = active?.dataset.vesselKey || cards[0].dataset.vesselKey;
+        }
+
+        cards.forEach(card => {
+            const expanded = card.dataset.vesselKey === expandedKey;
+            card.classList.toggle("collapsed", !expanded);
+            card.classList.toggle("expanded", expanded);
+            const chevron = card.querySelector(".vessel-chevron");
+            if (chevron) chevron.textContent = expanded ? "▾" : "▸";
+        });
+    }
+
+    function toggleVessel(key) {
+        const container = byId("multiShipContainer");
+        if (!container) return;
+
+        expandedKey = expandedKey === key ? null : key;
+        if (expandedKey === null) {
+            container.querySelectorAll(".fleet-vessel-card").forEach(card => {
+                card.classList.add("collapsed");
+                card.classList.remove("expanded");
+                const chevron = card.querySelector(".vessel-chevron");
+                if (chevron) chevron.textContent = "▸";
+            });
+            return;
+        }
+        applyExpandedState(container);
     }
 
     function applyRole(card, role) {
@@ -233,8 +294,11 @@
             card.querySelectorAll(".ship-arm-card").forEach(arm => {
                 window.updateModuleSlots?.(arm.id);
             });
+
+            summarizeCard(card);
         });
 
+        applyExpandedState(container);
         restoring = false;
         persistState();
 
@@ -310,6 +374,8 @@
 
         container.addEventListener("change", event => {
             if (event.target.classList.contains("vessel-role-select")) return;
+            const card = event.target.closest(".fleet-vessel-card");
+            if (card) summarizeCard(card);
             persistState();
             setTimeout(() => {
                 if (typeof calculate === "function") calculate();
@@ -322,6 +388,7 @@
     window.MFAFleetPlanner = {
         syncFromControls,
         setVesselRole,
+        toggleVessel,
         getRoleCounts,
         getActualFleet,
         resetLoadouts,
