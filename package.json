@@ -1,0 +1,12 @@
+{
+  "name": "mining-fracture-analyser",
+  "version": "5.35.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:pages": "node scripts/build-pages.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
