@@ -28,7 +28,7 @@ internal static class Program
             },
             ["resource"] = new[]
             {
-                "resource", "ore", "material", "deposit", "cluster", "mineral"
+                "resource", "ore", "material", "deposit", "cluster", "mineral", "harvestable"
             },
             ["cargo"] = new[]
             {
@@ -40,9 +40,24 @@ internal static class Program
             },
             ["build"] = new[]
             {
-                "build", "version", "branch"
+                "build", "version", "branch", "database version"
             }
         };
+
+    private static readonly string[] KnownMiningMaterials =
+    {
+        "Quantanium", "Bexalite", "Taranite", "Agricium", "Laranite", "Borase",
+        "Hephaestanite", "Titanium", "Diamond", "Gold", "Copper", "Corundum",
+        "Aluminum", "Quartz", "Inert Material"
+    };
+
+    private static readonly Regex EquipmentRegex =
+        new(@"(?<raw>(?:Mining_(?:Gadget|Module|Laser)[A-Za-z0-9_]*|ARGO_MOLE[A-Za-z0-9_]*|MISC_Prospector[A-Za-z0-9_]*|DRAK_Golem[A-Za-z0-9_]*))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex DatabaseVersionRegex =
+        new(@"Database version:\s*(?<version>[A-Za-z0-9\.\-_]+)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -83,6 +98,7 @@ internal static class Program
 
         var allEventsPath = Path.Combine(outputDir, "events.jsonl");
         var candidatesPath = Path.Combine(outputDir, "candidates.jsonl");
+        var structuredPath = Path.Combine(outputDir, "structured-events.jsonl");
         var sessionPath = Path.Combine(outputDir, "session.json");
 
         var cancellation = new CancellationTokenSource();
@@ -94,12 +110,19 @@ internal static class Program
 
         var session = new
         {
-            probeVersion = "0.1.0",
+            probeVersion = "0.2.0",
             startedUtc = DateTimeOffset.UtcNow,
             gameLogPath = logPath,
             startMode = options.FromStart ? "from-start" : "tail-new-lines-only",
             rawCapture = !options.CandidatesOnly,
             candidateCapture = true,
+            structuredCapture = true,
+            authority = new
+            {
+                calculations = "MFA current deterministic calculation engine",
+                telemetry = "Game.log context only unless a field is explicitly verified",
+                scannerFallback = new[] { "rockMass", "resistance", "instability", "composition" }
+            },
             notes = "Local passive Game.log observer only. No memory access, injection, packet interception, or game-file modification."
         };
 
@@ -108,12 +131,13 @@ internal static class Program
             JsonSerializer.Serialize(session, new JsonSerializerOptions { WriteIndented = true }),
             cancellation.Token);
 
-        Console.WriteLine("MFA Telemetry Probe v0.1.0");
+        Console.WriteLine("MFA Telemetry Probe v0.2.0");
         Console.WriteLine($"Game.log : {logPath}");
         Console.WriteLine($"Output   : {outputDir}");
         Console.WriteLine(options.FromStart
             ? "Mode     : reading existing file then following new lines"
             : "Mode     : following new lines only");
+        Console.WriteLine("Policy   : Game.log supplies context; MFA calculations remain authoritative.");
         Console.WriteLine();
         Console.WriteLine("Press Ctrl+C to stop.");
         Console.WriteLine("Do not publish raw Game.log captures; they may contain account/session or system information.");
@@ -131,18 +155,20 @@ internal static class Program
             new UTF8Encoding(false))
         { AutoFlush = true };
 
+        await using var structuredWriter = new StreamWriter(
+            new FileStream(structuredPath, FileMode.Append, FileAccess.Write, FileShare.Read),
+            new UTF8Encoding(false))
+        { AutoFlush = true };
+
         long lineNumber = 0;
-        long position = 0;
+        long position = options.FromStart ? 0 : new FileInfo(logPath).Length;
 
         try
         {
-            position = options.FromStart ? 0 : new FileInfo(logPath).Length;
-
             while (!cancellation.IsCancellationRequested)
             {
                 var info = new FileInfo(logPath);
 
-                // Game.log can be recreated or truncated between sessions.
                 if (info.Length < position)
                 {
                     Console.WriteLine("[probe] Game.log was truncated/recreated; resuming from start of new file.");
@@ -178,6 +204,8 @@ internal static class Program
                     position = stream.Position;
 
                     var matches = Classify(line);
+                    var structured = ExtractStructured(line);
+
                     var evt = new ProbeEvent
                     {
                         CapturedUtc = DateTimeOffset.UtcNow,
@@ -194,7 +222,7 @@ internal static class Program
                         await allWriter.WriteLineAsync(json.AsMemory(), cancellation.Token);
                     }
 
-                    if (matches.Categories.Count > 0)
+                    if (matches.Categories.Count > 0 || structured.Count > 0)
                     {
                         await candidateWriter.WriteLineAsync(json.AsMemory(), cancellation.Token);
 
@@ -202,6 +230,18 @@ internal static class Program
                             $"[{evt.CapturedUtc:HH:mm:ss}] " +
                             $"[{string.Join(",", matches.Categories)}] " +
                             Truncate(line, 180));
+                    }
+
+                    foreach (var item in structured)
+                    {
+                        item.CapturedUtc = evt.CapturedUtc;
+                        item.LineNumber = lineNumber;
+                        await structuredWriter.WriteLineAsync(
+                            JsonSerializer.Serialize(item, JsonOptions).AsMemory(),
+                            cancellation.Token);
+
+                        Console.WriteLine(
+                            $"  -> {item.Type}: {item.Name ?? item.Value ?? "detected"}");
                     }
                 }
 
@@ -243,7 +283,136 @@ internal static class Program
             }
         }
 
+        foreach (var material in KnownMiningMaterials)
+        {
+            if (line.Contains(material, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!categories.Contains("material", StringComparer.OrdinalIgnoreCase))
+                {
+                    categories.Add("material");
+                }
+
+                if (!keywords.Contains(material, StringComparer.OrdinalIgnoreCase))
+                {
+                    keywords.Add(material);
+                }
+            }
+        }
+
         return (categories, keywords);
+    }
+
+    private static List<StructuredEvent> ExtractStructured(string line)
+    {
+        var events = new List<StructuredEvent>();
+
+        var dbMatch = DatabaseVersionRegex.Match(line);
+        if (dbMatch.Success)
+        {
+            events.Add(new StructuredEvent
+            {
+                Type = "database_version",
+                Value = dbMatch.Groups["version"].Value,
+                Source = "Game.log",
+                Confidence = "observed"
+            });
+        }
+
+        foreach (Match match in EquipmentRegex.Matches(line))
+        {
+            var raw = match.Groups["raw"].Value;
+            events.Add(ParseEquipment(raw));
+        }
+
+        foreach (var material in KnownMiningMaterials)
+        {
+            if (line.Contains(material, StringComparison.OrdinalIgnoreCase))
+            {
+                events.Add(new StructuredEvent
+                {
+                    Type = "mining_material_observed",
+                    Category = "material",
+                    Name = material,
+                    Source = "Game.log",
+                    Confidence = "observed"
+                });
+            }
+        }
+
+        return events
+            .GroupBy(e => new { e.Type, e.Category, e.Name, e.Value }, StringTupleComparer.Instance)
+            .Select(g => g.First())
+            .ToList();
+    }
+
+    private static StructuredEvent ParseEquipment(string raw)
+    {
+        var normalized = raw.Trim();
+
+        if (normalized.StartsWith("Mining_Gadget_", StringComparison.OrdinalIgnoreCase))
+        {
+            return new StructuredEvent
+            {
+                Type = "mining_equipment_detected",
+                Category = "gadget",
+                Name = PrettyName(normalized["Mining_Gadget_".Length..]),
+                RawIdentifier = normalized,
+                Source = "Game.log",
+                Confidence = "observed"
+            };
+        }
+
+        if (normalized.StartsWith("Mining_Module_", StringComparison.OrdinalIgnoreCase))
+        {
+            return new StructuredEvent
+            {
+                Type = "mining_equipment_detected",
+                Category = "module",
+                Name = PrettyName(normalized["Mining_Module_".Length..]),
+                RawIdentifier = normalized,
+                Source = "Game.log",
+                Confidence = "observed"
+            };
+        }
+
+        if (normalized.StartsWith("Mining_Laser_", StringComparison.OrdinalIgnoreCase))
+        {
+            return new StructuredEvent
+            {
+                Type = "mining_equipment_detected",
+                Category = "laser",
+                Name = PrettyName(normalized["Mining_Laser_".Length..]),
+                RawIdentifier = normalized,
+                Source = "Game.log",
+                Confidence = "observed"
+            };
+        }
+
+        string? ship = null;
+        if (normalized.StartsWith("ARGO_MOLE", StringComparison.OrdinalIgnoreCase)) ship = "Argo MOLE";
+        if (normalized.StartsWith("MISC_Prospector", StringComparison.OrdinalIgnoreCase)) ship = "MISC Prospector";
+        if (normalized.StartsWith("DRAK_Golem", StringComparison.OrdinalIgnoreCase)) ship = "Drake Golem";
+
+        return new StructuredEvent
+        {
+            Type = "mining_vehicle_detected",
+            Category = "vehicle",
+            Name = ship ?? normalized,
+            RawIdentifier = normalized,
+            Source = "Game.log",
+            Confidence = "observed"
+        };
+    }
+
+    private static string PrettyName(string raw)
+    {
+        var parts = raw
+            .Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(p => !p.Equals("SHIN", StringComparison.OrdinalIgnoreCase))
+            .Where(p => !p.Equals("GRIN", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        return parts.Length == 0 ? raw : string.Join(" ", parts);
     }
 
     private static string Truncate(string text, int max)
@@ -275,9 +444,15 @@ Options:
                          Default is to capture only lines appended after probe start.
 
   --candidates-only      Do not store the full appended log stream.
-                         Store only keyword-matched candidate lines.
+                         Store only keyword/structured candidate lines.
 
   --help                 Show this help.
+
+Outputs:
+  session.json
+  events.jsonl
+  candidates.jsonl
+  structured-events.jsonl
 
 Safety boundary:
   This tool reads a normal text log generated by Star Citizen.
@@ -348,5 +523,29 @@ Safety boundary:
         public List<string> Categories { get; init; } = new();
         public List<string> MatchedKeywords { get; init; } = new();
         public string Text { get; init; } = "";
+    }
+
+    private sealed class StructuredEvent
+    {
+        public DateTimeOffset CapturedUtc { get; set; }
+        public long LineNumber { get; set; }
+        public string Type { get; init; } = "";
+        public string? Category { get; init; }
+        public string? Name { get; init; }
+        public string? Value { get; init; }
+        public string? RawIdentifier { get; init; }
+        public string Source { get; init; } = "Game.log";
+        public string Confidence { get; init; } = "observed";
+    }
+
+    private sealed class StringTupleComparer : IEqualityComparer<object>
+    {
+        public static readonly StringTupleComparer Instance = new();
+
+        public new bool Equals(object? x, object? y) =>
+            string.Equals(JsonSerializer.Serialize(x), JsonSerializer.Serialize(y), StringComparison.Ordinal);
+
+        public int GetHashCode(object obj) =>
+            JsonSerializer.Serialize(obj).GetHashCode(StringComparison.Ordinal);
     }
 }
