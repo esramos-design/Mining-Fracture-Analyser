@@ -1257,3 +1257,246 @@ html[data-theme="dark"] footer { color:#52677E; }
     .ops-brand h1 { font-size:21px; }
     .value-row input { font-size:21px; }
 }
+
+
+/* =========================================================
+   UNIFIED FLEET PLANNER
+   ========================================================= */
+.unified-fleet-planner {
+    border: 1px solid rgba(31,58,95,.18);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255,252,247,.72);
+}
+.fleet-roster-head,
+.fleet-loadout-heading {
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+    margin-bottom:12px;
+}
+.fleet-roster-head strong,
+.fleet-loadout-heading strong {
+    display:block;
+    color:#17324D;
+    font:900 15px var(--font-tech);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+.fleet-roster-head span,
+.fleet-loadout-heading span {
+    display:block;
+    margin-top:4px;
+    color:#64748B;
+    font-size:12px;
+    line-height:1.4;
+}
+.fleet-role-legend {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 12px;
+    justify-content:flex-end;
+    color:#52677E;
+    font:700 10px var(--font-tech);
+}
+.fleet-role-legend span {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    margin:0;
+}
+.role-dot {
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    display:inline-block;
+}
+.role-dot.active { background:#2F8F6B; }
+.role-dot.available { background:#E67E22; }
+.role-dot.standby { background:#94A3B8; }
+
+.fleet-presence-grid {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    margin-bottom:16px;
+}
+.fleet-presence-grid .fleet-presence-row {
+    min-width:0;
+}
+.fleet-loadout-heading {
+    padding-top:14px;
+    border-top:1px solid rgba(31,58,95,.16);
+}
+.fleet-loadout-heading button {
+    flex:0 0 auto;
+    border:1px solid rgba(31,58,95,.22);
+    border-radius:8px;
+    padding:8px 11px;
+    background:#F5E8D7;
+    color:#30465F;
+    font:800 10px var(--font-tech);
+    text-transform:uppercase;
+    cursor:pointer;
+}
+.fleet-loadout-heading button:hover {
+    border-color:#E67E22;
+    color:#A65016;
+}
+
+.unified-vessel-list {
+    display:grid;
+    gap:12px;
+}
+.fleet-vessel-card {
+    border:2px solid #C8D3DD;
+    border-radius:12px;
+    overflow:hidden;
+    background:#FFFDF8;
+    transition:border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+.fleet-vessel-card.role-active {
+    border-color:#2F8F6B;
+    box-shadow:0 0 0 3px rgba(47,143,107,.09);
+}
+.fleet-vessel-card.role-available {
+    border-color:#E2A156;
+}
+.fleet-vessel-card.role-standby {
+    border-color:#B8C0C8;
+    opacity:.72;
+}
+.vessel-card-head {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    padding:13px 14px;
+    background:linear-gradient(90deg,#F8EAD7,#FFF9F0);
+    border-bottom:1px solid rgba(31,58,95,.14);
+}
+.vessel-number {
+    display:block;
+    color:#C96A2B;
+    font:800 9px var(--font-tech);
+    letter-spacing:.10em;
+}
+.vessel-card-head h3 {
+    margin:3px 0 0;
+    color:#17324D;
+    font:900 18px var(--font-ui);
+}
+.vessel-card-head small {
+    display:block;
+    margin-top:3px;
+    color:#64748B;
+    font-size:11px;
+}
+.vessel-role-control {
+    min-width:260px;
+}
+.vessel-role-control label {
+    display:block;
+    margin-bottom:4px;
+    color:#64748B;
+    font:800 9px var(--font-tech);
+    text-transform:uppercase;
+}
+.vessel-role-control select {
+    width:100%;
+    min-height:38px;
+    padding:7px 10px;
+    border:1px solid #BFAE95;
+    border-radius:8px;
+    background:#FFFFFF;
+    color:#17324D;
+    font:800 12px var(--font-tech);
+}
+.vessel-role-badge {
+    display:block;
+    margin-top:5px;
+    color:#52677E;
+    font:800 9px var(--font-tech);
+    text-align:right;
+}
+.role-active .vessel-role-badge { color:#247354; }
+.role-available .vessel-role-badge { color:#A65016; }
+.role-standby .vessel-role-badge { color:#64748B; }
+
+.vessel-arms-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:10px;
+    padding:12px;
+}
+.vessel-arms-grid .ship-arm-card {
+    margin:0 !important;
+    padding:12px !important;
+    border:1px solid #D3C4AF !important;
+    border-radius:10px !important;
+    background:#FFF9F0 !important;
+}
+.vessel-arms-grid .ship-arm-card > div:first-child span {
+    color:#17324D !important;
+    font-size:13px !important;
+}
+.vessel-arms-grid select {
+    min-height:38px;
+    padding:7px 9px !important;
+    background:#FFFFFF !important;
+    color:#17324D !important;
+    border:1px solid #BFAE95 !important;
+    font-size:12px !important;
+    line-height:1.3;
+}
+.vessel-arms-grid select:focus {
+    border-color:#E67E22 !important;
+    box-shadow:0 0 0 3px rgba(230,126,34,.14) !important;
+    outline:none;
+}
+.vessel-arms-grid button {
+    font-size:10px !important;
+}
+.role-standby .vessel-arms-grid {
+    filter:saturate(.65);
+}
+
+/* Native select readability. Browser/OS may still control popup chrome. */
+select {
+    color-scheme: light;
+}
+select option {
+    background:#FFFDF8;
+    color:#17324D;
+    padding:8px;
+}
+select option:checked {
+    background:#E8B16E;
+    color:#102A43;
+}
+select optgroup {
+    background:#E8DCCB;
+    color:#17324D;
+    font-weight:800;
+}
+
+/* Theme-safe select contrast for the legacy light theme too. */
+[data-theme="light"] select option {
+    background:#FFFFFF;
+    color:#102A43;
+}
+[data-theme="light"] select optgroup {
+    background:#EAF1F5;
+    color:#17324D;
+}
+
+@media (max-width:1000px) {
+    .fleet-presence-grid { grid-template-columns:1fr; }
+    .fleet-roster-head,
+    .fleet-loadout-heading,
+    .vessel-card-head {
+        flex-direction:column;
+    }
+    .fleet-role-legend { justify-content:flex-start; }
+    .vessel-role-control { min-width:0; width:100%; }
+    .vessel-role-badge { text-align:left; }
+}
