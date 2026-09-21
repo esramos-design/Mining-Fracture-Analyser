@@ -2938,3 +2938,174 @@ html[data-theme="dusk"] .floating-verdict-jump strong,
 html[data-theme="dusk"] .floating-verdict-metrics strong {
     color:#FFF3DF !important;
 }
+
+
+/* =========================================================
+   SOLVER PURPOSE CLARITY — vivid verdicts + exact loadouts
+   ========================================================= */
+.solver-status-banner {
+    position:relative;
+    overflow:hidden;
+    padding:16px 17px 16px 20px !important;
+    border-width:2px !important;
+    box-shadow:0 8px 20px var(--theme-shadow);
+}
+.solver-status-banner:before {
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:6px;
+    background:currentColor;
+}
+.solver-status-banner strong {
+    font:900 13px var(--font-tech) !important;
+    letter-spacing:.055em;
+}
+.solver-status-banner span {
+    margin-top:6px !important;
+    font-size:11px !important;
+    font-weight:750;
+}
+
+.solver-current-ok {
+    background:color-mix(in srgb,var(--theme-success) 24%,var(--theme-panel)) !important;
+    border-color:var(--theme-success) !important;
+    color:var(--theme-success) !important;
+}
+.solver-current-ok strong {
+    color:var(--theme-success) !important;
+}
+.solver-current-ok span {
+    color:var(--theme-strong) !important;
+}
+
+.solver-current-insufficient {
+    border-radius:11px;
+    background:color-mix(in srgb,var(--theme-danger) 22%,var(--theme-panel)) !important;
+    border:2px solid var(--theme-danger) !important;
+    color:var(--theme-danger) !important;
+}
+.solver-current-insufficient strong {
+    display:block;
+    color:var(--theme-danger) !important;
+}
+.solver-current-insufficient span {
+    display:block;
+    color:var(--theme-strong) !important;
+}
+
+.solver-no-option {
+    margin-top:10px;
+    background:color-mix(in srgb,var(--theme-danger) 13%,var(--theme-panel)) !important;
+    border-color:color-mix(in srgb,var(--theme-danger) 75%,var(--theme-border)) !important;
+}
+.solver-no-option strong {
+    color:var(--theme-danger) !important;
+}
+.solver-no-option span {
+    color:var(--theme-text) !important;
+}
+
+/* Snapshot uses only meaningful non-zero groups. */
+.solver-fleet-snapshot.snapshot-1 { grid-template-columns:1fr; }
+.solver-fleet-snapshot.snapshot-2 { grid-template-columns:repeat(2,1fr); }
+.solver-fleet-snapshot.snapshot-3 { grid-template-columns:repeat(3,1fr); }
+
+/* Exact loadouts are a first-class output, not secondary metadata. */
+.solver-current-loadouts {
+    margin-top:12px;
+    border:1px solid var(--theme-border);
+    border-radius:11px;
+    overflow:hidden;
+    background:var(--theme-card);
+}
+.solver-loadout-heading {
+    padding:10px 12px;
+    border-bottom:1px solid var(--theme-border);
+    background:var(--theme-card-alt);
+}
+.solver-loadout-heading span,
+.solver-loadout-heading strong {
+    display:block;
+}
+.solver-loadout-heading span {
+    color:var(--theme-primary);
+    font:900 9px var(--font-tech);
+    letter-spacing:.08em;
+}
+.solver-loadout-heading strong {
+    margin-top:3px;
+    color:var(--theme-strong);
+    font:800 11px var(--font-ui);
+}
+.solver-vessel-title {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+}
+.solver-vessel-title span {
+    color:var(--theme-strong);
+}
+.solver-vessel-title em {
+    flex:0 0 auto;
+    padding:3px 6px;
+    border-radius:999px;
+    font:900 7px var(--font-tech);
+    font-style:normal;
+    letter-spacing:.05em;
+}
+.solver-required-vessel {
+    border-color:color-mix(in srgb,var(--theme-primary) 65%,var(--theme-border)) !important;
+}
+.solver-required-vessel .solver-vessel-title em {
+    background:color-mix(in srgb,var(--theme-primary) 20%,transparent);
+    border:1px solid color-mix(in srgb,var(--theme-primary) 55%,var(--theme-border));
+    color:var(--theme-primary);
+}
+.solver-current-vessel {
+    border-color:color-mix(in srgb,var(--theme-success) 55%,var(--theme-border)) !important;
+}
+.solver-current-vessel .solver-vessel-title em {
+    background:color-mix(in srgb,var(--theme-success) 18%,transparent);
+    border:1px solid color-mix(in srgb,var(--theme-success) 50%,var(--theme-border));
+    color:var(--theme-success);
+}
+
+/* Theme-specific extra punch while preserving the shared semantic colors. */
+html[data-theme="day"] .solver-current-ok {
+    background:#E4F4EC !important;
+    border-color:#247354 !important;
+}
+html[data-theme="day"] .solver-current-insufficient {
+    background:#FBE5E1 !important;
+    border-color:#B84E3B !important;
+}
+html[data-theme="dusk"] .solver-current-ok {
+    background:#21483A !important;
+    border-color:#57D59A !important;
+}
+html[data-theme="dusk"] .solver-current-ok strong { color:#79E6B5 !important; }
+html[data-theme="dusk"] .solver-current-insufficient {
+    background:#4B292B !important;
+    border-color:#E0525B !important;
+}
+html[data-theme="dusk"] .solver-current-insufficient strong { color:#FF8D94 !important; }
+html[data-theme="night"] .solver-current-ok {
+    background:#123A30 !important;
+    border-color:#34D399 !important;
+}
+html[data-theme="night"] .solver-current-ok strong { color:#5DE5B2 !important; }
+html[data-theme="night"] .solver-current-insufficient {
+    background:#442331 !important;
+    border-color:#FB7185 !important;
+}
+html[data-theme="night"] .solver-current-insufficient strong { color:#FF9AAA !important; }
+
+@media (max-width:760px) {
+    .solver-fleet-snapshot.snapshot-2,
+    .solver-fleet-snapshot.snapshot-3 { grid-template-columns:1fr; }
+    .solver-vessel-title { align-items:flex-start; }
+}
