@@ -181,74 +181,78 @@
                     </div>
                     <div class="segmented">
                         <button id="fleet-mode-auto" class="active" onclick="MFAOps.setFleetMode('auto')">Auto Solver</button>
-                        <button id="fleet-mode-manual" onclick="MFAOps.setFleetMode('manual')">Manual Fleet</button>
+                        <button id="fleet-mode-manual" onclick="MFAOps.setFleetMode('manual')">Manual Review</button>
                     </div>
                 </div>
 
-                <p class="fleet-planner-intro">Select who is actually in the mining operation. This is the main fleet input used by the solver.</p>
+                <p class="fleet-planner-intro">This is the single fleet control for the operation: who is present, what each vessel actually has fitted, and whether it is currently active, available to assist, or standing by.</p>
 
-                                <div class="ops-fleet-availability">
-                    <span>Who is in this operation?</span>
-                    <p>Select the mining vessel types actually present and set how many of each are available. MFA subtracts vessels already deployed in the current calculation.</p>
+                <div class="unified-fleet-planner">
+                    <div class="fleet-roster-head">
+                        <div>
+                            <strong>Operation Fleet</strong>
+                            <span>Quantity creates one editable vessel card per ship.</span>
+                        </div>
+                        <div class="fleet-role-legend">
+                            <span><i class="role-dot active"></i> Active = lasing now</span>
+                            <span><i class="role-dot available"></i> Available = can assist</span>
+                            <span><i class="role-dot standby"></i> Standby = excluded</span>
+                        </div>
+                    </div>
 
-                    <div class="fleet-presence-list">
+                    <div class="fleet-presence-list fleet-presence-grid">
                         <label class="fleet-presence-row">
-                            <input id="fleetEnabledMole" type="checkbox" checked onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
+                            <input id="fleetEnabledMole" type="checkbox" checked onchange="MFAFleetPlanner.syncFromControls()">
                             <span class="fleet-presence-name">
                                 <strong>ARGO MOLE</strong>
                                 <small>Multi-crew · 3 mining heads</small>
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
+                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
                             </span>
                         </label>
 
                         <label class="fleet-presence-row">
-                            <input id="fleetEnabledProspector" type="checkbox" checked onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
+                            <input id="fleetEnabledProspector" type="checkbox" checked onchange="MFAFleetPlanner.syncFromControls()">
                             <span class="fleet-presence-name">
                                 <strong>MISC PROSPECTOR</strong>
                                 <small>Solo · Size 1 mining head</small>
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" inputmode="numeric" onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
+                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
                             </span>
                         </label>
 
                         <label class="fleet-presence-row">
-                            <input id="fleetEnabledGolem" type="checkbox" checked onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
+                            <input id="fleetEnabledGolem" type="checkbox" checked onchange="MFAFleetPlanner.syncFromControls()">
                             <span class="fleet-presence-name">
                                 <strong>DRAKE GOLEM</strong>
                                 <small>Fixed mining system</small>
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()" oninput="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
+                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
                             </span>
                         </label>
+                    </div>
+
+                    <div class="fleet-loadout-heading">
+                        <div>
+                            <strong>Actual Fleet Loadouts</strong>
+                            <span>Set what each ship really has fitted. MFA recommendations are calculated separately and never overwrite these selections.</span>
+                        </div>
+                        <button type="button" onclick="MFAFleetPlanner.resetLoadouts()">Reset loadouts</button>
+                    </div>
+
+                    <div id="multiShipContainer" class="unified-vessel-list">
+                        <p id="empty-state-msg" class="empty-state">SELECT AT LEAST ONE VESSEL ABOVE…</p>
                     </div>
                 </div>
 
                 <div id="auto-fleet-note" class="solver-note">
-                    <strong>Auto Solver policy:</strong> use the selected objective and constraints to determine the required cooperative configuration. The current calculation engine remains authoritative; unsupported mechanics are never guessed.
-                </div>
-
-                <div class="fleet-builder">
-                    <div class="ship-deploy-card">
-                        <img id="selectedShipImage" src="" alt="Selected mining ship">
-                        <div>
-                            <span>Deploy mining vessel</span>
-                            <div class="deploy-row">
-                                <select id="shipSelectToAdd" onchange="updateShipImage()"></select>
-                                <button onclick="addShipLoadout()">+ Deploy</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="multiShipContainer" class="fleet-arms">
-                        <p id="empty-state-msg" class="empty-state">AWAITING VESSEL DEPLOYMENT…</p>
-                    </div>
+                    <strong>Auto Solver:</strong> uses this fleet as the available ship pool. Active vessels contribute to the current fracture verdict; Available vessels may be recommended as support; Standby vessels are ignored.
                 </div>
             </section>
 
@@ -362,5 +366,6 @@ window.MFA_CONFIG = {
 <script src="scanner.js"></script>
 <script src="operations-console.js"></script>
 <script src="cooperative-solver.js"></script>
+<script src="unified-fleet-planner.js"></script>
 </body>
 </html>
