@@ -7,6 +7,7 @@ on:
       - "style.css"
       - "operations-console.js"
       - "cooperative-solver.js"
+      - "unified-fleet-planner.js"
       - "scanner.js"
       - "scripts/validate-operations-console.mjs"
   push:
@@ -38,5 +39,6 @@ jobs:
           node --check scanner.js
           node --check operations-console.js
           node --check cooperative-solver.js
+          node --check unified-fleet-planner.js
       - name: Validate operations console DOM contract
         run: node scripts/validate-operations-console.mjs
