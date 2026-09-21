@@ -197,7 +197,7 @@
         var seen={}, unique=[];
         options.forEach(function(o){var k=o.counts.mole+"/"+o.counts.prospector+"/"+o.counts.golem+"/"+o.gadget;if(!seen[k]){seen[k]=true;unique.push(o);}});
         var good=unique.filter(function(o){return o.evaluation.success;});
-        return {variants:vars,options:(good.length?good:unique).slice(0,6)};
+        return {variants:vars,options:(good.length?good:unique).slice(0,5)};
     }
 
     function armLine(a){return esc(a.laser)+((a.modules||[]).length?" + "+esc(a.modules.join(" + ")):"");}
@@ -253,10 +253,18 @@
         var strat=strategy(state), solved=solve(state,baseArms,support,p,strat);
         if(!solved.options.length){box.innerHTML=snap+'<div class="solver-no-option"><strong>NO SOLUTION FOUND WITH THE AVAILABLE OPERATION FLEET</strong></div>';return;}
         var viable=solved.options.filter(function(o){return o.evaluation.success;}).length;
-        box.innerHTML=snap+'<div class="solver-portfolio-head"><div><span>COOPERATIVE SOLUTION PORTFOLIO</span><strong>'+(viable?viable+' VIABLE SUPPORT OPTION'+(viable===1?'':'S'):'CLOSEST AVAILABLE OPTIONS')+'</strong></div><div>'+esc(strat.name)+'</div></div>'+
-            '<div class="solver-or-note">These are <strong>OR</strong> solutions. Choose one complete option; separate cards are not cumulative requirements.</div>'+
-            '<div class="solver-option-list">'+solved.options.map(function(o,i){return optionHtml(o,i,solved.variants,baseArms,state);}).join('<div class="solver-or-divider"><span>OR</span></div>')+'</div>'+
-            '<div class="solver-method-note">Every displayed option is recalculated with MFA’s existing deterministic power/resistance/instability mechanics for the complete proposed fleet. Secondary loadouts are tested against the same formula. Other preserved mining attributes are not invented into the fracture formula until separately validated.</div>';
+        var best=solved.options[0];
+        var others=solved.options.slice(1);
+        var alternatives=others.length
+            ? '<details class="solver-more-plans"><summary>Show '+others.length+' other viable / closest plan'+(others.length===1?'':'s')+'</summary><div class="solver-other-list">'+
+              others.map(function(o,i){return optionHtml(o,i+1,solved.variants,baseArms,state);}).join('<div class="solver-or-divider"><span>OR</span></div>')+
+              '</div></details>'
+            : '';
+        box.innerHTML=snap+'<div class="solver-portfolio-head"><div><span>BEST MATCH FOR THIS OPERATION</span><strong>'+(best.evaluation.success?'RECOMMENDED SUPPORT PLAN':'CLOSEST AVAILABLE PLAN')+'</strong></div><div>'+esc(strat.name)+'</div></div>'+
+            '<div class="solver-or-note">The first plan is MFA’s best match for the fleet you selected. Open alternatives only if the preferred ship or equipment is unavailable.</div>'+
+            '<div class="solver-best-option">'+optionHtml(best,0,solved.variants,baseArms,state)+'</div>'+
+            alternatives+
+            '<div class="solver-method-note">Every displayed plan is recalculated with MFA’s existing deterministic power/resistance/instability mechanics for the complete proposed fleet. Secondary loadouts are tested against the same formula. Other preserved mining attributes are not invented into the fracture formula until separately validated.</div>';
     }
 
     window.MFACoopSolver={render:render,evaluate:evaluate};
