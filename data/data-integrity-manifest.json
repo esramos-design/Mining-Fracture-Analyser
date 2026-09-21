@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "targetDataset": "data/star-citizen-4.10.1.json",
+  "policy": "docs/DATA_INTEGRITY_CONTRACT.md",
+  "categories": {
+    "gadgets": {
+      "expectedItems": [
+        "BoreMax",
+        "Okunis",
+        "OptiMax",
+        "Sabir",
+        "Stalwart",
+        "Waveshift"
+      ],
+      "requiredFields": [
+        "name",
+        "clusterModifierPct",
+        "instabilityPct",
+        "laserInstabilityPct",
+        "optimalChargeWindowRatePct",
+        "optimalChargeWindowSizePct",
+        "resistancePct",
+        "sourceItemVersion"
+      ]
+    },
+    "miningModules": {
+      "expectedItems": [
+        "Brandt",
+        "FLTR",
+        "FLTR-L",
+        "FLTR-XL",
+        "Focus",
+        "Focus II",
+        "Focus III",
+        "Forel",
+        "Lifeline",
+        "Optimum",
+        "Rieger",
+        "Rieger-C2",
+        "Rieger-C3",
+        "Rime",
+        "Stampede",
+        "Surge",
+        "Torpid",
+        "Torrent",
+        "Torrent II",
+        "Torrent III",
+        "Vaux",
+        "Vaux-C2",
+        "Vaux-C3",
+        "XTR",
+        "XTR-L",
+        "XTR-XL"
+      ],
+      "requiredFields": [
+        "name",
+        "type",
+        "durationSec",
+        "miningLaserPowerPct",
+        "extractionLaserPowerPct",
+        "laserInstabilityPct",
+        "resistancePct",
+        "optimalChargeRatePct",
+        "optimalChargeWindowSizePct",
+        "catastrophicChargeRatePct",
+        "shatterDamagePct",
+        "inertMaterialLevelPct",
+        "uses",
+        "sourceItemVersion"
+      ]
+    },
+    "miningLaserHeads": {
+      "expectedItems": [
+        "Arbor MH1",
+        "Arbor MH2",
+        "Arbor MHV",
+        "Helix I",
+        "Helix II",
+        "Hofstede-S1",
+        "Hofstede-S2",
+        "Impact I",
+        "Impact II",
+        "Klein-S1",
+        "Klein-S2",
+        "Lancet MH1",
+        "Lancet MH2",
+        "Lawson",
+        "Pitman",
+        "S0 Helix",
+        "S00 Hofstede"
+      ],
+      "requiredFields": [
+        "name",
+        "size",
+        "miningLaserPowerMin",
+        "miningLaserPowerMax",
+        "extractionLaserPower",
+        "moduleSlots",
+        "laserInstabilityPct",
+        "inertMaterialLevelPct",
+        "optimalChargeWindowRatePct",
+        "optimalChargeWindowSizePct",
+        "optimalRangeM",
+        "maximumRangeM",
+        "resistancePct",
+        "sourceItemVersion"
+      ]
+    }
+  }
+}
