@@ -9,6 +9,7 @@ await mkdir(out, { recursive: true });
 
 const files = [
   "index.html",
+  "v535-runtime.js",
   "fleet.html",
   "data-reference.html",
   "style.css",

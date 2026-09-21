@@ -112,29 +112,63 @@
         return out;
     }
 
-    function armMetrics(a){
-        var power=n(a.basePower), res=1+n(a.resistanceEffect)/100, inst=1+n(a.instabilityEffect)/100, active=0;
-        (a.modules||[]).forEach(function(name){
-            var m=powerModules.find(function(x){return x.name===name;});
-            if(!m) return;
-            power*=n(m.multiplier,1); res*=1+n(m.resistanceEffect)/100; inst*=1+n(m.instabilityEffect)/100;
-            if(m.activation==="Active") active++;
-        });
-        return {power:power,res:res,inst:inst,active:active};
+    function recommendedArmToRuntime(a){
+        return {
+            enabled:true,
+            power:n(a.basePower),
+            resistanceEffect:n(a.resistanceEffect),
+            instabilityEffect:n(a.instabilityEffect),
+            modules:(a.modules||[]).map(function(name){
+                var m=powerModules.find(function(x){return x.name===name;});
+                if(!m)return null;
+                return {
+                    name:m.name,
+                    activation:m.activation,
+                    // Recommended Active modules are part of the required operating state.
+                    active:true,
+                    multiplier:m.multiplier,
+                    resistanceEffect:m.resistanceEffect,
+                    instabilityEffect:m.instabilityEffect
+                };
+            }).filter(Boolean)
+        };
     }
 
     function evaluate(baseRes,baseInst,mass,arms,gadgetName){
-        if(!arms.length) return {success:false,power:0,required:Infinity,finalResistance:baseRes,finalInstability:baseInst,marginPct:-Infinity,activeModules:0};
-        var power=0,resProd=1,instProd=1,active=0;
-        arms.forEach(function(a){var m=armMetrics(a);power+=m.power;resProd*=m.res;instProd*=m.inst;active+=m.active;});
-        var resMult=Math.pow(resProd,1/arms.length), instMult=Math.pow(instProd,1/arms.length);
-        var g=gadgets.find(function(x){return x.name===gadgetName;});
-        if(g){resMult*=1+n(g.reduction!=null?g.reduction:g.resistance)/100;instMult*=1+n(g.instabilityEffect)/100;}
-        var finalRes=Math.max(0,baseRes*resMult), finalInst=Math.max(0,baseInst*instMult);
-        var required=finalRes<100?mass*(1-finalRes/100)/5:Infinity;
-        var success=Number.isFinite(required)&&required>0&&power>=required;
-        var margin=Number.isFinite(required)&&required>0?(power-required)/required*100:-Infinity;
-        return {success:success,power:power,required:required,finalResistance:finalRes,finalInstability:finalInst,marginPct:margin,activeModules:active};
+        if(!window.MFAV535 || typeof window.MFAV535.calculateV535!=="function"){
+            throw new Error("Shared MFA v5.35 runtime engine is unavailable.");
+        }
+
+        var gadget=gadgets.find(function(x){return x.name===gadgetName;})||null;
+        var calc=window.MFAV535.calculateV535({
+            rockMass:mass,
+            resistance:baseRes,
+            instability:baseInst,
+            arms:(arms||[]).map(recommendedArmToRuntime),
+            gadget:gadget
+        });
+
+        var margin=calc.requiredPower>0 && calc.requiredPower<999999
+            ? (calc.totalPower-calc.requiredPower)/calc.requiredPower*100
+            : -Infinity;
+
+        var activeModules=0;
+        (arms||[]).forEach(function(a){
+            (a.modules||[]).forEach(function(name){
+                var m=powerModules.find(function(x){return x.name===name;});
+                if(m&&m.activation==="Active")activeModules++;
+            });
+        });
+
+        return {
+            success:calc.success,
+            power:calc.totalPower,
+            required:calc.requiredPower>=999999?Infinity:calc.requiredPower,
+            finalResistance:calc.finalResistance,
+            finalInstability:calc.finalInstability,
+            marginPct:margin,
+            activeModules:activeModules
+        };
     }
 
     function strategy(s){
@@ -448,8 +482,10 @@
 
     function optionHtml(o,vars,s){
         var e=o.evaluation, status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
+        var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy every head/module shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
         return '<article class="solver-option '+(e.success?'viable':'short')+'"><div class="solver-option-head"><div><span class="solver-option-label">BEST SOLUTION</span><h4>'+esc(compText(o.counts))+'</h4></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
             '<div class="solver-option-metrics"><span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span><span>Required <strong>'+(Number.isFinite(e.required)?Math.round(e.required).toLocaleString()+' MW':'Impossible')+'</strong></span><span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span><span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span><span>Gadget <strong>'+esc(o.gadget)+'</strong></span></div>'+
+            reproduction+
             '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Ideal recommendation remains unchanged.</em></div>'+
             '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,s)+'</article>';
     }
