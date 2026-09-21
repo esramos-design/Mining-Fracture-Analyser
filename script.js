@@ -360,67 +360,67 @@ window.calculate = function() {
     const baseInst = parseFloat(instEl.value) || 0;
     const rockMass = parseFloat(massEl.value) || 0;
 
-    let totalPwr = 0; 
-    let totalResMult = 1.0; 
-    let totalInstMult = 1.0; 
-    let activeArms = 0;
+    if (!window.MFAV535 || typeof window.MFAV535.calculateV535 !== 'function') {
+        console.error('MFA v5.35 runtime engine is unavailable.');
+        return;
+    }
 
+    const arms = [];
     document.querySelectorAll('.ship-arm-card').forEach(arm => {
-        if(!document.getElementById(arm.id+'-enable').checked) return;
-        activeArms++;
-        const sel = document.getElementById(arm.id+'-laser');
-        const pwr = parseFloat(sel.value)||0;
-        const opt = sel.options[sel.selectedIndex];
-        const rEff = parseFloat(opt.dataset.resistance)||0;
-        const iEff = parseFloat(opt.dataset.instability)||0;
+        const enabled = document.getElementById(arm.id + '-enable');
+        if (!enabled || !enabled.checked) return;
 
-        let armRes = 1 + (rEff/100);
-        let armInst = 1 + (iEff/100);
-        let armPwr = 1.0;
+        const sel = document.getElementById(arm.id + '-laser');
+        if (!sel || sel.selectedIndex < 0) return;
+
+        const opt = sel.options[sel.selectedIndex];
+        const modules = [];
 
         for (let i = 1; i <= 3; i++) {
-            const mSel = document.getElementById(arm.id+`-mod${i}`);
-            // CHECK IF DISABLED (NEW LOGIC)
-            if (mSel && !mSel.disabled && mSel.value !== 'None') {
-                const m = powerModules.find(x => x.name === mSel.value);
-                const tog = document.getElementById(arm.id+`-mod${i}-active-toggle`);
-                const active = m.activation !== 'Active' || (tog && tog.checked);
-                if(active) {
-                    armPwr *= m.multiplier;
-                    armRes *= (1 + (m.resistanceEffect||0)/100);
-                    armInst *= (1 + (m.instabilityEffect||0)/100);
-                }
-            }
+            const mSel = document.getElementById(arm.id + `-mod${i}`);
+            if (!mSel || mSel.disabled || mSel.value === 'None') continue;
+
+            const m = powerModules.find(x => x.name === mSel.value);
+            if (!m) continue;
+
+            const tog = document.getElementById(arm.id + `-mod${i}-active-toggle`);
+            modules.push({
+                name: m.name,
+                activation: m.activation,
+                active: m.activation !== 'Active' || !!(tog && tog.checked),
+                multiplier: m.multiplier,
+                resistanceEffect: m.resistanceEffect,
+                instabilityEffect: m.instabilityEffect
+            });
         }
-        totalPwr += pwr * armPwr;
-        totalResMult *= armRes;
-        totalInstMult *= armInst;
+
+        arms.push({
+            enabled: true,
+            power: parseFloat(sel.value) || 0,
+            resistanceEffect: parseFloat(opt.dataset.resistance) || 0,
+            instabilityEffect: parseFloat(opt.dataset.instability) || 0,
+            modules
+        });
     });
 
-    if(activeArms > 0) {
-        totalResMult = Math.pow(totalResMult, 1/activeArms);
-        totalInstMult = Math.pow(totalInstMult, 1/activeArms);
-    }
-
     const gEl = document.getElementById('gadgetSelect');
-    const gadg = gadgets.find(g => g.name === gEl.value);
-    if(gadg) {
-        let gR = gadg.reduction || gadg.resistance || 0;
-        totalResMult *= (1 + gR/100);
-        totalInstMult *= (1 + (gadg.instabilityEffect||0)/100);
-    }
+    const gadget = gEl ? gadgets.find(g => g.name === gEl.value) || null : null;
 
-    let finalRes = Math.max(0, baseRes * totalResMult);
-    let finalInst = Math.max(0, baseInst * totalInstMult);
-    
-    let reqPwr = 0;
-    if((finalRes/100) < 1.0) {
-        reqPwr = (rockMass * (1.0 - finalRes/100)) / 5.0;
-    } else {
-        reqPwr = 999999; // Impossible
-    }
+    const calc = window.MFAV535.calculateV535({
+        rockMass,
+        resistance: baseRes,
+        instability: baseInst,
+        arms,
+        gadget
+    });
 
-    const success = totalPwr >= reqPwr && reqPwr > 0;
+    const totalPwr = calc.totalPower;
+    const finalRes = calc.finalResistance;
+    const finalInst = calc.finalInstability;
+    const reqPwr = calc.requiredPower;
+    const success = calc.success;
+    const activeArms = calc.activeArms;
+
     const formattedPwr = totalPwr.toLocaleString(undefined, { maximumFractionDigits: 0 });
     const diff = assessDifficulty(finalInst, finalRes);
 
