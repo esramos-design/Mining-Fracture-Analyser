@@ -2589,3 +2589,352 @@ html[data-theme="day"] .step-number {
     }
     .gadget-attribute-grid { grid-template-columns:1fr; }
 }
+
+
+/* =========================================================
+   DUSK — MATCH vNATO FLIGHT PLANNING SUITE
+   Palette derived from the Planner Suite's current dusk-mode CSS.
+   ========================================================= */
+html[data-theme="dusk"] {
+    --theme-page:#2B2927;
+    --theme-page-2:#312D29;
+    --theme-panel:#35312E;
+    --theme-card:#302D2A;
+    --theme-card-alt:#3B3733;
+    --theme-input:#272522;
+
+    --theme-text:#EEE7DC;
+    --theme-strong:#FFF3DF;
+    --theme-muted:#B8AEA2;
+
+    --theme-border:#5B5148;
+    --theme-border-strong:#66594E;
+
+    --theme-primary:#C78632;
+    --theme-secondary:#D4933D;
+    --theme-tertiary:#8D6AB8;
+
+    --theme-success:#57D59A;
+    --theme-warning:#F3C56B;
+    --theme-danger:#E0525B;
+
+    --theme-header-1:#3B2E27;
+    --theme-header-2:#2F2722;
+    --theme-header-text:#FFF3DF;
+
+    --theme-select-menu:#272522;
+    --theme-select-menu-text:#F5EEE5;
+    --theme-optgroup:#44372B;
+    --theme-optgroup-text:#FFD79B;
+
+    --theme-shadow:rgba(0,0,0,.34);
+    --theme-console:#242321;
+    --theme-console-text:#E7DED2;
+
+    --bg-main:var(--theme-page);
+    --bg-panel:var(--theme-panel);
+    --bg-card:var(--theme-card);
+    --bg-input:var(--theme-input);
+    --border-main:var(--theme-border);
+    --text-main:var(--theme-text);
+    --text-strong:var(--theme-strong);
+    --text-muted:var(--theme-muted);
+
+    --ops-line:rgba(212,147,61,.22);
+    --ops-blue:var(--theme-secondary);
+    --ops-green:var(--theme-success);
+    --ops-red:var(--theme-danger);
+    --ops-amber:var(--theme-warning);
+
+    --chart-grid:rgba(238,231,220,.10);
+    --chart-text:#E7DED2;
+}
+
+html[data-theme="dusk"] body {
+    background:
+        radial-gradient(circle at 18% 0%, rgba(212,147,61,.10), transparent 29%),
+        linear-gradient(145deg,#2B2927 0%,#312D29 56%,#262321 100%) !important;
+    color:#EEE7DC !important;
+}
+
+html[data-theme="dusk"] .ops-topbar {
+    background:
+        radial-gradient(circle at 78% 0%, rgba(229,164,59,.14), transparent 30%),
+        linear-gradient(135deg,#3B2E27,#2F2722) !important;
+    border-color:#5B5148 !important;
+    box-shadow:0 14px 32px rgba(0,0,0,.30) !important;
+}
+
+html[data-theme="dusk"] .ops-topbar .ops-kicker {
+    color:#F1C27D !important;
+}
+
+html[data-theme="dusk"] .ops-topbar .ops-button:not(.secondary) {
+    background:#C78632 !important;
+    border-color:#E0A650 !important;
+    color:#1F1B17 !important;
+}
+
+html[data-theme="dusk"] .ops-topbar .ops-button.secondary,
+html[data-theme="dusk"] .theme-picker > summary {
+    background:#3B3733 !important;
+    color:#F4EADC !important;
+    border-color:#66594E !important;
+}
+
+html[data-theme="dusk"] .ops-topbar .ops-button.secondary:hover,
+html[data-theme="dusk"] .theme-picker > summary:hover {
+    background:#C78632 !important;
+    color:#1F1B17 !important;
+    border-color:#E0A650 !important;
+}
+
+html[data-theme="dusk"] .glass-panel {
+    background:#35312E !important;
+    color:#EEE7DC !important;
+    border-color:#5B5148 !important;
+}
+
+html[data-theme="dusk"] .section-heading h2,
+html[data-theme="dusk"] .fleet-roster-head strong,
+html[data-theme="dusk"] .fleet-loadout-heading strong,
+html[data-theme="dusk"] .gadget-attribute-head strong,
+html[data-theme="dusk"] .verdict-title {
+    color:#F1C27D !important;
+}
+
+html[data-theme="dusk"] .step-number {
+    background:#44372B !important;
+    color:#F3C56B !important;
+    border-color:#80613E !important;
+}
+
+html[data-theme="dusk"] .target-field,
+html[data-theme="dusk"] .subpanel,
+html[data-theme="dusk"] .metric,
+html[data-theme="dusk"] .unified-fleet-planner,
+html[data-theme="dusk"] .fleet-presence-row,
+html[data-theme="dusk"] .fleet-vessel-card,
+html[data-theme="dusk"] .vessel-arms-grid .ship-arm-card,
+html[data-theme="dusk"] .solver-fleet-snapshot > div,
+html[data-theme="dusk"] .solver-option,
+html[data-theme="dusk"] .solver-vessel,
+html[data-theme="dusk"] .solver-backup,
+html[data-theme="dusk"] .solver-more-plans,
+html[data-theme="dusk"] .gadget-attribute-card {
+    background:#302D2A !important;
+    color:#EEE7DC !important;
+    border-color:#5D5146 !important;
+}
+
+html[data-theme="dusk"] .vessel-card-head,
+html[data-theme="dusk"] .solver-option-head {
+    background:#3B3733 !important;
+    border-color:#66594E !important;
+}
+
+html[data-theme="dusk"] .vessel-card-head h3,
+html[data-theme="dusk"] .metric strong,
+html[data-theme="dusk"] .solver-option-head h4,
+html[data-theme="dusk"] .solver-portfolio-head strong,
+html[data-theme="dusk"] .solver-vessel-title,
+html[data-theme="dusk"] .gadget-choice-title strong {
+    color:#FFF3DF !important;
+}
+
+html[data-theme="dusk"] .section-copy,
+html[data-theme="dusk"] .fleet-planner-intro,
+html[data-theme="dusk"] .verdict-subtitle,
+html[data-theme="dusk"] .fleet-roster-head span,
+html[data-theme="dusk"] .fleet-loadout-heading span,
+html[data-theme="dusk"] .vessel-card-head small,
+html[data-theme="dusk"] .solver-method-note,
+html[data-theme="dusk"] .gadget-choice small,
+html[data-theme="dusk"] .gadget-attribute-card p {
+    color:#C9BFB4 !important;
+}
+
+html[data-theme="dusk"] input,
+html[data-theme="dusk"] select,
+html[data-theme="dusk"] textarea,
+html[data-theme="dusk"] .vessel-arms-grid select,
+html[data-theme="dusk"] .vessel-role-control select {
+    background:#272522 !important;
+    color:#F5EEE5 !important;
+    border-color:#66594E !important;
+}
+
+html[data-theme="dusk"] input:focus,
+html[data-theme="dusk"] select:focus,
+html[data-theme="dusk"] textarea:focus,
+html[data-theme="dusk"] .vessel-arms-grid select:focus {
+    border-color:#D4933D !important;
+    box-shadow:0 0 0 3px rgba(212,147,61,.20) !important;
+}
+
+html[data-theme="dusk"] select option {
+    background:#272522 !important;
+    color:#F5EEE5 !important;
+}
+
+html[data-theme="dusk"] select option:checked {
+    background:#C78632 !important;
+    color:#1F1B17 !important;
+}
+
+html[data-theme="dusk"] select optgroup {
+    background:#44372B !important;
+    color:#FFD79B !important;
+}
+
+html[data-theme="dusk"] .primary-action,
+html[data-theme="dusk"] .status-link,
+html[data-theme="dusk"] .fleet-loadout-heading button,
+html[data-theme="dusk"] .scenario-actions button {
+    background:#C78632 !important;
+    border-color:#E0A650 !important;
+    color:#1F1B17 !important;
+}
+
+html[data-theme="dusk"] .primary-action:hover,
+html[data-theme="dusk"] .status-link:hover,
+html[data-theme="dusk"] .fleet-loadout-heading button:hover,
+html[data-theme="dusk"] .scenario-actions button:hover {
+    background:#D4933D !important;
+    color:#17120E !important;
+}
+
+html[data-theme="dusk"] .verdict-main {
+    background:linear-gradient(135deg,#3B3733,#302D2A) !important;
+    border-color:#D4933D !important;
+}
+
+html[data-theme="dusk"] .margin-gauge strong {
+    color:#F3C56B !important;
+}
+
+html[data-theme="dusk"] .solver-note,
+html[data-theme="dusk"] .solver-or-note {
+    background:#44372B !important;
+    color:#F8E5C0 !important;
+    border-left-color:#D4933D !important;
+}
+
+html[data-theme="dusk"] .solver-or-note strong {
+    color:#FFF3DF !important;
+}
+
+html[data-theme="dusk"] .solver-arm span,
+html[data-theme="dusk"] .vessel-number {
+    color:#F3C56B !important;
+}
+
+html[data-theme="dusk"] .solver-arm strong,
+html[data-theme="dusk"] .solver-option-metrics strong,
+html[data-theme="dusk"] .solver-backup strong,
+html[data-theme="dusk"] .solver-backup code {
+    color:#F5EEE5 !important;
+}
+
+html[data-theme="dusk"] .solver-option-metrics span {
+    background:#312D29 !important;
+    color:#C9BFB4 !important;
+}
+
+html[data-theme="dusk"] .foreman-panel {
+    background:#35312E !important;
+    border-color:#5B5148 !important;
+}
+
+html[data-theme="dusk"] .foreman-output {
+    background:#242321 !important;
+    color:#E7DED2 !important;
+    border-color:#74675B !important;
+}
+
+html[data-theme="dusk"] .foreman-actions button:nth-child(1) {
+    background:#75579B !important;
+    border-color:#9A7BC1 !important;
+}
+
+html[data-theme="dusk"] .foreman-actions button:nth-child(2) {
+    background:#C78632 !important;
+    border-color:#E0A650 !important;
+    color:#1F1B17 !important;
+}
+
+html[data-theme="dusk"] .foreman-actions button:nth-child(3) {
+    background:#3A8FD8 !important;
+    border-color:#67ADE8 !important;
+}
+
+html[data-theme="dusk"] .gadget-choice {
+    background:#302D2A !important;
+    border-color:#5B5148 !important;
+}
+
+html[data-theme="dusk"] .gadget-choice:hover,
+html[data-theme="dusk"] .gadget-choice:has(input:checked) {
+    background:#3B3733 !important;
+    border-color:#D4933D !important;
+}
+
+html[data-theme="dusk"] .gadget-choice code {
+    color:#F3C56B !important;
+}
+
+html[data-theme="dusk"] .gadget-choice-title span,
+html[data-theme="dusk"] .gadget-type-chip {
+    background:#44372B !important;
+    color:#FFD79B !important;
+    border-color:#80613E !important;
+}
+
+html[data-theme="dusk"] .gadget-radio-ui {
+    background:#44372B !important;
+    border-color:#66594E !important;
+}
+
+html[data-theme="dusk"] .gadget-choice input:checked + .gadget-radio-ui {
+    background:#C78632 !important;
+    border-color:#E0A650 !important;
+}
+
+html[data-theme="dusk"] .gadget-attribute-item {
+    background:#312D29 !important;
+    border-color:#5B5148 !important;
+}
+
+html[data-theme="dusk"] .gadget-attribute-item strong.benefit {
+    color:#57D59A !important;
+}
+
+html[data-theme="dusk"] .gadget-attribute-item strong.tradeoff {
+    color:#F3C56B !important;
+}
+
+html[data-theme="dusk"] .theme-menu {
+    background:#35312E !important;
+    border-color:#66594E !important;
+}
+
+html[data-theme="dusk"] .theme-menu button:hover,
+html[data-theme="dusk"] .theme-menu button.active {
+    background:#3B3733 !important;
+    border-color:#D4933D !important;
+}
+
+html[data-theme="dusk"] .floating-verdict {
+    background:#35312E !important;
+    border-color:#D4933D !important;
+}
+
+html[data-theme="dusk"] .floating-verdict-kicker,
+html[data-theme="dusk"] .floating-verdict-metrics span {
+    color:#B8AEA2 !important;
+}
+
+html[data-theme="dusk"] .floating-verdict-jump strong,
+html[data-theme="dusk"] .floating-verdict-metrics strong {
+    color:#FFF3DF !important;
+}
