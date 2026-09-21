@@ -179,6 +179,9 @@
             allowActiveModules: !!byId("allowActiveModules")?.checked,
             allowGadgets: !!byId("allowGadgets")?.checked,
             preferCurrentShip: !!byId("preferCurrentShip")?.checked,
+            fleetEnabledMole: !!byId("fleetEnabledMole")?.checked,
+            fleetEnabledProspector: !!byId("fleetEnabledProspector")?.checked,
+            fleetEnabledGolem: !!byId("fleetEnabledGolem")?.checked,
             fleetAvailableMole: Number(byId("fleetAvailableMole")?.value || 0),
             fleetAvailableProspector: Number(byId("fleetAvailableProspector")?.value || 0),
             fleetAvailableGolem: Number(byId("fleetAvailableGolem")?.value || 0)
@@ -199,15 +202,67 @@
             if (typeof saved.allowActiveModules === "boolean" && byId("allowActiveModules")) byId("allowActiveModules").checked = saved.allowActiveModules;
             if (typeof saved.allowGadgets === "boolean" && byId("allowGadgets")) byId("allowGadgets").checked = saved.allowGadgets;
             if (typeof saved.preferCurrentShip === "boolean" && byId("preferCurrentShip")) byId("preferCurrentShip").checked = saved.preferCurrentShip;
+            if (typeof saved.fleetEnabledMole === "boolean" && byId("fleetEnabledMole")) byId("fleetEnabledMole").checked = saved.fleetEnabledMole;
+            if (typeof saved.fleetEnabledProspector === "boolean" && byId("fleetEnabledProspector")) byId("fleetEnabledProspector").checked = saved.fleetEnabledProspector;
+            if (typeof saved.fleetEnabledGolem === "boolean" && byId("fleetEnabledGolem")) byId("fleetEnabledGolem").checked = saved.fleetEnabledGolem;
             if (Number.isFinite(saved.fleetAvailableMole) && byId("fleetAvailableMole")) byId("fleetAvailableMole").value = saved.fleetAvailableMole;
             if (Number.isFinite(saved.fleetAvailableProspector) && byId("fleetAvailableProspector")) byId("fleetAvailableProspector").value = saved.fleetAvailableProspector;
             if (Number.isFinite(saved.fleetAvailableGolem) && byId("fleetAvailableGolem")) byId("fleetAvailableGolem").value = saved.fleetAvailableGolem;
+            syncFleetPresence("mole");
+            syncFleetPresence("prospector");
+            syncFleetPresence("golem");
             setInputMode(saved.inputMode || "manual");
             setFleetMode(saved.fleetMode || "auto");
         } catch (_) {
             setInputMode("manual");
             setFleetMode("auto");
         }
+    }
+
+    function shipIds(shipId) {
+        const key = shipId.charAt(0).toUpperCase() + shipId.slice(1);
+        return {
+            enabled: byId("fleetEnabled" + key),
+            count: byId("fleetAvailable" + key)
+        };
+    }
+
+    function syncFleetPresence(shipId) {
+        const refs = shipIds(shipId);
+        if (!refs.enabled || !refs.count) return;
+
+        let count = Math.max(0, Number(refs.count.value || 0));
+
+        if (!refs.enabled.checked) {
+            refs.count.dataset.previousValue = count > 0 ? String(count) : (refs.count.dataset.previousValue || "1");
+            refs.count.value = "0";
+            refs.count.disabled = true;
+        } else {
+            refs.count.disabled = false;
+            if (count < 1) {
+                refs.count.value = refs.count.dataset.previousValue || "1";
+            }
+        }
+
+        const row = refs.enabled.closest(".fleet-presence-row");
+        if (row) row.classList.toggle("disabled", !refs.enabled.checked);
+    }
+
+    function adjustFleetCount(shipId, delta) {
+        const refs = shipIds(shipId);
+        if (!refs.enabled || !refs.count) return;
+
+        if (!refs.enabled.checked && delta > 0) refs.enabled.checked = true;
+        if (!refs.enabled.checked) return;
+
+        const next = Math.max(0, Math.min(20, Number(refs.count.value || 0) + delta));
+        refs.count.value = String(next);
+
+        if (next === 0) refs.enabled.checked = false;
+
+        syncFleetPresence(shipId);
+        savePreferences();
+        if (typeof calculate === "function") calculate();
     }
 
     function saveScenario() {
@@ -310,6 +365,8 @@
         savePreferences,
         saveScenario,
         loadScenario,
+        syncFleetPresence,
+        adjustFleetCount,
         syncVerdict,
         getPreferences
     };
