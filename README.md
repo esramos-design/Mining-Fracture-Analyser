@@ -6,7 +6,7 @@
 Stop Guessing. Start Fracturing.
 <br />
 <br />
-<a href="https://github.com/esramos-design/mfa.github.io/blob/main/LICENSE" target="_blank">
+<a href="https://github.com/esramos-design/Mining-Fracture-Analyser/blob/main/LICENSE" target="_blank">
 <img alt="License: GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" />
 </a>
 <img alt="Status: Active" src="https://img.shields.io/badge/status-active-success.svg" />
@@ -17,87 +17,146 @@ Stop Guessing. Start Fracturing.
 |
 <a href="https://esramos-design.github.io/mfa.github.io/fleet.html" target="_blank">🚢 <strong>Fleet Roster</strong></a>
 |
-<a href="https://github.com/esramos-design/mfa.github.io/issues" target="_blank">🐛 Report Bug</a>
+<a href="https://github.com/esramos-design/Mining-Fracture-Analyser/issues" target="_blank">🐛 Report Bug</a>
 </p><br />
 </div>
 
-# **⛏️ Mining Fracture Analyser (MFA)**
+# ⛏️ Mining Fracture Analyser (MFA)
 
-**The ultimate tactical dashboard and calculation engine for industrial mining crews in Star Citizen.**
+**Mining Fracture Analyser (MFA)** is an open-source tactical dashboard and calculation engine for cooperative industrial mining crews in Star Citizen.
 
-The **Mining Fracture Analyser (MFA)** is a web-based tool designed to remove guesswork from high-stakes mining operations. It calculates **Total Combined Effective Laser Power (MW)** in real-time, accounting for ship hulls, laser heads, active/passive modules, gadgets, and rock resistance.
+It is designed to reduce guesswork during mining operations by calculating **Total Combined Effective Laser Power (MW)** in real time, accounting for ship hulls, laser heads, active and passive modules, gadgets, and rock resistance.
 
-**Version 5.35** introduces the **Fleet Roster System**, **Dynamic Module Slot Locking**, and the new **Dynamic Channel OCR Engine** for reading difficult scanners.
-
----
-
-## **🚀 Key Features (v5.35)**
-
-### **📷 Optical Scanner (OCR v5.35)**
-* **Dynamic Channel Isolation:** The new scanning engine (v5.35) automatically detects the strongest color channel (Red, Green, or White) to read UI text against any background.
-* **Contrast Crushing:** Aggressively filters out grey rock textures to ensure accurate readings on Lyria/Wala.
-* **Anchor Logic:** Uses the "%" symbol to intelligently locate Mass and Instability values, even if the labels are obscured.
-
-### **🚢 Fleet Roster System**
-A dedicated dashboard for managing your organization's industrial assets.
-* **Live Manifest:** Tracks **Prospector**, **MOLE**, and **Drake Golem** fleets.
-* **Advanced Telemetry:** View detailed component breakdowns (Shields, Coolers, Power Plants) and emissions data.
-* **Command Dashboard:** Aggregates total cargo capacity, active mining heads, and fleet mass instantly.
-
-### **🛠️ Strict Fleet Configuration**
-* **Dynamic Slot Locking:** The module slots now automatically lock/unlock based on your chosen Laser Head.
-* **Smart Filtering:** The ship selector strictly enforces hardpoint sizes (S1 for Prospector, S2 for MOLE).
-
-### **🧠 Reactive Dynamic Loadouts**
-The **Optimized Fleet Loadouts** panel reacts instantly to changes in Mass, Resistance, or Instability:
-* **Hazard Protocols:** Suggests "BoreMax" or "Lancet" builds if **Instability exceeds 60%**.
-* **Power Protocols:** Switches to "Surge" patterns if **Resistance exceeds 40%** or fleet power is insufficient.
-
-### **🤖 AI Foreman 2.0**
-* **Gemini 2.5 Flash Uplink:** Powered by Google's latest model for fast, context-aware tactical reasoning.
+Version 5.35 introduces the **Fleet Roster System**, **Dynamic Module Slot Locking**, and the **Dynamic Channel OCR Engine** for extracting values from difficult scanner screenshots.
 
 ---
 
-## **📖 How to Use**
+## 🚀 Key Features
 
-### **1. Initialization**
-1. Launch the dashboard.
-2. Click **"AUTH KEY"** in the AI Foreman panel.
-3. Paste your free **Google Gemini API Key**.
+### 📷 Optical Scanner (OCR v5.35)
+- **Dynamic Channel Isolation:** detects the strongest usable colour channel to improve text extraction.
+- **Contrast Processing:** suppresses background rock texture to improve scanner readability.
+- **Anchor Logic:** uses recognised HUD markers such as the percentage symbol to locate relevant values even when labels are partially obscured.
 
-### **2. Input Data (Manual or Scan)**
-* **Manual:** Enter Mass, Resistance, and Instability in the **Target Analysis** panel.
-* **Optical Scan:** Drag and drop a screenshot of your mining HUD into the window.
-* **Gadgets:** Toggle any active gadgets attached to the rock.
+### 🚢 Fleet Roster System
+- Tracks supported mining ships including the **Prospector**, **MOLE**, and **Drake Golem**.
+- Displays component, cargo, mining-head, and fleet data.
+- Aggregates fleet-level mining capability for cooperative crews.
 
-### **3. Deploy Fleet**
-* **Add Ships:** Use the **Fleet Config** panel to add ships.
-* **Fit Loadouts:** Select Laser Heads and Modules.
+### 🛠️ Strict Fleet Configuration
+- Dynamically locks or unlocks compatible module slots according to the selected laser head.
+- Enforces supported hardpoint sizes and configuration constraints.
 
-### **4. Execute**
-* **Check Telemetry:** If the banner is **GREEN**, you have enough power.
-* **Consult AI:** Click **"🧠 STRATEGY"** for a second opinion on safety.
+### 🧠 Reactive Dynamic Loadouts
+The optimisation panel reacts to Mass, Resistance, Instability, and available fleet power to surface loadout suggestions.
+
+### 🤖 AI Foreman
+Optional AI-assisted tactical guidance is available through a user-supplied Google Gemini API key.
 
 ---
 
-## **🛠️ Installation & Deployment**
+## 📖 How to Use
 
-### **🌐 Option 1: Live Web Version (Recommended)**
-The tool is a Progressive Web App (PWA) compatible with any modern browser.
+### 1. Launch
+Open the live web application or a supported standalone build.
+
+### 2. Enter target data
+- **Manual:** enter Mass, Resistance, and Instability.
+- **Optical Scan:** drag and drop a screenshot of the mining HUD.
+- **Gadgets:** select any active gadgets applied to the rock.
+
+### 3. Configure the fleet
+Add ships, mining heads, and modules representing the active crew configuration.
+
+### 4. Review the result
+Use the calculated telemetry and loadout guidance as operational assistance.
+
+> MFA is a community tool. Game mechanics can change between Star Citizen releases, so users should verify critical values against current in-game behaviour.
+
+---
+
+## 🧩 Project Scope
+
+MFA is maintained as a community-focused open-source utility for Star Citizen mining. Its main engineering areas include:
+
+- browser-based calculation and state-management logic;
+- OCR and image preprocessing for HUD screenshots;
+- ship, laser-head, module, gadget, and mining-data modelling;
+- cooperative fleet configuration and optimisation;
+- Progressive Web App deployment;
+- optional AI-assisted guidance.
+
+The project aims to remain useful to individual miners, multi-crew operators, and community organisations while keeping its calculation logic inspectable and improvable by contributors.
+
+---
+
+## 💻 Installation & Deployment
+
+### 🌐 Live Web Version
+The tool is available as a Progressive Web App compatible with modern browsers.
+
 👉 [Launch MFA Dashboard](https://esramos-design.github.io/mfa.github.io/)
 
-### **💻 Option 2: Standalone Windows App**
-**Desktop App:** Get the updated standalone Windows executable.  
-📥 [**DOWNLOAD MFA v5.35 EXE HERE**](https://github.com/esramos-design/Mining-Fracture-Analyser/releases/tag/v5.35-release)
+### 🖥️ Standalone Windows Build
+Published standalone builds are available from the repository releases.
+
+📥 [Download MFA v5.35](https://github.com/esramos-design/Mining-Fracture-Analyser/releases/tag/v5.35-release)
 
 ---
 
-## **⚖️ License & Credits**
-* **Lead Developer:** [Esramos Design](https://github.com/esramos-design)
-* **Mining Data:** Verified against [**Regolith.rocks**](https://regolith.rocks/) and [**UEXCorp**](https://uexcorp.space/).
-* **UI Design:** Logofolio "Obsidian" Dark Mode.
-* **AI Backend:** Powered by Google Gemini 2.5 Flash.
+## 🤝 Contributing
 
-**Disclaimer:** This project is a fan-made tool and is not affiliated with Cloud Imperium Games (CIG) or Roberts Space Industries (RSI).
+Contributions are welcome.
+
+Useful contributions include:
+
+- corrections to mining data;
+- reproducible bug reports;
+- OCR test cases and scanner screenshots that do not contain sensitive information;
+- accessibility and usability improvements;
+- documentation improvements;
+- code fixes and feature proposals.
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+For security issues, follow the private-reporting guidance in [SECURITY.md](SECURITY.md) rather than opening a public issue.
+
+---
+
+## 🔐 Security & API Keys
+
+MFA may use third-party APIs for optional features. Contributors and users must never commit API keys, authentication tokens, passwords, or other secrets to the repository.
+
+User-supplied API credentials should remain under the user's control and should not be included in bug reports, screenshots, logs, or pull requests.
+
+See [SECURITY.md](SECURITY.md) for vulnerability-reporting guidance.
+
+---
+
+## 🗺️ Maintainer Workflow
+
+The project is actively maintained through GitHub. Planned open-source maintenance work includes:
+
+- issue triage and reproducible test cases;
+- pull-request review;
+- regression testing;
+- documentation maintenance;
+- release preparation;
+- security review;
+- contributor onboarding;
+- automation for routine repository maintenance.
+
+AI-assisted development tools may be used to support these workflows, but project changes remain subject to maintainer review.
+
+---
+
+## ⚖️ License & Credits
+
+- **License:** [GNU General Public License v3.0](LICENSE)
+- **Lead Developer / Maintainer:** [Esramos Design](https://github.com/esramos-design)
+- **Mining Data References:** [Regolith.rocks](https://regolith.rocks/) and [UEXCorp](https://uexcorp.space/)
+- **AI Integration:** optional Google Gemini integration
+
+**Disclaimer:** This is a fan-made open-source community project and is not affiliated with, endorsed by, or sponsored by Cloud Imperium Games (CIG) or Roberts Space Industries (RSI).
 
 *Fly Safe. Crack Hard.*
