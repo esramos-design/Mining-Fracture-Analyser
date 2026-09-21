@@ -2,30 +2,20 @@ name: Operations Console
 
 on:
   pull_request:
-    paths:
-      - "index.html"
-      - "style.css"
-      - "operations-console.js"
-      - "cooperative-solver.js"
-      - "unified-fleet-planner.js"
-      - "scanner.js"
-      - "scripts/validate-operations-console.mjs"
+    branches:
+      - alpha
+      - main
   push:
     branches:
-      - "feature/**"
-    paths:
-      - "index.html"
-      - "style.css"
-      - "operations-console.js"
-      - "cooperative-solver.js"
-      - "scanner.js"
-      - "scripts/validate-operations-console.mjs"
+      - alpha
+      - main
 
 permissions:
   contents: read
 
 jobs:
-  validate:
+  operations-console:
+    name: Operations Console
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
