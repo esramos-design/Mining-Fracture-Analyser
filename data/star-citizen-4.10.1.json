@@ -772,5 +772,12 @@
       "resistancePct": -40,
       "sourceItemVersion": "4.3.2"
     }
-  ]
+  ],
+  "lastVerifiedAt": "2026-09-21",
+  "verification": {
+    "source": "UEX mining components / item specifications",
+    "supportedPatch": "4.10.1",
+    "scope": "Mining modules and gadgets reconciled for complete UI/reference attributes",
+    "calculationPolicy": "Verified display/reference attributes are separate from protected v5.35 calculation aliases unless mechanics are explicitly revalidated."
+  }
 }
