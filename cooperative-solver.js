@@ -45,21 +45,47 @@
         };
     }
 
+    function laserSlotCount(laserName){
+        var head=allLaserHeads.find(function(h){return h.name===laserName;});
+        return Math.max(0,Math.floor(n(head&&head.moduleSlots)));
+    }
+
     function currentArms(){
         var out=[];
         document.querySelectorAll(".ship-arm-card").forEach(function(card){
             var enabled=el(card.id+"-enable");
             if(!enabled || !enabled.checked) return;
+
             var ls=el(card.id+"-laser");
             if(!ls || ls.selectedIndex<0) return;
-            var opt=ls.options[ls.selectedIndex], modules=[];
-            for(var i=1;i<=3;i++){
+
+            var opt=ls.options[ls.selectedIndex];
+            var laserName=(opt.textContent||"Current").split("(")[0].trim();
+            var slotCount=Math.max(0,Math.floor(n(opt.dataset.slots,laserSlotCount(laserName))));
+            var modules=[];
+            var fittedModules=[];
+
+            for(var i=1;i<=slotCount;i++){
                 var ms=el(card.id+"-mod"+i);
-                if(!ms || ms.disabled || ms.value==="None") continue;
-                var m=powerModules.find(function(x){return x.name===ms.value;});
+                var selectedName=ms && !ms.disabled ? ms.value : "None";
+                var module=powerModules.find(function(x){return x.name===selectedName;});
                 var toggle=el(card.id+"-mod"+i+"-active-toggle");
-                if(m && (m.activation!=="Active" || (toggle && toggle.checked))) modules.push(m.name);
+                var isActiveModule=!!(module && module.activation==="Active");
+                var isOn=!isActiveModule || !!(toggle && toggle.checked);
+
+                fittedModules.push({
+                    slot:i,
+                    name:selectedName && selectedName!=="None" ? selectedName : "Empty",
+                    activation:module ? module.activation : "Empty",
+                    active:isOn
+                });
+
+                // Protected v5.35 calculation semantics: only effective modules enter mechanics.
+                if(module && module.name!=="None" && (module.activation!=="Active" || isOn)){
+                    modules.push(module.name);
+                }
             }
+
             var vesselCard=card.closest(".fleet-vessel-card");
             var vesselKey=vesselCard?vesselCard.dataset.vesselKey:(card.dataset.ship||"unknown");
             var vesselName=vesselCard&&vesselCard.querySelector(".vessel-card-head h3")
@@ -67,11 +93,20 @@
                 : LABEL[card.dataset.ship]||card.dataset.ship||"Vessel";
             var siblingArms=vesselCard?[].slice.call(vesselCard.querySelectorAll(".ship-arm-card")):[];
             var armIndex=siblingArms.length?siblingArms.indexOf(card)+1:1;
+
             out.push({
-                shipId:card.dataset.ship||"unknown", vesselKey:vesselKey, vesselName:vesselName, armIndex:armIndex, role:"Head "+armIndex,
-                laser:(opt.textContent||"Current").split("(")[0].trim(),
-                basePower:n(ls.value), resistanceEffect:n(opt.dataset.resistance),
-                instabilityEffect:n(opt.dataset.instability), modules:modules
+                shipId:card.dataset.ship||"unknown",
+                vesselKey:vesselKey,
+                vesselName:vesselName,
+                armIndex:armIndex,
+                role:"Head "+armIndex,
+                laser:laserName,
+                moduleSlots:slotCount,
+                fittedModules:fittedModules,
+                basePower:n(ls.value),
+                resistanceEffect:n(opt.dataset.resistance),
+                instabilityEffect:n(opt.dataset.instability),
+                modules:modules
             });
         });
         return out;
@@ -178,7 +213,16 @@
             var laser=allLaserHeads.find(function(h){return h.name===laserName;})||eligibleLasers(id)[0];
             if(!laser) return null;
             mods=mods.slice(0,Math.max(0,n(laser.moduleSlots)));
-            return {shipId:id,role:role,laser:laser.name,basePower:n(laser.power),resistanceEffect:n(laser.resistanceEffect),instabilityEffect:n(laser.instabilityEffect),modules:mods};
+            return {
+                shipId:id,
+                role:role,
+                laser:laser.name,
+                moduleSlots:Math.max(0,Math.floor(n(laser.moduleSlots))),
+                basePower:n(laser.power),
+                resistanceEffect:n(laser.resistanceEffect),
+                instabilityEffect:n(laser.instabilityEffect),
+                modules:mods
+            };
         }).filter(Boolean);
     }
 
@@ -222,20 +266,68 @@
         return {variants:vars,options:(good.length?good:unique).slice(0,5)};
     }
 
-    function armLine(a){return esc(a.laser)+((a.modules||[]).length?" + "+esc(a.modules.join(" + ")):"");}
+    function normalizedSlots(a){
+        if(Array.isArray(a.fittedModules) && a.fittedModules.length){
+            return a.fittedModules.map(function(slot){
+                return {
+                    slot:slot.slot,
+                    name:slot.name||"Empty",
+                    activation:slot.activation||"Empty",
+                    active:slot.active!==false
+                };
+            });
+        }
+
+        var count=Math.max(0,Math.floor(n(a.moduleSlots,laserSlotCount(a.laser))));
+        var modules=(a.modules||[]).slice();
+        var slots=[];
+        for(var i=1;i<=count;i++){
+            var name=modules[i-1]||"Empty";
+            var module=powerModules.find(function(m){return m.name===name;});
+            slots.push({
+                slot:i,
+                name:name,
+                activation:module?module.activation:"Empty",
+                active:true
+            });
+        }
+        return slots;
+    }
+
+    function moduleSlotLine(slot){
+        if(!slot || slot.name==="Empty") return "Empty";
+        if(slot.activation==="Active") return slot.name+" · Active "+(slot.active?"ON":"OFF");
+        if(slot.activation==="Passive") return slot.name+" · Passive";
+        return slot.name;
+    }
+
+    function armLoadoutHtml(a,index){
+        var slots=normalizedSlots(a);
+        return '<div class="solver-head-loadout">'+
+            '<div class="solver-head-line"><span>'+esc(a.role||("Head "+(index+1)))+'</span><strong>'+esc(a.laser)+'</strong></div>'+
+            (slots.length?'<div class="solver-module-slots">'+slots.map(function(slot){
+                return '<div class="solver-module-slot"><span>Module '+slot.slot+'</span><strong>'+esc(moduleSlotLine(slot))+'</strong></div>';
+            }).join("")+'</div>':'<div class="solver-module-slots empty"><div class="solver-module-slot"><span>Modules</span><strong>No module slots</strong></div></div>')+
+            '</div>';
+    }
+
+    function armLine(a){
+        var slots=normalizedSlots(a).map(function(slot){return slot.name;});
+        return esc(a.laser)+(slots.length?" + "+esc(slots.join(" + ")):"");
+    }
     function vesselHtml(id,count,v){
         if(!count||!v)return"";
         var rows=[];
         for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
             rows.push('<div class="solver-vessel solver-required-vessel">'+
                 '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
-                v.arms.map(function(a,i){return '<div class="solver-arm"><span>'+esc(a.role||("Head "+(i+1)))+'</span><strong>'+armLine(a)+'</strong></div>';}).join("")+
+                v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
                 '</div>');
         }
         return rows.join("");
     }
 
-    function currentFleetLoadoutHtml(arms){
+    function currentFleetLoadoutHtml(arms,gadgetName){
         if(!arms.length)return"";
         var groups={},order=[];
         arms.forEach(function(a){
@@ -244,13 +336,13 @@
             groups[key].arms.push(a);
         });
         return '<div class="solver-current-loadouts">'+
-            '<div class="solver-loadout-heading"><span>ACTIVE VESSEL LOADOUTS</span><strong>Exact configuration currently producing this verdict</strong></div>'+
+            '<div class="solver-loadout-heading"><span>ACTIVE VESSEL LOADOUTS</span><strong>Exact configuration currently producing this verdict</strong><em>Gadget: '+esc(gadgetName||"None")+'</em></div>'+
             '<div class="solver-vessels">'+order.map(function(key,index){
                 var g=groups[key];
                 return '<div class="solver-vessel solver-current-vessel">'+
                     '<div class="solver-vessel-title"><span>'+esc(g.name)+' #'+(index+1)+'</span><em>CURRENT FITTED</em></div>'+
                     g.arms.sort(function(a,b){return n(a.armIndex)-n(b.armIndex);}).map(function(a,i){
-                        return '<div class="solver-arm"><span>'+esc(a.role||("Head "+(i+1)))+'</span><strong>'+armLine(a)+'</strong></div>';
+                        return armLoadoutHtml(a,i);
                     }).join("")+
                     '</div>';
             }).join("")+'</div></div>';
@@ -266,7 +358,7 @@
                 var e=evaluate(s.baseResistance,s.baseInstability,s.mass,baseArms.concat(proposed),o.gadget);
                 rows.push('<div class="solver-backup"><div><strong>'+esc(LABEL[id])+' · '+esc(v.label)+'</strong><span>'+
                     (e.success?'Still viable · '+(e.marginPct>=0?'+':'')+e.marginPct.toFixed(1)+'% margin':'Not sufficient in this option · '+e.marginPct.toFixed(1)+'% margin')+
-                    '</span></div><div class="solver-backup-arms">'+v.arms.map(function(a){return '<code>'+esc(a.role)+': '+armLine(a)+'</code>';}).join("")+'</div></div>');
+                    '</span></div><div class="solver-backup-arms comprehensive">'+v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+'</div></div>');
             });
         });
         return rows.length?'<details class="solver-alternatives"><summary>Secondary equipment alternatives</summary><div class="solver-alternative-list">'+rows.join("")+'</div></details>':"";
@@ -313,7 +405,7 @@
         if(current.success){
             box.innerHTML=snap+
                 '<div class="solver-current-ok solver-status-banner"><strong>CURRENT DEPLOYED FLEET IS SUFFICIENT</strong><span>'+(current.marginPct>=0?"+":"")+current.marginPct.toFixed(1)+'% deterministic fracture margin · no additional vessel required.</span></div>'+
-                currentFleetLoadoutHtml(baseArms)+
+                currentFleetLoadoutHtml(baseArms,selected)+
                 '<div class="solver-method-note">This is the exact active configuration currently producing the viable verdict. MFA has not replaced your fitted equipment.</div>';
             return;
         }
@@ -323,7 +415,7 @@
 
         if(support.mole+support.prospector+support.golem===0){
             box.innerHTML=snap+insufficient+
-                currentFleetLoadoutHtml(baseArms)+
+                currentFleetLoadoutHtml(baseArms,selected)+
                 '<div class="solver-no-option"><strong>NO UNDEPLOYED SUPPORT VESSELS ARE AVAILABLE</strong><span>Change one or more active vessel loadouts, or mark another selected vessel as Available.</span></div>';
             return;
         }
