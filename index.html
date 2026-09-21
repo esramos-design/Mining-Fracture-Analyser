@@ -128,17 +128,50 @@
                 </div>
 
                 <div class="ops-fleet-availability">
-                    <span>Operational fleet totals</span>
-                    <p>Total vessels physically available to this mining operation. MFA subtracts vessels already deployed above.</p>
-                    <div class="fleet-count-grid">
-                        <label>MOLE
-                            <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()">
+                    <span>Who is in this operation?</span>
+                    <p>Select the mining vessel types actually present and set how many of each are available. MFA subtracts vessels already deployed in the current calculation.</p>
+
+                    <div class="fleet-presence-list">
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledMole" type="checkbox" checked onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
+                            <span class="fleet-presence-name">
+                                <strong>ARGO MOLE</strong>
+                                <small>Multi-crew · 3 mining heads</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <button type="button" onclick="MFAOps.adjustFleetCount('mole',-1)">−</button>
+                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" onchange="MFAOps.syncFleetPresence('mole');MFAOps.savePreferences();calculate()">
+                                <button type="button" onclick="MFAOps.adjustFleetCount('mole',1)">+</button>
+                            </span>
                         </label>
-                        <label>Prospector
-                            <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" onchange="MFAOps.savePreferences();calculate()">
+
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledProspector" type="checkbox" checked onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
+                            <span class="fleet-presence-name">
+                                <strong>MISC PROSPECTOR</strong>
+                                <small>Solo · Size 1 mining head</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <button type="button" onclick="MFAOps.adjustFleetCount('prospector',-1)">−</button>
+                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" onchange="MFAOps.syncFleetPresence('prospector');MFAOps.savePreferences();calculate()">
+                                <button type="button" onclick="MFAOps.adjustFleetCount('prospector',1)">+</button>
+                            </span>
                         </label>
-                        <label>Golem
-                            <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()">
+
+                        <label class="fleet-presence-row">
+                            <input id="fleetEnabledGolem" type="checkbox" checked onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
+                            <span class="fleet-presence-name">
+                                <strong>DRAKE GOLEM</strong>
+                                <small>Fixed mining system</small>
+                            </span>
+                            <span class="fleet-qty">
+                                <em>Qty</em>
+                                <button type="button" onclick="MFAOps.adjustFleetCount('golem',-1)">−</button>
+                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" onchange="MFAOps.syncFleetPresence('golem');MFAOps.savePreferences();calculate()">
+                                <button type="button" onclick="MFAOps.adjustFleetCount('golem',1)">+</button>
+                            </span>
                         </label>
                     </div>
                 </div>
