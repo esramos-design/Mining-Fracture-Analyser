@@ -272,6 +272,11 @@ function parseData(text) {
 
     if (updated) {
         window.calculate();
+        const fields = [];
+        if (foundMass) fields.push("mass");
+        if (foundRes !== null) fields.push("resistance");
+        if (foundInst !== null && !isNaN(foundInst)) fields.push("instability");
+        window.dispatchEvent(new CustomEvent("mfa:ocr-applied", { detail: { fields } }));
         log("SUCCESS: Simulation Updated.");
     } else {
         log("FAIL: Could not extract data structure.");
