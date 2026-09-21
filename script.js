@@ -58,36 +58,62 @@ const allLaserHeads = [
 });
 
 const powerModules = [
-    // --- ACTIVE Modules ---
-    { name: "Surge", multiplier: 1.50, resistanceEffect: -15, instabilityEffect: 10, activation: 'Active', windowEffect: 0, miningLaserPower: 150 },
-    { name: "Brandt", multiplier: 1.35, resistanceEffect: 15, instabilityEffect: 0.0, activation: 'Active', windowEffect: 0, miningLaserPower: 135 },
-    { name: "Stampede", multiplier: 1.35, resistanceEffect: 0.0, instabilityEffect: -10, activation: 'Active', windowEffect: 0, miningLaserPower: 135 },
-    { name: "Forel", multiplier: 1.00, resistanceEffect: 15, instabilityEffect: 0, activation: 'Active', windowEffect: 15, miningLaserPower: 0 },
-    { name: "Lifeline", multiplier: 1.00, resistanceEffect: -15, instabilityEffect: -20.0, activation: 'Active', windowEffect: 0, miningLaserPower: 0 },
-    { name: "Torpid", multiplier: 0.60, resistanceEffect: 40.0, instabilityEffect: 0.0, activation: 'Active', windowEffect: 0, miningLaserPower: 60 }, 
-    { name: "Rime", multiplier: 0.85, resistanceEffect: -25, instabilityEffect: 0.0, activation: 'Active', windowEffect: 0, miningLaserPower: 85 },
-    { name: "Optimum", multiplier: 0.85, resistanceEffect: 0.0, instabilityEffect: -10.0, activation: 'Active', windowEffect: 0, miningLaserPower: 85 },
-    // --- PASSIVE Modules ---
-    { name: "Rieger-C3", multiplier: 1.25, resistanceEffect: 0.0, instabilityEffect: 0, activation: 'Passive', windowEffect: -1, miningLaserPower: 125 },
-    { name: "Rieger-C2", multiplier: 1.20, resistanceEffect: 0.0, instabilityEffect: 0, activation: 'Passive', windowEffect: -3, miningLaserPower: 120 },
-    { name: "Rieger", multiplier: 1.15, resistanceEffect: 0.0, instabilityEffect: 0, activation: 'Passive', windowEffect: -10, miningLaserPower: 115 },
-    { name: "Focus III", multiplier: 0.95, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 40, miningLaserPower: 95 },
-    { name: "Focus II", multiplier: 0.90, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 37, miningLaserPower: 90 },
-    { name: "Focus", multiplier: 0.85, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 30, miningLaserPower: 85 },
-    { name: "Torrent III", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0, activation: 'Passive', windowEffect: -1, miningLaserPower: 0 }, 
-    { name: "Torrent II", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0, activation: 'Passive', windowEffect: -3, miningLaserPower: 0 }, 
-    { name: "Torrent", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0, activation: 'Passive', windowEffect: -10, miningLaserPower: 0 }, 
-    { name: "XTR-XL", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 25, miningLaserPower: 0 },
-    { name: "XTR-L", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 22, miningLaserPower: 0 }, 
-    { name: "XTR", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 15, miningLaserPower: 0 },
-    { name: "Vaux-C3", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 0, miningLaserPower: 0 },
-    { name: "Vaux-C2", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 0, miningLaserPower: 0 },
-    { name: "Vaux", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 0, miningLaserPower: 0 },
-    { name: "FLTR-XL", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 0, miningLaserPower: 0 },
-    { name: "FLTR-L", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 0, miningLaserPower: 0 },
-    { name: "FLTR", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Passive', windowEffect: 0, miningLaserPower: 0 },
-    // --- DEFAULT Modules ---
-    { name: "None", multiplier: 1.00, resistanceEffect: 0.0, instabilityEffect: 0.0, activation: 'Default', windowEffect: 0, miningLaserPower: 0 },
+    // Legacy calculation fields are preserved exactly. "verified" contains the complete
+    // externally verified mining attributes used for UI/reference display only.
+    { name:"Surge", multiplier:1.50, resistanceEffect:-15, instabilityEffect:10, activation:"Active", windowEffect:0, miningLaserPower:150,
+      verified:{ durationSec:15, miningLaserPowerPct:150, extractionLaserPowerPct:null, laserInstabilityPct:10, resistancePct:-15, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:7, sourceItemVersion:"4.1" } },
+    { name:"Brandt", multiplier:1.35, resistanceEffect:15, instabilityEffect:0, activation:"Active", windowEffect:0, miningLaserPower:135,
+      verified:{ durationSec:60, miningLaserPowerPct:135, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:15, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:-30, inertMaterialLevelPct:null, uses:5, sourceItemVersion:"4.1" } },
+    { name:"Stampede", multiplier:1.35, resistanceEffect:0, instabilityEffect:-10, activation:"Active", windowEffect:0, miningLaserPower:135,
+      verified:{ durationSec:30, miningLaserPowerPct:135, extractionLaserPowerPct:85, laserInstabilityPct:-10, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:-10, inertMaterialLevelPct:null, uses:6, sourceItemVersion:"4.1" } },
+    { name:"Forel", multiplier:1.00, resistanceEffect:15, instabilityEffect:0, activation:"Active", windowEffect:15, miningLaserPower:0,
+      verified:{ durationSec:60, miningLaserPowerPct:null, extractionLaserPowerPct:150, laserInstabilityPct:null, resistancePct:15, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:-60, shatterDamagePct:null, inertMaterialLevelPct:null, uses:6, sourceItemVersion:"4.1" } },
+    { name:"Lifeline", multiplier:1.00, resistanceEffect:-15, instabilityEffect:-20, activation:"Active", windowEffect:0, miningLaserPower:0,
+      verified:{ durationSec:15, miningLaserPowerPct:null, extractionLaserPowerPct:null, laserInstabilityPct:-20, resistancePct:-15, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:60, shatterDamagePct:null, inertMaterialLevelPct:null, uses:3, sourceItemVersion:"4.8.0" } },
+    { name:"Torpid", multiplier:0.60, resistanceEffect:40, instabilityEffect:0, activation:"Active", windowEffect:0, miningLaserPower:60,
+      verified:{ durationSec:60, miningLaserPowerPct:null, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:60, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:-60, shatterDamagePct:40, inertMaterialLevelPct:null, uses:5, sourceItemVersion:"4.1" } },
+    { name:"Rime", multiplier:0.85, resistanceEffect:-25, instabilityEffect:0, activation:"Active", windowEffect:0, miningLaserPower:85,
+      verified:{ durationSec:20, miningLaserPowerPct:85, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:-25, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:-10, inertMaterialLevelPct:null, uses:10, sourceItemVersion:"4.1" } },
+    { name:"Optimum", multiplier:0.85, resistanceEffect:0, instabilityEffect:-10, activation:"Active", windowEffect:0, miningLaserPower:85,
+      verified:{ durationSec:60, miningLaserPowerPct:85, extractionLaserPowerPct:null, laserInstabilityPct:-10, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:-80, shatterDamagePct:null, inertMaterialLevelPct:null, uses:5, sourceItemVersion:"4.1" } },
+
+    { name:"Rieger-C3", multiplier:1.25, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:-1, miningLaserPower:125,
+      verified:{ durationSec:null, miningLaserPowerPct:125, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:-1, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Rieger-C2", multiplier:1.20, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:-3, miningLaserPower:120,
+      verified:{ durationSec:null, miningLaserPowerPct:120, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:-3, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Rieger", multiplier:1.15, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:-10, miningLaserPower:115,
+      verified:{ durationSec:null, miningLaserPowerPct:115, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:-10, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.5" } },
+    { name:"Focus III", multiplier:0.95, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:40, miningLaserPower:95,
+      verified:{ durationSec:null, miningLaserPowerPct:95, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:40, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Focus II", multiplier:0.90, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:37, miningLaserPower:90,
+      verified:{ durationSec:null, miningLaserPowerPct:90, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:37, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Focus", multiplier:0.85, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:30, miningLaserPower:85,
+      verified:{ durationSec:null, miningLaserPowerPct:85, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:30, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Torrent III", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:-1, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:40, optimalChargeWindowSizePct:-1, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Torrent II", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:-3, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:35, optimalChargeWindowSizePct:-3, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Torrent", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:-10, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:null, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:30, optimalChargeWindowSizePct:-10, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"XTR-XL", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:25, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:95, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:25, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:-6, uses:null, sourceItemVersion:"4.4" } },
+    { name:"XTR-L", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:22, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:90, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:22, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:-5.7, uses:null, sourceItemVersion:"4.1" } },
+    { name:"XTR", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:15, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:85, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:15, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:-5, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Vaux-C3", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:0, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:125, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:-5, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Vaux-C2", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:0, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:120, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:-15, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"Vaux", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:0, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:115, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:-20, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:null, uses:null, sourceItemVersion:"4.1" } },
+    { name:"FLTR-XL", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:0, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:95, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:-24, uses:null, sourceItemVersion:"4.4" } },
+    { name:"FLTR-L", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:0, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:90, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:-23, uses:null, sourceItemVersion:"4.1" } },
+    { name:"FLTR", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Passive", windowEffect:0, miningLaserPower:0,
+      verified:{ durationSec:null, miningLaserPowerPct:null, extractionLaserPowerPct:85, laserInstabilityPct:null, resistancePct:null, optimalChargeRatePct:null, optimalChargeWindowSizePct:null, catastrophicChargeRatePct:null, shatterDamagePct:null, inertMaterialLevelPct:-20, uses:null, sourceItemVersion:"4.1" } },
+    { name:"None", multiplier:1.00, resistanceEffect:0, instabilityEffect:0, activation:"Default", windowEffect:0, miningLaserPower:0, verified:null }
 ];
 
 function sortModules(modules) {
@@ -102,18 +128,37 @@ function sortModules(modules) {
 const sortedModules = sortModules([...powerModules]); 
 
 const gadgets = [
-    { name: "Sabir", reduction: -50.0, instabilityEffect: 15, type: 'Multiplicative', desc: "Reduces Resistance massively but increases Instability." }, 
-    { name: "OptiMax", reduction: -30.0, instabilityEffect: 0.0, type: 'Multiplicative', desc: "Reduces Resistance but shrinks the Green Zone." },
-    { name: "BoreMax", reduction: 10.0, instabilityEffect: -70, type: 'Additive', desc: "Massively reduces Instability but increases Resistance slightly." }, 
-    { name: "Waveshift", reduction: 0.0, instabilityEffect: -35, type: 'Utility', desc: "Doubles the Green Zone size but slows charge rate." }, 
-    { name: "Stalwart", reduction: 0.0, instabilityEffect: -35, type: 'Utility', desc: "Stabilizes laser and increases charge rate, shrinks window." }, 
-    { name: "Okunis", reduction: 0.0, instabilityEffect: 0.0, type: 'Utility', desc: "Maximizes charge speed and window size." },
-    { name: "None", reduction: 0.0, instabilityEffect: 0.0, type: 'None', desc: "No Gadget Attached" }, 
-].sort((a, b) => {
-    if (a.name === "None") return -1;
-    if (b.name === "None") return 1;
+    { name:"BoreMax", reduction:10, instabilityEffect:-70, type:"Gadget", role:"Stability",
+      verified:{ clusterModifierPct:30, instabilityPct:null, laserInstabilityPct:-70, optimalChargeWindowRatePct:null, optimalChargeWindowSizePct:null, resistancePct:10, sourceItemVersion:"4.9" } },
+    { name:"Okunis", reduction:0, instabilityEffect:0, type:"Gadget", role:"Charge / Window",
+      verified:{ clusterModifierPct:-20, instabilityPct:null, laserInstabilityPct:null, optimalChargeWindowRatePct:100, optimalChargeWindowSizePct:50, resistancePct:null, sourceItemVersion:"4.9" } },
+    { name:"OptiMax", reduction:-30, instabilityEffect:0, type:"Gadget", role:"Resistance",
+      verified:{ clusterModifierPct:60, instabilityPct:null, laserInstabilityPct:null, optimalChargeWindowRatePct:null, optimalChargeWindowSizePct:-30, resistancePct:-30, sourceItemVersion:"4.8.1" } },
+    { name:"Sabir", reduction:-50, instabilityEffect:15, type:"Gadget", role:"Resistance",
+      verified:{ clusterModifierPct:null, instabilityPct:15, laserInstabilityPct:null, optimalChargeWindowRatePct:null, optimalChargeWindowSizePct:50, resistancePct:-50, sourceItemVersion:"4.8.0" } },
+    { name:"Stalwart", reduction:0, instabilityEffect:-35, type:"Gadget", role:"Stability / Charge",
+      verified:{ clusterModifierPct:30, instabilityPct:null, laserInstabilityPct:-35, optimalChargeWindowRatePct:50, optimalChargeWindowSizePct:-30, resistancePct:null, sourceItemVersion:"4.1" } },
+    { name:"Waveshift", reduction:0, instabilityEffect:-35, type:"Gadget", role:"Stability / Window",
+      verified:{ clusterModifierPct:null, instabilityPct:null, laserInstabilityPct:-35, optimalChargeWindowRatePct:-30, optimalChargeWindowSizePct:100, resistancePct:null, sourceItemVersion:"4.1" } },
+    { name:"None", reduction:0, instabilityEffect:0, type:"None", role:"None", verified:null }
+].sort((a,b)=>{
+    if(a.name==="None") return -1;
+    if(b.name==="None") return 1;
     return a.name.localeCompare(b.name);
 });
+
+function verifiedGadgetDescription(gadget) {
+    if (!gadget || !gadget.verified) return "No Gadget Attached";
+    const v=gadget.verified, parts=[];
+    const add=(label,value)=>{ if(value!==null && value!==undefined) parts.push(label+" "+(value>0?"+":"")+value+"%"); };
+    add("Cluster",v.clusterModifierPct);
+    add("Instability",v.instabilityPct);
+    add("Laser Instability",v.laserInstabilityPct);
+    add("Charge Rate",v.optimalChargeWindowRatePct);
+    add("Window",v.optimalChargeWindowSizePct);
+    add("Resistance",v.resistancePct);
+    return parts.join(" · ");
+}
 
 // =========================================================
 // === CORE FUNCTIONS                                    ===
@@ -121,23 +166,43 @@ const gadgets = [
 
 function getFormattedStats(item, type) {
     let stats = [];
-    if (type === 'laser') {
+    const pct=(label,value)=>{
+        if(value===null || value===undefined) return;
+        stats.push(`${label}${value>0?"+":""}${value}%`);
+    };
+
+    if (type === "laser") {
         if (item.power) stats.push(`${item.power}W`);
-        if (item.resistanceEffect !== 0) stats.push(`${item.resistanceEffect > 0 ? '+' : ''}${item.resistanceEffect}%Res`);
-        if (item.instabilityEffect !== 0) stats.push(`${item.instabilityEffect > 0 ? '+' : ''}${item.instabilityEffect}%Inst`);
+        if (item.resistanceEffect !== 0) pct("Res",item.resistanceEffect);
+        if (item.instabilityEffect !== 0) pct("Inst",item.instabilityEffect);
         if (item.moduleSlots) stats.push(`Slots:${item.moduleSlots}`);
-    } else if (type === 'module') {
-        if (item.multiplier !== 1.0) stats.push(`Pwr${Math.round((item.multiplier - 1.0) * 100)}%`);
-        if (item.resistanceEffect !== 0) stats.push(`Res${item.resistanceEffect}%`);
-        if (item.instabilityEffect !== 0) stats.push(`Inst${item.instabilityEffect}%`);
-        if (item.windowEffect !== 0) stats.push(`Win${item.windowEffect}%`);
-    } else if (type === 'gadget') {
-        let r = item.reduction || item.resistance || 0;
-        if (r !== 0) stats.push(`Res${r}%`);
-        if (item.instabilityEffect !== 0) stats.push(`Inst${item.instabilityEffect}%`);
+    } else if (type === "module") {
+        const v=item.verified;
+        if(v){
+            pct("MLP",v.miningLaserPowerPct);
+            pct("EXT",v.extractionLaserPowerPct);
+            pct("LInst",v.laserInstabilityPct);
+            pct("Res",v.resistancePct);
+            pct("OptRate",v.optimalChargeRatePct);
+            pct("Win",v.optimalChargeWindowSizePct);
+            pct("Cat",v.catastrophicChargeRatePct);
+            pct("Shatter",v.shatterDamagePct);
+            pct("Inert",v.inertMaterialLevelPct);
+            if(v.durationSec!==null && v.durationSec!==undefined) stats.push(`Dur:${v.durationSec}s`);
+            if(v.uses!==null && v.uses!==undefined) stats.push(`Uses:${v.uses}`);
+        }
+    } else if (type === "gadget") {
+        const v=item.verified;
+        if(v){
+            pct("Cluster",v.clusterModifierPct);
+            pct("Inst",v.instabilityPct);
+            pct("LInst",v.laserInstabilityPct);
+            pct("OptRate",v.optimalChargeWindowRatePct);
+            pct("Win",v.optimalChargeWindowSizePct);
+            pct("Res",v.resistancePct);
+        }
     }
-    if (stats.length === 0) return "";
-    return ` (${stats.join(' ')})`; 
+    return stats.length ? ` (${stats.join(" ")})` : "";
 }
 
 function assessDifficulty(instability, resistance) {
@@ -518,7 +583,7 @@ function populateGadgetList() {
                     <strong>${g.name}</strong>
                     ${g.name !== 'None' ? `<span>${g.type}</span>` : ''}
                 </div>
-                <small>${g.desc || ''}</small>
+                <small>${verifiedGadgetDescription(g)}</small>
                 <code>${getFormattedStats(g,'gadget').replace(/^\\s*\\(|\\)$/g,'') || 'No modifiers'}</code>
             </div>
             <input type="radio" name="gadg" id="gr-${i}" value="${g.name}" ${g.name==='None'?'checked':''}
@@ -559,21 +624,28 @@ function renderGadgetAttributes(gadgetName) {
 
     card.classList.remove('empty');
     title.textContent = gadget.name;
-    type.textContent = gadget.type || 'Gadget';
+    type.textContent = gadget.role || gadget.type || 'Gadget';
     description.textContent = gadget.desc || 'Stored MFA gadget attributes.';
 
-    const resistance = gadget.reduction ?? gadget.resistance ?? 0;
+    const v = gadget.verified || {};
     const attributes = [
-        ['Resistance', signedPercent(resistance)],
-        ['Instability', signedPercent(gadget.instabilityEffect ?? 0)]
-    ];
+        ['Cluster Modifier', v.clusterModifierPct],
+        ['Instability', v.instabilityPct],
+        ['Laser Instability', v.laserInstabilityPct],
+        ['Optimal Charge Rate', v.optimalChargeWindowRatePct],
+        ['Optimal Window Size', v.optimalChargeWindowSizePct],
+        ['Resistance', v.resistancePct]
+    ].filter(([,value]) => value !== null && value !== undefined);
 
-    grid.innerHTML = attributes.map(([label,value]) => `
+    description.textContent = verifiedGadgetDescription(gadget) || 'No verified gameplay modifiers reported.';
+    grid.innerHTML = attributes.map(([label,value]) => {
+        const formatted = signedPercent(value);
+        return `
         <div class="gadget-attribute-item">
             <span>${label}</span>
-            <strong class="${String(value).startsWith('-') ? 'benefit' : String(value).startsWith('+') ? 'tradeoff' : ''}">${value}</strong>
-        </div>
-    `).join('');
+            <strong class="${value < 0 ? 'benefit' : value > 0 ? 'tradeoff' : ''}">${formatted}</strong>
+        </div>`;
+    }).join('');
 }
 
 function selectGadget(gadgetName) {
