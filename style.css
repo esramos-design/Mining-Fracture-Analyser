@@ -1,0 +1,390 @@
+/* MINING FRACTURE ANALYSER (MFA)
+    Version: 5.35
+    Theme: Obsidian Dark (Logofolio)
+    Updated: Dynamic Channel OCR & Fleet Roster
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200..900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+    --bg-main: #0D0D0D;
+    --bg-gradient: radial-gradient(circle at 50% 0%, #404040 0%, #0D0D0D 85%);
+    --bg-panel: rgba(13, 13, 13, 0.85);
+    --bg-card: rgba(64, 64, 64, 0.25);
+    --bg-input: rgba(13, 13, 13, 0.6);
+    --bg-input-focus: rgba(64, 64, 64, 0.8);
+    --border-main: rgba(166, 166, 166, 0.2);
+    --text-main: #F2F2F2;
+    --text-muted: #A6A6A6;
+    --text-strong: #FFFFFF;
+    --font-ui: 'Inter', sans-serif;
+    --font-tech: 'JetBrains Mono', monospace;
+    --chart-grid: rgba(115, 115, 115, 0.15);
+    --chart-text: #A6A6A6;
+    --glow-blue: 0 0 25px rgba(242, 242, 242, 0.15);
+    --glow-purple: 0 0 25px rgba(166, 166, 166, 0.15);
+    --glow-yellow: 0 0 25px rgba(255, 255, 255, 0.15);
+    --glow-text: 0 0 10px rgba(242, 242, 242, 0.3);
+}
+
+[data-theme="light"] {
+    --bg-main: #F2F2F2; 
+    --bg-gradient: linear-gradient(180deg, #F2F2F2 0%, #E5E5E5 100%);
+    --bg-panel: rgba(255, 255, 255, 0.95);      
+    --bg-card: rgba(255, 255, 255, 0.7);       
+    --bg-input: #FFFFFF;
+    --bg-input-focus: #F2F2F2;
+    --border-main: rgba(64, 64, 64, 0.2);   
+    --text-main: #0D0D0D;     
+    --text-muted: #737373;    
+    --text-strong: #000000;   
+    --chart-grid: rgba(0,0,0,0.1);
+    --chart-text: #404040;
+    --glow-blue: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+    --glow-text: none;
+}
+
+html { font-size: 16px; }
+body {
+    font-family: var(--font-ui);
+    background: var(--bg-main);
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+input, select, button { font-size: 0.9rem !important; }
+.text-xs { font-size: 0.85rem !important; } 
+.text-sm { font-size: 1rem !important; }
+
+/* --- ANIMATIONS --- */
+@keyframes statusPulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(242, 242, 242, 0.2); }
+    50% { transform: scale(1.02); box-shadow: 0 0 20px 0 rgba(242, 242, 242, 0.1); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(242, 242, 242, 0); }
+}
+.animate-status { animation: statusPulse 2s infinite ease-in-out; }
+
+/* Glass UI */
+.glass-panel {
+    background-color: var(--bg-panel);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-main);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+.glass-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-main);
+    transition: all 0.3s ease;
+}
+
+.font-tech { font-family: var(--font-tech); letter-spacing: -0.02em; }
+.text-glow { text-shadow: var(--glow-text); }
+
+input, select {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-main);
+    color: var(--text-main);
+    font-family: var(--font-tech);
+}
+
+input:focus, select:focus {
+    background-color: var(--bg-input-focus);
+    border-color: var(--text-main);
+    outline: none;
+    box-shadow: 0 0 15px rgba(242, 242, 242, 0.1);
+}
+
+/* Holographic Section */
+.holo-container {
+    position: relative;
+    background: rgba(13, 13, 13, 0.8);
+    border: 1px solid rgba(166, 166, 166, 0.3);
+    box-shadow: inset 0 0 30px rgba(166, 166, 166, 0.05);
+    overflow: hidden;
+}
+.holo-scanline {
+    position: absolute; top: 0; left: 0; right: 0; height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(242, 242, 242, 0.03) 51%, transparent 51%);
+    background-size: 100% 4px; pointer-events: none; z-index: 0;
+}
+
+/* Layout Utilities - FIXED GRID */
+.main-container { 
+    max-width: 2400px; 
+    width: 98%; 
+    display: grid; 
+    gap: 1.5rem; 
+    margin: 0 auto;
+    /* Default for Mobile: 1 Column */
+    grid-template-columns: 1fr; 
+    align-items: start;
+}
+
+/* Tablet (2 Columns) */
+@media (min-width: 768px) {
+    .main-container { grid-template-columns: repeat(2, 1fr); }
+    .col-span-1.lg\:col-span-4 { grid-column: span 2; }
+}
+
+/* Desktop (4 Columns) - Matches 1440px+ */
+@media (min-width: 1440px) { 
+    .main-container { grid-template-columns: repeat(4, 1fr); } 
+    /* Header spans all 4 cols */
+    .col-span-1.lg\:col-span-4 { grid-column: span 4; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #404040; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #A6A6A6; }
+
+/* Sticky Columns */
+@media (min-width: 1024px) {
+    .sticky-column-wrapper {
+        position: sticky; top: 1.5rem; max-height: calc(100vh - 3rem); 
+        overflow-y: auto; padding-top: 0; -ms-overflow-style: none; scrollbar-width: none;
+        border-radius: 1rem; 
+    }
+    
+    .vertical-column {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        height: 100%;
+    }
+}
+
+/* Modal */
+.modal-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(13, 13, 13, 0.95); backdrop-filter: blur(10px);
+    z-index: 100; display: none; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.2s ease-in-out;
+}
+.modal-backdrop.show { display: flex; opacity: 1; }
+.modal-content {
+    background: #0D0D0D; border: 1px solid var(--text-muted);
+    padding: 2rem; border-radius: 1rem; width: 90%; max-width: 500px;
+    box-shadow: 0 0 60px rgba(242, 242, 242, 0.1);
+}
+
+/* Fix for Dropdown Widths */
+#multiShipContainer { width: 100%; max-width: 100%; overflow-x: hidden; }
+.ship-arm-card select { 
+    width: 100%; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+    font-size: 0.8rem; padding-right: 1.2rem;
+}
+.ship-arm-card select option { font-size: 12px; background-color: #0D0D0D; }
+
+/* AI Content Scrollbar */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 2px; }
+
+/* Chrome Text Effect */
+.text-chrome {
+    background: linear-gradient(
+        to bottom,
+        #FFFFFF 20%,    /* Shiny Top */
+        #A0A0A0 45%,    /* Silver Middle */
+        #404040 50%,    /* Dark Horizon Line */
+        #E0E0E0 55%,    /* Reflective Bottom */
+        #FFFFFF 90%     /* Bottom Shine */
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 2px 0px rgba(0,0,0,0.8)); /* Deep shadow for 3D pop */
+}
+
+/* 3. MOBILE & TABLET AUTO-SCALING */
+@media (max-width: 1024px) {
+    .glass-panel {
+        width: 100% !important;
+        margin-bottom: 1.5rem;
+        min-height: auto;
+    }
+
+    .sticky-column-wrapper {
+        position: relative !important;
+        top: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    button, select, input {
+        min-height: 50px !important;
+        font-size: 16px !important;
+    }
+}
+/* --- LIGHT MODE SPECIFIC OVERRIDES --- */
+[data-theme="light"] #configs h4, 
+[data-theme="light"] #configs span,
+[data-theme="light"] #configs div {
+    color: #334155 !important; /* Dark Slate for Loadout Text */
+}
+
+/* Ensure the Strategy Tag is readable */
+[data-theme="light"] #configs .text-[10px].uppercase {
+    color: #0F172A !important; /* Almost Black */
+    background: rgba(0,0,0,0.05);
+    border-color: #CBD5E1;
+}
+
+/* Fix AI Section Buttons text color */
+[data-theme="light"] #ai-section button {
+    color: #1E293B !important; /* Dark text for buttons */
+    font-weight: 800;
+}
+
+/* Fix Fleet Config Dropdown and Input text */
+[data-theme="light"] #shipSelectToAdd, 
+[data-theme="light"] #multiShipContainer select,
+[data-theme="light"] #multiShipContainer p,
+[data-theme="light"] .ship-arm-card {
+    color: #0F172A !important;
+    background-color: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+}
+
+/* Fix "Minimum Crew Requirement" numbers */
+[data-theme="light"] #configs .text-2xl.font-black {
+    color: #0F172A !important;
+}
+
+/* Fix Gadget Strategy Box */
+[data-theme="light"] #configs .bg-purple-900\/20 {
+    background-color: #F3E8FF !important; /* Light Purple for Light Mode */
+    border-color: #D8B4FE !important;
+}
+[data-theme="light"] #configs .bg-purple-900\/20 h4 {
+    color: #7E22CE !important; /* Dark Purple Text */
+}
+/* =========================================
+   LIGHT MODE: HIGH CONTRAST LOADOUT CARDS
+   ========================================= */
+
+/* 1. Turn the dark semi-transparent cards into solid white data cards */
+[data-theme="light"] #configs .bg-black\/40 {
+    background-color: #FFFFFF !important;
+    border: 1px solid #94A3B8 !important; /* Slate-400 Border */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 2. Darken the Ship Names (Header Text) */
+[data-theme="light"] #configs .text-indigo-400 { color: #3730a3 !important; } /* Dark Indigo */
+[data-theme="light"] #configs .text-green-400  { color: #166534 !important; } /* Dark Green */
+[data-theme="light"] #configs .text-orange-400 { color: #9a3412 !important; } /* Dark Orange */
+
+/* 3. Darken the Role Labels (Break / Stab / Extr) */
+[data-theme="light"] #configs .text-red-400    { color: #dc2626 !important; } /* Dark Red */
+[data-theme="light"] #configs .text-blue-400   { color: #2563eb !important; } /* Dark Blue */
+/* Note: Green labels use the rule in section 2 */
+
+/* 4. Fix the Loadout List Text (The most important part) */
+[data-theme="light"] #configs .text-gray-300,
+[data-theme="light"] #configs .text-xs,
+[data-theme="light"] #configs .font-mono {
+    color: #0F172A !important; /* Nearly Black (Slate-900) */
+    font-weight: 600 !important; /* Make text bolder */
+}
+
+/* 5. Fix the 'Solo' / '3 Heads' tags */
+[data-theme="light"] #configs span.rounded {
+    background-color: #F1F5F9 !important; /* Light Grey BG */
+    border: 1px solid #CBD5E1 !important;
+    color: #334155 !important;
+}
+
+/* 6. Fix Empty State Message in Fleet Config */
+[data-theme="light"] #empty-state-msg {
+    color: #64748B !important;
+    border-color: #94A3B8 !important;
+    background-color: #F8FAFC !important;
+    font-weight: bold;
+}
+/* =========================================
+   LIGHT MODE: AI FOREMAN BUTTONS (SOLID)
+   ========================================= */
+
+/* 1. Force White Text on AI Buttons */
+[data-theme="light"] #ai-section button {
+    color: #FFFFFF !important;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* Subtle shadow for pop */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 2. Darken Backgrounds (Solid Colors) so White text is visible */
+/* Strategy (Purple) */
+[data-theme="light"] #ai-section button[onclick*="strategy"] { 
+    background-color: #7E22CE !important; 
+    border-color: #6B21A8 !important; 
+}
+
+/* Risk Report (Dark Yellow/Gold) */
+[data-theme="light"] #ai-section button[onclick*="risk"] { 
+    background-color: #CA8A04 !important; 
+    border-color: #A16207 !important; 
+}
+
+/* Loadout (Green) */
+[data-theme="light"] #ai-section button[onclick*="optimize"] { 
+    background-color: #15803D !important; 
+    border-color: #14532D !important; 
+}
+
+/* Orders (Blue) */
+[data-theme="light"] #ai-section button[onclick*="briefing"] { 
+    background-color: #1D4ED8 !important; 
+    border-color: #1E3A8A !important; 
+}
+
+/* Auth Key Button */
+[data-theme="light"] #ai-section button[onclick*="openApiModal"] {
+    background-color: #475569 !important; /* Slate Grey */
+    border-color: #334155 !important;
+    color: #FFFFFF !important;
+}
+
+/* --- FLEET ROSTER ADDITIONS (v5.22 Update) --- */
+
+/* Grid and Layout */
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* Branding Colors */
+.text-orange-500 { color: #f97316; }
+.bg-orange-600 { background-color: #ea580c; }
+.border-orange-500\/50 { border-color: rgba(249, 115, 22, 0.5); }
+
+.text-yellow-500 { color: #eab308; }
+.bg-yellow-500 { background-color: #eab308; }
+.border-yellow-500\/50 { border-color: rgba(234, 179, 8, 0.5); }
+
+/* Manufacturer Identity Colors */
+.manu-ARGO { background-color: #f97316; box-shadow: 0 0 15px #f97316; } /* Orange */
+.manu-MISC { background-color: #cbd5e1; box-shadow: 0 0 15px #94a3b8; } /* Silver/Chrome */
+.manu-DRAK { background-color: #eab308; box-shadow: 0 0 15px #eab308; } /* Drake Yellow */
+
+/* Card Hover Effects */
+.glass-panel.group:hover, #fleet-container .glass-panel:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
+    border-color: rgba(255,255,255,0.2);
+}
+
+/* Light Mode Overrides for Fleet Page */
+[data-theme="light"] .glass-panel h2 { color: #0F172A; }
+[data-theme="light"] .bg-black\/20 { background-color: rgba(0,0,0,0.05); border-color: #cbd5e1; }
+[data-theme="light"] .text-white { color: #1e293b; } /* Dark slate for stats */
+[data-theme="light"] .text-gray-400 { color: #475569; }
+[data-theme="light"] .border-white\/5 { border-color: #e2e8f0; }
+[data-theme="light"] .bg-\[var\(--bg-input\)\] { background-color: #f1f5f9; border-color: #cbd5e1; }
