@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 const source = await readFile("cooperative-solver.js", "utf8");
+const uiSource = await readFile("script.js", "utf8");
 
 function fail(message) {
   console.error("Target-driven solver validation failed:", message);
@@ -46,5 +47,21 @@ const solveBlock = source.slice(solveStart, solveEnd);
 if (solveBlock.includes("baseArms")) fail("solveIdeal still uses current fitted arms");
 if (solveBlock.includes("support.")) fail("solveIdeal still uses available support counts");
 if (!solveBlock.includes("m+pr+g")) fail("solveIdeal is not searching independent fleet compositions");
+
+const evaluateStart = source.indexOf("function evaluate(");
+const evaluateEnd = source.indexOf("function strategy", evaluateStart);
+if (evaluateStart < 0 || evaluateEnd < 0) fail("Recommended evaluator block not found");
+const evaluateBlock = source.slice(evaluateStart, evaluateEnd);
+if (!evaluateBlock.includes("window.MFAV535.calculateV535")) {
+  fail("Recommended Solutions is not using the shared v5.35 runtime engine");
+}
+
+const calculateStart = uiSource.indexOf("window.calculate = function()");
+const calculateEnd = uiSource.indexOf("// --- UPDATE CHART FUNCTIONS", calculateStart);
+if (calculateStart < 0 || calculateEnd < 0) fail("Active Fracture Verdict calculation block not found");
+const calculateBlock = uiSource.slice(calculateStart, calculateEnd);
+if (!calculateBlock.includes("window.MFAV535.calculateV535")) {
+  fail("Active Fracture Verdict is not using the shared v5.35 runtime engine");
+}
 
 console.log("Target-driven solver validation passed.");
