@@ -178,7 +178,10 @@
             maxFleetSize: Number(byId("maxFleetSize")?.value || 6),
             allowActiveModules: !!byId("allowActiveModules")?.checked,
             allowGadgets: !!byId("allowGadgets")?.checked,
-            preferCurrentShip: !!byId("preferCurrentShip")?.checked
+            preferCurrentShip: !!byId("preferCurrentShip")?.checked,
+            fleetAvailableMole: Number(byId("fleetAvailableMole")?.value || 0),
+            fleetAvailableProspector: Number(byId("fleetAvailableProspector")?.value || 0),
+            fleetAvailableGolem: Number(byId("fleetAvailableGolem")?.value || 0)
         };
     }
 
@@ -196,6 +199,9 @@
             if (typeof saved.allowActiveModules === "boolean" && byId("allowActiveModules")) byId("allowActiveModules").checked = saved.allowActiveModules;
             if (typeof saved.allowGadgets === "boolean" && byId("allowGadgets")) byId("allowGadgets").checked = saved.allowGadgets;
             if (typeof saved.preferCurrentShip === "boolean" && byId("preferCurrentShip")) byId("preferCurrentShip").checked = saved.preferCurrentShip;
+            if (Number.isFinite(saved.fleetAvailableMole) && byId("fleetAvailableMole")) byId("fleetAvailableMole").value = saved.fleetAvailableMole;
+            if (Number.isFinite(saved.fleetAvailableProspector) && byId("fleetAvailableProspector")) byId("fleetAvailableProspector").value = saved.fleetAvailableProspector;
+            if (Number.isFinite(saved.fleetAvailableGolem) && byId("fleetAvailableGolem")) byId("fleetAvailableGolem").value = saved.fleetAvailableGolem;
             setInputMode(saved.inputMode || "manual");
             setFleetMode(saved.fleetMode || "auto");
         } catch (_) {
