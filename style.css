@@ -4311,3 +4311,124 @@ html[data-theme="night"] .fleet-topbar :is(h1,.fleet-action) {
     .fleet-brand-logo { width:44px; height:44px; flex-basis:44px; }
     .fleet-brand h1 { font-size:16px; }
 }
+
+
+/* =========================================================
+   FLEET ROSTER READABILITY PASS
+   Slightly larger type and media while preserving compact layout.
+   ========================================================= */
+.fleet-brand h1 { font-size:22px; }
+.fleet-brand p { font-size:10px; }
+.fleet-kicker { font-size:9px; }
+
+.fleet-summary-card {
+    min-height:78px;
+    padding:11px 13px;
+}
+.fleet-summary-card span,
+.fleet-summary-card small { font-size:9px; }
+.fleet-summary-card strong { font-size:22px; }
+
+.fleet-search-wrap input,
+.fleet-sort-label select {
+    min-height:38px;
+    font-size:10px;
+}
+.fleet-filter {
+    min-height:36px;
+    font-size:9px;
+}
+.fleet-sort-label span,
+.fleet-results-line,
+.fleet-results-line button {
+    font-size:9px;
+}
+
+.fleet-card-main {
+    grid-template-columns:148px minmax(0,1fr);
+    gap:13px;
+    padding:13px;
+}
+.fleet-thumb-wrap {
+    height:116px;
+}
+.fleet-card-topline {
+    gap:10px;
+}
+.fleet-manufacturer,
+.fleet-ready {
+    font-size:8px;
+}
+.fleet-card-identity h2 {
+    font-size:21px;
+}
+.fleet-card-identity > p {
+    font-size:9px;
+}
+.fleet-quick-stats {
+    gap:6px;
+    margin-top:10px;
+}
+.fleet-quick-stats span,
+.fleet-loadout-heading span,
+.fleet-detail-grid span,
+.fleet-system-grid span {
+    font-size:8px;
+}
+.fleet-quick-stats strong {
+    font-size:10px;
+}
+
+.fleet-card-loadout {
+    margin:0 13px 11px;
+    padding:10px 11px;
+}
+.fleet-loadout-heading strong {
+    font-size:8px;
+}
+.fleet-mining-list {
+    gap:5px;
+}
+.fleet-mining-list li {
+    font-size:9px;
+}
+
+.fleet-details-toggle {
+    width:calc(100% - 26px);
+    min-height:32px;
+    margin:0 13px 12px;
+    font-size:9px;
+}
+.fleet-card-details {
+    padding:11px 13px 13px;
+}
+.fleet-detail-grid,
+.fleet-system-grid {
+    gap:7px;
+}
+.fleet-detail-grid div,
+.fleet-system-grid div {
+    padding:8px 9px;
+}
+.fleet-detail-grid strong,
+.fleet-system-grid strong {
+    font-size:9px;
+}
+.fleet-card-meta {
+    font-size:8px;
+}
+.fleet-footer {
+    font-size:9px;
+}
+
+@media (max-width:480px) {
+    .fleet-card-main {
+        grid-template-columns:116px minmax(0,1fr);
+    }
+    .fleet-thumb-wrap {
+        height:96px;
+    }
+    .fleet-card-identity h2 {
+        font-size:18px;
+    }
+}
