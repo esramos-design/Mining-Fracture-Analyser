@@ -133,88 +133,114 @@ function updateDashboard(activeData = fleetRawData) {
     let totalLasers = 0;
     let totalMass = 0;
     let totalRange = 0;
-    let shipCount = 0;
 
     activeData.forEach(entry => {
-        const s = entry.data;
-        totalCargo += s.cargo_capacity || 0;
-        totalMass += s.mass || 0;
-        shipCount++;
-        totalRange += (s.quantum.quantum_range || 0);
-
-        // Count active mining heads
-        const heads = getComponent(s.hardpoints, "WeaponMining");
-        totalLasers += heads.length;
+        const ship = entry.data;
+        totalCargo += ship.cargo_capacity || 0;
+        totalMass += ship.mass || 0;
+        totalRange += ship.quantum?.quantum_range || 0;
+        totalLasers += getComponent(ship.hardpoints, "WeaponMining").length;
     });
 
-    // Update DOM Elements
-    const elCargo = document.getElementById('total-cargo');
-    const elLasers = document.getElementById('total-lasers');
-    const elMass = document.getElementById('total-mass');
-    const elRange = document.getElementById('avg-range');
-
-    // Add animation effect to updates
-    const animateValue = (el, val, unit) => {
-        if (!el) return;
-        el.style.opacity = 0.5;
-        setTimeout(() => {
-            el.innerHTML = `${val} <span class="text-sm text-gray-500">${unit}</span>`;
-            el.style.opacity = 1;
-        }, 150);
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
     };
 
-    if(elCargo) animateValue(elCargo, totalCargo, "SCU");
-    if(elLasers) animateValue(elLasers, totalLasers, "UNITS");
-    if(elMass) animateValue(elMass, (totalMass / 1000).toFixed(1), "kT");
-    
-    if(elRange) {
-        const avgR = shipCount > 0 ? (totalRange / shipCount / 1_000_000).toFixed(0) : 0;
-        animateValue(elRange, avgR, "M km");
-    }
+    setText('total-vessels', activeData.length);
+    setText('total-cargo', totalCargo);
+    setText('total-lasers', totalLasers);
+    setText('total-mass', (totalMass / 1000).toFixed(1));
+    setText('avg-range', activeData.length
+        ? (totalRange / activeData.length / 1_000_000).toFixed(0)
+        : '0');
 }
 
 // ==========================================
-// 4. SEARCH & FILTER LOGIC
+// 4. SEARCH, FILTER & SORT
 // ==========================================
 
-// UPDATED: Now collects visible ships and updates dashboard
-window.filterFleet = function(criteria) {
-    const cards = document.querySelectorAll('.ship-card-wrapper');
-    const searchInput = document.getElementById('fleet-search');
-    const searchVal = searchInput ? searchInput.value.toLowerCase() : "";
-    
-    let visibleShips = [];
+let activeManufacturerFilter = 'all';
 
-    cards.forEach(card => {
-        const name = card.dataset.name.toLowerCase();
-        const manu = card.dataset.manu;
-        const uuid = card.dataset.uuid;
+function visibleFleetData() {
+    return [...document.querySelectorAll('.ship-card-wrapper')]
+        .filter(card => card.style.display !== 'none')
+        .map(card => fleetRawData.find(entry => entry.data.uuid === card.dataset.uuid))
+        .filter(Boolean);
+}
 
-        let visible = true;
+function updateResultCount() {
+    const count = visibleFleetData().length;
+    const out = document.getElementById('fleet-result-count');
+    if (out) out.textContent = `${count} vessel${count === 1 ? '' : 's'} shown`;
+}
 
-        // 1. Text Search Match
-        if (searchVal && !name.includes(searchVal) && !uuid.includes(searchVal) && !manu.toLowerCase().includes(searchVal)) {
-            visible = false;
-        }
+window.filterFleet = function(criteria, button) {
+    if (criteria) activeManufacturerFilter = criteria;
 
-        // 2. Button Category Match
-        if (criteria && criteria !== 'all' && criteria !== manu) {
-            visible = false;
-        }
+    if (button) {
+        document.querySelectorAll('.fleet-filter').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+    }
 
-        // Toggle visibility
-        card.style.display = visible ? 'flex' : 'none';
+    const search = (document.getElementById('fleet-search')?.value || '').trim().toLowerCase();
 
-        // Collect data for Dashboard update
-        if (visible) {
-            const shipData = fleetRawData.find(s => s.data.uuid === uuid);
-            if (shipData) visibleShips.push(shipData);
-        }
+    document.querySelectorAll('.ship-card-wrapper').forEach(card => {
+        const matchesText = !search ||
+            card.dataset.name.toLowerCase().includes(search) ||
+            card.dataset.manu.toLowerCase().includes(search) ||
+            card.dataset.uuid.toLowerCase().includes(search);
+
+        const matchesManufacturer =
+            activeManufacturerFilter === 'all' ||
+            card.dataset.manu === activeManufacturerFilter;
+
+        card.style.display = matchesText && matchesManufacturer ? '' : 'none';
     });
 
-    // Recalculate dashboard based on what is visible
-    updateDashboard(visibleShips);
-}
+    const visible = visibleFleetData();
+    updateDashboard(visible);
+    updateResultCount();
+};
+
+window.sortFleet = function(mode) {
+    const container = document.getElementById('fleet-container');
+    if (!container) return;
+
+    const cards = [...container.querySelectorAll('.ship-card-wrapper')];
+
+    const number = (card, key) => Number(card.dataset[key]) || 0;
+    cards.sort((a,b) => {
+        if (mode === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+        if (mode === 'cargo') return number(b,'cargo') - number(a,'cargo');
+        if (mode === 'mass') return number(b,'mass') - number(a,'mass');
+        if (mode === 'heads') return number(b,'heads') - number(a,'heads');
+        return a.dataset.manu.localeCompare(b.dataset.manu) || a.dataset.name.localeCompare(b.dataset.name);
+    });
+
+    cards.forEach(card => container.appendChild(card));
+};
+
+window.toggleFleetCard = function(button) {
+    const card = button.closest('.ship-card-wrapper');
+    if (!card) return;
+    const expanded = card.classList.toggle('expanded');
+    button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    const label = button.querySelector('span');
+    if (label) label.textContent = expanded ? 'Hide details' : 'Details';
+};
+
+window.collapseAllFleetCards = function() {
+    document.querySelectorAll('.ship-card-wrapper.expanded').forEach(card => {
+        card.classList.remove('expanded');
+        const button = card.querySelector('.fleet-details-toggle');
+        if (button) {
+            button.setAttribute('aria-expanded','false');
+            const label = button.querySelector('span');
+            if (label) label.textContent = 'Details';
+        }
+    });
+};
 
 // ==========================================
 // 5. RENDER LOGIC (MAIN)
@@ -225,116 +251,124 @@ function renderFleet() {
     if (!container) return;
 
     container.innerHTML = '';
-    
-    // Initial Dashboard Calculation (Full Fleet)
-    updateDashboard(fleetRawData);
 
     fleetRawData.forEach(entry => {
         const ship = entry.data;
-        
-        // --- Data Extraction ---
-        const scm = ship.speed.scm;
-        const maxSpeed = ship.speed.max;
-        const hullHp = formatNumber(ship.health);
-        const shieldHp = formatNumber(ship.shield_hp);
-        const cargo = ship.cargo_capacity;
-        const mass = formatNumber(Math.round(ship.mass));
-        const hydrogen = ship.fuel.capacity;
-        const quantumFuel = ship.quantum.quantum_fuel_capacity;
-        const qRange = (ship.quantum.quantum_range / 1_000_000).toFixed(1);
-        
         const miningHeads = getComponent(ship.hardpoints, "WeaponMining");
         const shields = getComponent(ship.hardpoints, "Shield");
         const powerPlants = getComponent(ship.hardpoints, "PowerPlant");
         const coolers = getComponent(ship.hardpoints, "Cooler");
         const qDrive = getComponent(ship.hardpoints, "QuantumDrive");
-        
-        let miningHtml = "";
-        if (miningHeads.length > 0) {
-            miningHtml = `<div class="col-span-2 bg-black/40 p-2 rounded border border-white/10 backdrop-blur-sm">
-                <p class="text-[10px] text-[var(--text-muted)] uppercase mb-1 font-bold">Mining Configuration</p>
-                <div class="flex flex-wrap gap-2">`;
-            miningHeads.forEach(head => {
-                miningHtml += `<span class="text-[10px] font-bold text-green-300 bg-green-900/40 px-2 py-1 rounded border border-green-500/30 font-mono tracking-wide">${head.name} (S${head.size})</span>`;
-            });
-            miningHtml += `</div></div>`;
-        } else {
-             miningHtml = `<div class="col-span-2 bg-black/40 p-2 rounded border border-white/10 backdrop-blur-sm"><p class="text-[10px] text-[var(--text-muted)] uppercase">Mining Configuration</p><span class="text-xs text-gray-500">Standard Loadout</span></div>`;
-        }
 
-        // Manufacturer Styling
-        let manuColor = "bg-gray-500"; 
-        let cardBorder = "border-[var(--border-main)]";
-        if (ship.manufacturer.code === 'ARGO') { manuColor = 'bg-orange-600'; cardBorder = 'hover:border-orange-500/50'; }
-        if (ship.manufacturer.code === 'DRAK') { manuColor = 'bg-yellow-500'; cardBorder = 'hover:border-yellow-500/50'; }
-        if (ship.manufacturer.code === 'MISC') { manuColor = 'bg-slate-400'; cardBorder = 'hover:border-slate-400/50'; }
+        const qRange = (ship.quantum.quantum_range / 1_000_000).toFixed(1);
+        const manufacturer = ship.manufacturer.code;
+        const manufacturerClass =
+            manufacturer === 'ARGO' ? 'argo' :
+            manufacturer === 'MISC' ? 'misc' : 'drake';
 
-        const emIdle = formatNumber(ship.emission.em_idle);
-        const ir = formatNumber(ship.emission.ir);
+        const miningSummary = miningHeads.length
+            ? miningHeads.map(head =>
+                `<li><span>${head.name}</span><em>S${head.size}</em></li>`
+              ).join('')
+            : '<li><span>Standard mining system</span><em>—</em></li>';
 
-        // --- HTML TEMPLATE ---
         const cardHTML = `
-        <div class="ship-card-wrapper glass-panel p-0 rounded-2xl overflow-hidden flex flex-col group relative transition-all duration-300 hover:shadow-2xl border ${cardBorder}" 
-             data-name="${ship.name}" 
-             data-manu="${ship.manufacturer.code}" 
-             data-uuid="${ship.uuid}">
-            
-            <div class="relative w-full aspect-video overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-t from-[var(--bg-panel)] via-transparent to-transparent z-10"></div>
-                <img src="${ship.image_url}" class="w-full h-full object-cover object-center transform group-hover:scale-105 transition duration-700 ease-in-out" onerror="this.src='https://placehold.co/600x400/1e293b/cbd5e1?text=NO+IMAGE&font=oswald'">
-                <div class="absolute top-4 right-4 z-20">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-white bg-black/50 backdrop-blur px-2 py-1 rounded border border-white/10">${ship.manufacturer.code}</span>
-                </div>
-                <div class="absolute bottom-4 left-6 z-20">
-                    <h2 class="text-3xl font-black font-tech uppercase text-white tracking-wider drop-shadow-lg">${ship.name}</h2>
-                    <p class="text-[10px] font-mono text-gray-300 uppercase tracking-widest bg-black/30 inline-block px-1 rounded">${ship.type.en_EN} // Class ${ship.size_class}</p>
-                </div>
-            </div>
+        <article class="ship-card-wrapper fleet-roster-card ${manufacturerClass}"
+                 data-name="${ship.name}"
+                 data-manu="${manufacturer}"
+                 data-uuid="${ship.uuid}"
+                 data-cargo="${ship.cargo_capacity || 0}"
+                 data-mass="${ship.mass || 0}"
+                 data-heads="${miningHeads.length}">
 
-            <div class="h-1 w-full ${manuColor} shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20 relative"></div>
-            
-            <div class="p-6 pt-4 relative z-10 space-y-5">
-                
-                <div class="flex justify-between items-center text-xs font-mono border-b border-[var(--border-main)] pb-3">
-                    <div class="text-center"><span class="block text-[9px] text-[var(--text-muted)] uppercase">SCM Speed</span><span class="font-bold text-[var(--text-main)]">${scm} m/s</span></div>
-                    <div class="text-center"><span class="block text-[9px] text-[var(--text-muted)] uppercase">Max Cargo</span><span class="font-bold text-yellow-500">${cargo} SCU</span></div>
-                    <div class="text-center"><span class="block text-[9px] text-[var(--text-muted)] uppercase">Total Mass</span><span class="font-bold text-[var(--text-main)]">${mass} kg</span></div>
-                    <div class="text-center"><span class="block text-[9px] text-[var(--text-muted)] uppercase">Shields</span><span class="font-bold text-blue-400">${shieldHp} HP</span></div>
+            <div class="fleet-card-accent"></div>
+
+            <div class="fleet-card-main">
+                <div class="fleet-thumb-wrap">
+                    <img src="${ship.image_url}"
+                         alt="${ship.manufacturer.name} ${ship.name}"
+                         class="fleet-thumb"
+                         loading="lazy"
+                         onerror="this.src='https://placehold.co/360x220/17212b/cbd5e1?text=NO+IMAGE&font=oswald'">
                 </div>
 
-                <div class="bg-[var(--bg-card)] p-4 rounded-xl border border-[var(--border-main)] relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 text-[var(--text-muted)] opacity-5 text-6xl"><i class="fa-solid fa-microchip"></i></div>
-                    <h4 class="text-[10px] font-bold text-orange-400 uppercase mb-3 flex items-center gap-2 relative z-10"><i class="fa-solid fa-server"></i> Systems Architecture</h4>
-                    <div class="grid grid-cols-2 gap-2 relative z-10">
-                        ${miningHtml}
-                        <div class="bg-black/20 p-2 rounded border border-white/5 backdrop-blur-sm">
-                            <p class="text-[9px] text-[var(--text-muted)] uppercase">Quantum Drive</p>
-                            <p class="text-[11px] text-[var(--text-main)] font-mono">${qDrive[0]?.name || 'Stock'} <span class="text-gray-500">|</span> <span class="text-green-400">${qRange}m km</span></p>
-                        </div>
-                        <div class="bg-black/20 p-2 rounded border border-white/5 backdrop-blur-sm">
-                            <p class="text-[9px] text-[var(--text-muted)] uppercase">Power Plant</p>
-                            <p class="text-[11px] text-[var(--text-main)] font-mono">${powerPlants[0]?.name || 'Stock'}</p>
-                        </div>
-                        <div class="bg-black/20 p-2 rounded border border-white/5 backdrop-blur-sm">
-                            <p class="text-[9px] text-[var(--text-muted)] uppercase">Cooling Systems</p>
-                            <p class="text-[11px] text-[var(--text-main)] font-mono">${coolers[0]?.name || 'Stock'} <span class="text-gray-500">x${coolers.length}</span></p>
-                        </div>
-                        <div class="bg-black/20 p-2 rounded border border-white/5 backdrop-blur-sm">
-                            <p class="text-[9px] text-[var(--text-muted)] uppercase">Sig (EM / IR)</p>
-                            <p class="text-[11px] text-[var(--text-main)] font-mono">${emIdle} / ${ir}</p>
-                        </div>
+                <div class="fleet-card-identity">
+                    <div class="fleet-card-topline">
+                        <span class="fleet-manufacturer">${manufacturer}</span>
+                        <span class="fleet-ready"><i></i> Flight ready</span>
+                    </div>
+                    <h2>${ship.name}</h2>
+                    <p>${ship.type.en_EN} · Class ${ship.size_class}</p>
+
+                    <div class="fleet-quick-stats">
+                        <div><span>Cargo</span><strong>${ship.cargo_capacity} SCU</strong></div>
+                        <div><span>Mining</span><strong>${miningHeads.length} head${miningHeads.length === 1 ? '' : 's'}</strong></div>
+                        <div><span>SCM</span><strong>${ship.speed.scm} m/s</strong></div>
+                        <div><span>Range</span><strong>${qRange}M km</strong></div>
                     </div>
                 </div>
-                
-                <div class="flex justify-between items-center opacity-60">
-                    <span class="text-[9px] font-mono text-[var(--text-muted)] uppercase bg-[var(--bg-input)] px-2 py-1 rounded">UUID: ${ship.uuid.substring(0, 8)}</span>
-                    <span class="text-[9px] font-bold text-green-500 uppercase flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Flight Ready</span>
+            </div>
+
+            <div class="fleet-card-loadout">
+                <div class="fleet-loadout-heading">
+                    <span>Mining configuration</span>
+                    <strong>${miningHeads.length ? miningHeads.length + ' installed' : 'Standard'}</strong>
+                </div>
+                <ul class="fleet-mining-list">${miningSummary}</ul>
+            </div>
+
+            <button type="button"
+                    class="fleet-details-toggle"
+                    aria-expanded="false"
+                    onclick="toggleFleetCard(this)">
+                <span>Details</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+            <div class="fleet-card-details">
+                <div class="fleet-detail-grid">
+                    <div><span>Mass</span><strong>${formatNumber(Math.round(ship.mass))} kg</strong></div>
+                    <div><span>Max speed</span><strong>${ship.speed.max} m/s</strong></div>
+                    <div><span>Hull</span><strong>${formatNumber(ship.health)} HP</strong></div>
+                    <div><span>Shields</span><strong>${formatNumber(ship.shield_hp)} HP</strong></div>
+                    <div><span>Hydrogen</span><strong>${ship.fuel.capacity}</strong></div>
+                    <div><span>Quantum fuel</span><strong>${ship.quantum.quantum_fuel_capacity}</strong></div>
+                    <div><span>EM idle</span><strong>${formatNumber(ship.emission.em_idle)}</strong></div>
+                    <div><span>IR</span><strong>${formatNumber(ship.emission.ir)}</strong></div>
+                </div>
+
+                <div class="fleet-system-grid">
+                    <div>
+                        <span>Quantum drive</span>
+                        <strong>${qDrive[0]?.name || 'Stock'}</strong>
+                    </div>
+                    <div>
+                        <span>Power plant</span>
+                        <strong>${powerPlants[0]?.name || 'Stock'}</strong>
+                    </div>
+                    <div>
+                        <span>Cooling</span>
+                        <strong>${coolers[0]?.name || 'Stock'}${coolers.length > 1 ? ' ×' + coolers.length : ''}</strong>
+                    </div>
+                    <div>
+                        <span>Shield</span>
+                        <strong>${shields[0]?.name || 'Stock'}</strong>
+                    </div>
+                </div>
+
+                <div class="fleet-card-meta">
+                    <span>UUID ${ship.uuid}</span>
+                    <span>${ship.manufacturer.name}</span>
                 </div>
             </div>
-        </div>`;
+        </article>`;
 
         container.insertAdjacentHTML('beforeend', cardHTML);
     });
+
+    updateDashboard(fleetRawData);
+    sortFleet(document.getElementById('fleet-sort')?.value || 'manufacturer');
+    updateResultCount();
 }
 
 // Init on load
