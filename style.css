@@ -4432,3 +4432,230 @@ html[data-theme="night"] .fleet-topbar :is(h1,.fleet-action) {
         font-size:18px;
     }
 }
+
+
+/* =========================================================
+   FLEET THEME CONTRAST INTEGRITY
+   WCAG-minded contrast pass for Planner Day / Dusk / Night.
+   Scope intentionally limited to /fleet controls and critical labels.
+   ========================================================= */
+
+/* Common interaction states */
+.fleet-page .fleet-action,
+.fleet-page .fleet-filter,
+.fleet-page .fleet-details-toggle,
+.fleet-page .fleet-results-line button,
+.fleet-page .fleet-sort-label select,
+.fleet-page .fleet-search-wrap input {
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.fleet-page :is(.fleet-action,.fleet-filter,.fleet-details-toggle,.fleet-results-line button,.fleet-sort-label select,.fleet-search-wrap input):focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* ---------- Planner Day ---------- */
+html[data-theme="day"] .fleet-topbar .fleet-brand h1 {
+    color:#FFFFFF !important;
+}
+html[data-theme="day"] .fleet-topbar .fleet-kicker {
+    color:#FFC46B !important;
+}
+html[data-theme="day"] .fleet-topbar .fleet-brand p {
+    color:#E9F0F6 !important;
+}
+html[data-theme="day"] .fleet-topbar .fleet-action {
+    background:#F6EADB !important;
+    color:#17324D !important;
+    border-color:#D8B982 !important;
+    text-shadow:none !important;
+}
+html[data-theme="day"] .fleet-topbar .fleet-action:hover,
+html[data-theme="day"] .fleet-topbar .fleet-action:focus-visible {
+    background:#F0A24A !important;
+    color:#17324D !important;
+    border-color:#F7C778 !important;
+}
+html[data-theme="day"] .fleet-filter {
+    background:#FFFDF8 !important;
+    color:#24364B !important;
+    border-color:#9FB0C0 !important;
+}
+html[data-theme="day"] .fleet-filter:hover,
+html[data-theme="day"] .fleet-filter:focus-visible {
+    background:#F6EADB !important;
+    color:#17324D !important;
+    border-color:#C97A24 !important;
+}
+html[data-theme="day"] .fleet-filter.active {
+    background:#A94E00 !important;
+    color:#FFFFFF !important;
+    border-color:#7F3900 !important;
+}
+html[data-theme="day"] .fleet-results-line button {
+    color:#8A3F00 !important;
+}
+html[data-theme="day"] .fleet-details-toggle {
+    background:#E9EEF2 !important;
+    color:#17324D !important;
+    border-color:#9FB0C0 !important;
+}
+html[data-theme="day"] .fleet-details-toggle:hover,
+html[data-theme="day"] .fleet-details-toggle:focus-visible {
+    background:#DDE6ED !important;
+    color:#102A43 !important;
+    border-color:#52718D !important;
+}
+html[data-theme="day"] .fleet-search-wrap input,
+html[data-theme="day"] .fleet-sort-label select {
+    background:#FFFFFF !important;
+    color:#17324D !important;
+    border-color:#8298AA !important;
+}
+html[data-theme="day"] .fleet-search-wrap input::placeholder {
+    color:#5D6F80 !important;
+    opacity:1 !important;
+}
+html[data-theme="day"] .fleet-summary-card span,
+html[data-theme="day"] .fleet-summary-card small,
+html[data-theme="day"] .fleet-card-identity > p,
+html[data-theme="day"] .fleet-quick-stats span,
+html[data-theme="day"] .fleet-loadout-heading span,
+html[data-theme="day"] .fleet-detail-grid span,
+html[data-theme="day"] .fleet-system-grid span,
+html[data-theme="day"] .fleet-card-meta,
+html[data-theme="day"] .fleet-results-line {
+    color:#425B70 !important;
+}
+
+/* ---------- Planner Dusk ---------- */
+html[data-theme="dusk"] .fleet-topbar .fleet-brand h1 {
+    color:#FFF8EE !important;
+}
+html[data-theme="dusk"] .fleet-topbar .fleet-kicker {
+    color:#F1C27D !important;
+}
+html[data-theme="dusk"] .fleet-topbar .fleet-brand p {
+    color:#E8DDD0 !important;
+}
+html[data-theme="dusk"] .fleet-topbar .fleet-action {
+    background:#272522 !important;
+    color:#F5E8D7 !important;
+    border-color:#C78632 !important;
+}
+html[data-theme="dusk"] .fleet-topbar .fleet-action:hover,
+html[data-theme="dusk"] .fleet-topbar .fleet-action:focus-visible {
+    background:#C78632 !important;
+    color:#1F1C1A !important;
+    border-color:#F1C27D !important;
+}
+html[data-theme="dusk"] .fleet-filter {
+    background:#302D2A !important;
+    color:#EEE7DC !important;
+    border-color:#6E645A !important;
+}
+html[data-theme="dusk"] .fleet-filter:hover,
+html[data-theme="dusk"] .fleet-filter:focus-visible {
+    background:#3A342F !important;
+    color:#FFF8EE !important;
+    border-color:#C78632 !important;
+}
+html[data-theme="dusk"] .fleet-filter.active {
+    background:#C78632 !important;
+    color:#1F1C1A !important;
+    border-color:#F1C27D !important;
+}
+html[data-theme="dusk"] .fleet-results-line button {
+    color:#F1C27D !important;
+}
+html[data-theme="dusk"] .fleet-details-toggle {
+    background:#272522 !important;
+    color:#EEE7DC !important;
+    border-color:#6E645A !important;
+}
+html[data-theme="dusk"] .fleet-details-toggle:hover,
+html[data-theme="dusk"] .fleet-details-toggle:focus-visible {
+    background:#35312E !important;
+    color:#FFF8EE !important;
+    border-color:#C78632 !important;
+}
+html[data-theme="dusk"] .fleet-search-wrap input,
+html[data-theme="dusk"] .fleet-sort-label select {
+    background:#272522 !important;
+    color:#EEE7DC !important;
+    border-color:#756A60 !important;
+}
+html[data-theme="dusk"] .fleet-search-wrap input::placeholder {
+    color:#BFB2A3 !important;
+    opacity:1 !important;
+}
+
+/* ---------- Planner Night ---------- */
+html[data-theme="night"] .fleet-topbar .fleet-brand h1 {
+    color:#F8FBFF !important;
+}
+html[data-theme="night"] .fleet-topbar .fleet-kicker {
+    color:#7DD3FC !important;
+}
+html[data-theme="night"] .fleet-topbar .fleet-brand p {
+    color:#D4E1EB !important;
+}
+html[data-theme="night"] .fleet-topbar .fleet-action {
+    background:#121A24 !important;
+    color:#F1F5F9 !important;
+    border-color:#4F7090 !important;
+}
+html[data-theme="night"] .fleet-topbar .fleet-action:hover,
+html[data-theme="night"] .fleet-topbar .fleet-action:focus-visible {
+    background:#2E6A93 !important;
+    color:#FFFFFF !important;
+    border-color:#7DD3FC !important;
+}
+html[data-theme="night"] .fleet-filter {
+    background:#15212D !important;
+    color:#E8F0F7 !important;
+    border-color:#49647D !important;
+}
+html[data-theme="night"] .fleet-filter:hover,
+html[data-theme="night"] .fleet-filter:focus-visible {
+    background:#1C3040 !important;
+    color:#FFFFFF !important;
+    border-color:#5AA6D8 !important;
+}
+html[data-theme="night"] .fleet-filter.active {
+    background:#2E6A93 !important;
+    color:#FFFFFF !important;
+    border-color:#7DD3FC !important;
+}
+html[data-theme="night"] .fleet-results-line button {
+    color:#8ED8FF !important;
+}
+html[data-theme="night"] .fleet-details-toggle {
+    background:#121A24 !important;
+    color:#F1F5F9 !important;
+    border-color:#49647D !important;
+}
+html[data-theme="night"] .fleet-details-toggle:hover,
+html[data-theme="night"] .fleet-details-toggle:focus-visible {
+    background:#1C3040 !important;
+    color:#FFFFFF !important;
+    border-color:#5AA6D8 !important;
+}
+html[data-theme="night"] .fleet-search-wrap input,
+html[data-theme="night"] .fleet-sort-label select {
+    background:#0F1822 !important;
+    color:#F1F5F9 !important;
+    border-color:#55738F !important;
+}
+html[data-theme="night"] .fleet-search-wrap input::placeholder {
+    color:#A8BAC9 !important;
+    opacity:1 !important;
+}
+
+/* Preserve readable disabled/secondary states */
+.fleet-page button:disabled,
+.fleet-page .fleet-action[aria-disabled="true"] {
+    opacity:.62;
+    cursor:not-allowed;
+}
