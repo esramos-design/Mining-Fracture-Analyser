@@ -4662,74 +4662,177 @@ html[data-theme="night"] .fleet-search-wrap input::placeholder {
 
 
 /* =========================================================
-   MODULE LABEL / META COLOR CONTRAST ONLY
-   Progressive enhancement using customizable native select.
-   No layout, sizing, value, or onchange behavior changes.
+   LASER + MODULE LABEL / META COLOR CONTRAST ONLY
+   Progressive enhancement using customizable native selects.
+   No surrounding layout, sizing, value, or onchange behavior changes.
    ========================================================= */
 @supports (appearance: base-select) {
     select.module-color-select,
-    select.module-color-select::picker(select) {
+    select.module-color-select::picker(select),
+    select.laser-color-select,
+    select.laser-color-select::picker(select) {
         appearance: base-select;
     }
 
-    select.module-color-select {
-        min-height: 28px;
+    select.module-color-select > button,
+    select.laser-color-select > button {
+        width:100%;
+        min-width:0;
+        border:0;
+        padding:0;
+        margin:0;
+        background:transparent;
+        color:inherit;
+        font:inherit;
+        text-align:left;
     }
 
-    select.module-color-select::picker(select) {
-        background: var(--bg-input);
-        border: 1px solid var(--border-main);
-        border-radius: 4px;
+    select.module-color-select selectedcontent,
+    select.laser-color-select selectedcontent {
+        display:flex;
+        align-items:center;
+        gap:3px;
+        min-width:0;
+        overflow:hidden;
     }
 
-    select.module-color-select option {
-        background: var(--bg-input);
-        color: inherit;
-        padding: 4px 10px;
+    select.module-color-select::picker(select),
+    select.laser-color-select::picker(select) {
+        border:1px solid var(--border-main);
+        border-radius:4px;
     }
 
-    select.module-color-select option:hover,
-    select.module-color-select option:focus,
-    select.module-color-select option:checked {
-        background: #17395a;
+    select.module-color-select option,
+    select.laser-color-select option {
+        display:flex;
+        align-items:center;
+        gap:3px;
+        padding:4px 10px;
     }
 
-    select.module-color-select .module-option-label {
-        color: #f5f8fc;
-        font-weight: 800;
+    select.module-color-select .select-option-label,
+    select.laser-color-select .select-option-label {
+        font-weight:800;
+        white-space:nowrap;
     }
 
-    select.module-color-select .module-option-meta {
-        color: #8fd3ff;
-        font-weight: 700;
-        margin-left: 3px;
+    select.module-color-select .select-option-meta,
+    select.laser-color-select .select-option-meta {
+        font-weight:700;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
     }
 
     select.module-color-select optgroup {
-        background: var(--bg-input);
-        color: #f6c56b;
-        font-weight: 800;
+        font-weight:800;
     }
 
-    html[data-theme="dusk"] select.module-color-select .module-option-label {
-        color: #fff8ee;
+    /* Planner Night */
+    html[data-theme="night"] select.module-color-select,
+    html[data-theme="night"] select.laser-color-select,
+    html[data-theme="night"] select.module-color-select::picker(select),
+    html[data-theme="night"] select.laser-color-select::picker(select),
+    html[data-theme="night"] select.module-color-select option,
+    html[data-theme="night"] select.laser-color-select option {
+        background:#07111b;
+        color:#f5f8fc;
+        border-color:#35506d;
     }
 
-    html[data-theme="dusk"] select.module-color-select .module-option-meta {
-        color: #f0c674;
+    html[data-theme="night"] select.module-color-select .select-option-label,
+    html[data-theme="night"] select.laser-color-select .select-option-label {
+        color:#f5f8fc;
     }
 
-    html[data-theme="day"] select.module-color-select .module-option-label {
-        color: #17324d;
+    html[data-theme="night"] select.module-color-select .select-option-meta,
+    html[data-theme="night"] select.laser-color-select .select-option-meta {
+        color:#58c9ff;
     }
 
-    html[data-theme="day"] select.module-color-select .module-option-meta {
-        color: #0b648e;
+    html[data-theme="night"] select.module-color-select option:hover,
+    html[data-theme="night"] select.module-color-select option:focus,
+    html[data-theme="night"] select.module-color-select option:checked,
+    html[data-theme="night"] select.laser-color-select option:hover,
+    html[data-theme="night"] select.laser-color-select option:focus,
+    html[data-theme="night"] select.laser-color-select option:checked {
+        background:#17395a;
+    }
+
+    html[data-theme="night"] select.module-color-select optgroup {
+        background:#15314a;
+        color:#f6c56b;
+    }
+
+    /* Planner Dusk */
+    html[data-theme="dusk"] select.module-color-select,
+    html[data-theme="dusk"] select.laser-color-select,
+    html[data-theme="dusk"] select.module-color-select::picker(select),
+    html[data-theme="dusk"] select.laser-color-select::picker(select),
+    html[data-theme="dusk"] select.module-color-select option,
+    html[data-theme="dusk"] select.laser-color-select option {
+        background:#272522;
+        color:#fff8ee;
+        border-color:#756a60;
+    }
+
+    html[data-theme="dusk"] select.module-color-select .select-option-label,
+    html[data-theme="dusk"] select.laser-color-select .select-option-label {
+        color:#fff8ee;
+    }
+
+    html[data-theme="dusk"] select.module-color-select .select-option-meta,
+    html[data-theme="dusk"] select.laser-color-select .select-option-meta {
+        color:#f0c674;
+    }
+
+    html[data-theme="dusk"] select.module-color-select option:hover,
+    html[data-theme="dusk"] select.module-color-select option:focus,
+    html[data-theme="dusk"] select.module-color-select option:checked,
+    html[data-theme="dusk"] select.laser-color-select option:hover,
+    html[data-theme="dusk"] select.laser-color-select option:focus,
+    html[data-theme="dusk"] select.laser-color-select option:checked {
+        background:#c78632;
+    }
+
+    html[data-theme="dusk"] select.module-color-select optgroup {
+        background:#3b2e27;
+        color:#f6c56b;
+    }
+
+    /* Planner Day */
+    html[data-theme="day"] select.module-color-select,
+    html[data-theme="day"] select.laser-color-select,
+    html[data-theme="day"] select.module-color-select::picker(select),
+    html[data-theme="day"] select.laser-color-select::picker(select),
+    html[data-theme="day"] select.module-color-select option,
+    html[data-theme="day"] select.laser-color-select option {
+        background:#fffdf8;
+        color:#17324d;
+        border-color:#8298aa;
+    }
+
+    html[data-theme="day"] select.module-color-select .select-option-label,
+    html[data-theme="day"] select.laser-color-select .select-option-label {
+        color:#17324d;
+    }
+
+    html[data-theme="day"] select.module-color-select .select-option-meta,
+    html[data-theme="day"] select.laser-color-select .select-option-meta {
+        color:#006f9e;
     }
 
     html[data-theme="day"] select.module-color-select option:hover,
     html[data-theme="day"] select.module-color-select option:focus,
-    html[data-theme="day"] select.module-color-select option:checked {
-        background: #d5e8f2;
+    html[data-theme="day"] select.module-color-select option:checked,
+    html[data-theme="day"] select.laser-color-select option:hover,
+    html[data-theme="day"] select.laser-color-select option:focus,
+    html[data-theme="day"] select.laser-color-select option:checked {
+        background:#d5e8f2;
+    }
+
+    html[data-theme="day"] select.module-color-select optgroup {
+        background:#e2e8f0;
+        color:#7b3900;
     }
 }
