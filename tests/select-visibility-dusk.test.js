@@ -7,8 +7,9 @@ test("selected laser and module values use non-interactive color overlay", async
   assert.match(source, /select-color-shell/);
   assert.match(source, /selected-color-overlay/);
   assert.match(source, /function syncSelectedColor/);
-  assert.match(source, /pointer-events:none/);
   assert.doesNotMatch(source, /<selectedcontent>/);
+  const css = await readFile(new URL("../style.css", import.meta.url), "utf8");
+  assert.match(css, /pointer-events:none/);
 });
 
 test("native select onchange paths remain intact", async () => {
