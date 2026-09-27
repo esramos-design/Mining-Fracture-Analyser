@@ -221,6 +221,7 @@ window.updateModuleSlots = function(armId) {
     const laserSelect = document.getElementById(`${armId}-laser`);
     if (!laserSelect) return;
 
+    syncLaserSelector(laserSelect.id);
     const selectedOption = laserSelect.options[laserSelect.selectedIndex];
     const slots = parseInt(selectedOption.dataset.slots) || 1; 
 
@@ -687,7 +688,10 @@ function createArmConfigHtml(armIndex, ship) {
     // NOTE: Added onchange to the laser select to trigger slot locking
     return `<div id="${armId}" class="ship-arm-card p-3 mb-2 rounded bg-[var(--bg-card)] border border-[var(--border-main)]" data-ship="${ship.id}">
         <div class="flex justify-between mb-1"><span class="text-xs font-bold text-white">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
-        <select id="${armId}-laser" class="w-full p-2 mb-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}'); calculate()">${laserOpts}</select>
+        <div class="laser-select-row mb-2">
+        <select id="${armId}-laser" class="laser-native-select" aria-label="Mining laser head" onchange="updateModuleSlots('${armId}'); syncLaserSelector('${armId}-laser'); calculate()">${laserOpts}</select>
+        <div class="laser-select-host" data-select-id="${armId}-laser"></div>
+        </div>
         ${modHtml}
         <button onclick="this.parentElement.remove();calculate()" class="text-[9px] text-red-400 w-full text-right mt-1">REMOVE</button>
     </div>`;
@@ -697,6 +701,95 @@ function getModOptions() {
     const act = sortedModules.filter(m => m.activation === 'Active').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
     const pas = sortedModules.filter(m => m.activation === 'Passive').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
     return `<option value="None">None</option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
+}
+
+function laserDisplayParts(option) {
+    if (!option) return { name: 'Unknown', meta: '' };
+    const text = String(option.textContent || '').trim();
+    const open = text.indexOf('(');
+    const close = text.lastIndexOf(')');
+    if (open > 0 && close > open) {
+        return {
+            name: text.slice(0, open).trim(),
+            meta: text.slice(open + 1, close).trim().replace(/\s+/g, ' · ')
+        };
+    }
+    return { name: text, meta: '' };
+}
+
+function buildLaserMenu(select) {
+    const host = document.querySelector(`.laser-select-host[data-select-id="${select.id}"]`);
+    if (!host) return;
+
+    const selectedOption = select.options[select.selectedIndex];
+    const current = laserDisplayParts(selectedOption);
+
+    const optionsHtml = [...select.options].map((option, index) => {
+        const parts = laserDisplayParts(option);
+        const selected = index === select.selectedIndex;
+        return `
+            <button type="button"
+                    class="laser-choice ${selected ? 'selected' : ''}"
+                    role="option"
+                    aria-selected="${selected}"
+                    data-option-index="${index}">
+                <span class="laser-choice-name">${escapeModuleHtml(parts.name)}</span>
+                <span class="laser-choice-meta">${escapeModuleHtml(parts.meta)}</span>
+            </button>`;
+    }).join('');
+
+    host.innerHTML = `
+        <div class="laser-combobox">
+            <button type="button"
+                    class="laser-combobox-trigger"
+                    aria-haspopup="listbox"
+                    aria-expanded="false">
+                <span class="laser-trigger-copy">
+                    <strong>${escapeModuleHtml(current.name)}</strong>
+                    <small>${escapeModuleHtml(current.meta)}</small>
+                </span>
+                <span class="laser-trigger-chevron" aria-hidden="true">▾</span>
+            </button>
+            <div class="laser-combobox-menu" role="listbox" hidden>
+                ${optionsHtml}
+            </div>
+        </div>`;
+
+    const trigger = host.querySelector('.laser-combobox-trigger');
+    const menu = host.querySelector('.laser-combobox-menu');
+
+    trigger?.addEventListener('click', () => {
+        document.querySelectorAll('.laser-combobox-menu:not([hidden]), .module-combobox-menu:not([hidden])').forEach(openMenu => {
+            if (openMenu !== menu) {
+                openMenu.hidden = true;
+                openMenu.closest('.laser-combobox, .module-combobox')
+                    ?.querySelector('.laser-combobox-trigger, .module-combobox-trigger')
+                    ?.setAttribute('aria-expanded', 'false');
+            }
+        });
+        menu.hidden = !menu.hidden;
+        trigger.setAttribute('aria-expanded', String(!menu.hidden));
+    });
+
+    host.querySelectorAll('.laser-choice').forEach(button => {
+        button.addEventListener('click', () => {
+            const index = Number(button.dataset.optionIndex);
+            if (!Number.isInteger(index) || index < 0 || index >= select.options.length) return;
+            select.selectedIndex = index;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            if (menu) menu.hidden = true;
+            trigger?.setAttribute('aria-expanded', 'false');
+        });
+    });
+}
+
+function initLaserSelectors(root = document) {
+    root.querySelectorAll('select.laser-native-select').forEach(select => buildLaserMenu(select));
+}
+
+function syncLaserSelector(selectId) {
+    const select = document.getElementById(selectId);
+    if (select) buildLaserMenu(select);
 }
 
 function escapeModuleHtml(value) {
@@ -892,4 +985,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
     window.initModuleSelectors = initModuleSelectors;
     window.syncModuleSelector = syncModuleSelector;
+    window.initLaserSelectors = initLaserSelectors;
+    window.syncLaserSelector = syncLaserSelector;
 });
