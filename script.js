@@ -222,7 +222,8 @@ window.updateModuleSlots = function(armId) {
     if (!laserSelect) return;
 
     const selectedOption = laserSelect.options[laserSelect.selectedIndex];
-    const slots = parseInt(selectedOption.dataset.slots) || 1; 
+    const slots = parseInt(selectedOption.dataset.slots) || 1;
+    syncSelectedColor(laserSelect);
 
     for (let i = 1; i <= 3; i++) {
         const modSelect = document.getElementById(`${armId}-mod${i}`);
@@ -239,6 +240,7 @@ window.updateModuleSlots = function(armId) {
             modSelect.style.cursor = "pointer";
         }
         window.togCheck(armId, i);
+        syncSelectedColor(modSelect);
     }
 };
 
@@ -680,17 +682,56 @@ function createArmConfigHtml(armIndex, ship) {
 
     // Render all 3 slots (they will be disabled by updateModuleSlots if needed)
     for(let i=1; i<=3; i++) {
-        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="module-color-select w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()"><button type="button"><selectedcontent></selectedcontent></button>${modOpts}</select>
+        modHtml += `<div class="flex gap-1 mb-1"><div class="select-color-shell w-full"><select id="${armId}-mod${i}" class="module-color-select w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});syncSelectedColor(this);calculate()">${modOpts}</select><span class="selected-color-overlay" aria-hidden="true"></span></div>
         <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div></div>`;
     }
 
     // NOTE: Added onchange to the laser select to trigger slot locking
     return `<div id="${armId}" class="ship-arm-card p-3 mb-2 rounded bg-[var(--bg-card)] border border-[var(--border-main)]" data-ship="${ship.id}">
         <div class="flex justify-between mb-1"><span class="text-xs font-bold text-white">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
-        <select id="${armId}-laser" class="laser-color-select w-full p-2 mb-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}'); calculate()"><button type="button"><selectedcontent></selectedcontent></button>${laserOpts}</select>
+        <div class="select-color-shell mb-2"><select id="${armId}-laser" class="laser-color-select w-full p-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}');syncSelectedColor(this);calculate()">${laserOpts}</select><span class="selected-color-overlay" aria-hidden="true"></span></div>
         ${modHtml}
         <button onclick="this.parentElement.remove();calculate()" class="text-[9px] text-red-400 w-full text-right mt-1">REMOVE</button>
     </div>`;
+}
+
+function splitSelectedOption(option) {
+    if (!option) return { label:'', meta:'' };
+    const labelNode = option.querySelector?.('.select-option-label');
+    const metaNode = option.querySelector?.('.select-option-meta');
+    if (labelNode || metaNode) {
+        return {
+            label:(labelNode?.textContent || '').trim(),
+            meta:(metaNode?.textContent || '').trim()
+        };
+    }
+    const text = String(option.textContent || '').trim();
+    const open = text.indexOf('(');
+    return open > 0
+        ? { label:text.slice(0,open).trim(), meta:text.slice(open).trim() }
+        : { label:text, meta:'' };
+}
+
+function syncSelectedColor(select) {
+    if (!select) return;
+    const shell = select.closest('.select-color-shell');
+    const overlay = shell?.querySelector('.selected-color-overlay');
+    if (!overlay) return;
+
+    const parts = splitSelectedOption(select.options[select.selectedIndex]);
+    overlay.innerHTML = '';
+    const label = document.createElement('span');
+    label.className = 'selected-color-label';
+    label.textContent = parts.label;
+    overlay.appendChild(label);
+
+    if (parts.meta) {
+        const meta = document.createElement('span');
+        meta.className = 'selected-color-meta';
+        meta.textContent = parts.meta;
+        overlay.appendChild(meta);
+    }
+    overlay.classList.toggle('is-disabled', !!select.disabled);
 }
 
 function getModuleOptionMarkup(module) {
@@ -770,4 +811,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderGadgetAttributes = renderGadgetAttributes; 
     window.updateModuleSlots = updateModuleSlots; // Expose to global scope for HTML inline calls
     window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
+    window.syncSelectedColor = syncSelectedColor;
 });
