@@ -36,5 +36,5 @@ test("ideal solver restricts each vessel dimension independently and retains mix
   assert.match(solver, /for\(var pr=0;pr<=caps\.prospector;pr\+\+\)/);
   assert.match(solver, /for\(var g=0;g<=caps\.golem;g\+\+\)/);
   assert.match(solver, /var total=m\+pr\+g/);
-  assert.match(solver, /Recommendation vessels/);
+  assert.match(solver, /Recommendation resources/);
 });
