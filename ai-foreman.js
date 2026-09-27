@@ -1,14 +1,11 @@
 /**
- * MODULE: SENIOR FOREMAN
+ * MODULE: AI FOREMAN (OPENAI)
+ * Revision foundation for MFA after v5.35.
  *
- * Primary path:
- * - Cloudflare Pages Function
- * - Cloudflare Workers AI (Free-plan model)
- *
- * Fallback path:
- * - Deterministic MFA-native briefing generated in-browser.
- *
- * No browser API key and no paid OpenAI dependency.
+ * Security model:
+ * - No API keys are accepted or stored in the browser.
+ * - Browser calls a maintainer-controlled backend endpoint.
+ * - Backend owns OPENAI_API_KEY and calls the OpenAI Responses API.
  */
 
 const MFA_AI_ENDPOINT =
@@ -29,73 +26,17 @@ function setAIMessage(html) {
     if (el) el.innerHTML = html;
 }
 
-function finite(value, fallback = 0) {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
-}
-
-function buildNativeForeman(mode) {
-    if (typeof currentSimState === "undefined") {
-        return "MFA simulation state is unavailable.";
-    }
-
-    const mass = finite(currentSimState.mass);
-    const resistance = finite(currentSimState.resistance);
-    const instability = finite(currentSimState.instability);
-    const power = finite(currentSimState.power);
-    const activeArms = Math.max(0, Math.round(finite(currentSimState.activeArms)));
-    const success = Boolean(currentSimState.success);
-
-    const status = success ? "FRACTURE VIABLE" : "FRACTURE NOT VIABLE";
-    const base =
-        `${status}. MFA reports rock mass ${mass.toFixed(0)} kg, resistance ${resistance.toFixed(1)}%, ` +
-        `instability ${instability.toFixed(1)}%, and ${power.toFixed(0)} MW from ${activeArms} active mining head${activeArms === 1 ? "" : "s"}.`;
-
-    if (mode === "briefing") {
-        return (
-            `${base} Crew order: use only the configured active vessels and heads included in the MFA calculation. ` +
-            (success
-                ? "Coordinate laser application, maintain stable output, and follow the exact recommended loadout before fracture."
-                : "Do not begin fracture. Increase effective capability or apply the recommended MFA configuration, then recalculate.")
-        );
-    }
-
-    if (mode === "risk") {
-        const instabilityNote =
-            instability >= 70
-                ? "Instability is high; power changes should be deliberate and coordinated."
-                : instability >= 40
-                    ? "Instability is moderate; avoid unnecessary power oscillation."
-                    : "Instability is comparatively controlled in the submitted MFA state.";
-
-        return `${base} ${instabilityNote} MFA does not infer an explosion probability from these values.`;
-    }
-
-    if (mode === "optimize") {
-        return (
-            `${base} Use MFA Recommended Solutions as the authoritative loadout source. ` +
-            "Match the exact recommended vessel count, mining heads, module activation state, and gadget before comparing the reproduced fracture verdict."
-        );
-    }
-
-    return (
-        `${base} ` +
-        (success
-            ? "The submitted MFA state has sufficient calculated capability to proceed, subject to the exact configuration shown by the calculator."
-            : "The submitted MFA state does not have sufficient calculated capability. Follow Recommended Solutions and recalculate before proceeding.")
-    );
-}
-
 async function openApiModal() {
+    // Compatibility name retained for the existing button. No API key is entered in-browser.
     if (!MFA_AI_ENDPOINT) {
         setAIMessage(
-            '<span class="text-green-400 font-bold">// MFA NATIVE FOREMAN READY</span><br>' +
-            '<span class="text-purple-100/80">This build is using the deterministic zero-cost fallback.</span>'
+            '<span class="text-yellow-400 font-bold">// OPENAI FOREMAN BACKEND NOT CONFIGURED</span><br>' +
+            '<span class="text-purple-100/80">This build has no server-side Foreman endpoint configured.</span>'
         );
         return;
     }
 
-    setAIMessage('<span class="text-blue-300 font-bold">// CHECKING SENIOR FOREMAN…</span>');
+    setAIMessage('<span class="text-blue-300 font-bold">// CHECKING OPENAI FOREMAN BACKEND…</span>');
 
     try {
         const response = await fetch(MFA_AI_ENDPOINT, {
@@ -109,18 +50,16 @@ async function openApiModal() {
             throw new Error(data.error || `Backend health check returned HTTP ${response.status}`);
         }
 
-        const provider = typeof data.provider === "string" ? data.provider : "unknown";
+        const ready = data.status === "ready";
         const model = typeof data.model === "string" ? data.model : "unknown";
-        const fallback = typeof data.fallback === "string" ? data.fallback : "mfa-native";
-
         setAIMessage(
-            `<span class="text-green-400 font-bold">// SENIOR FOREMAN READY</span><br>` +
-            `<span class="text-purple-100/80">Provider: ${provider} · Model: ${model} · Fallback: ${fallback} · Paid API required: no</span>`
+            ready
+                ? `<span class="text-green-400 font-bold">// OPENAI FOREMAN READY</span><br><span class="text-purple-100/80">Server-side credentials configured · Model: ${model}</span>`
+                : `<span class="text-yellow-400 font-bold">// OPENAI FOREMAN CONFIGURATION REQUIRED</span><br><span class="text-purple-100/80">Backend reachable, but OPENAI_API_KEY is not configured · Model: ${model}</span>`
         );
     } catch (error) {
         setAIMessage(
-            '<span class="text-yellow-400 font-bold">// CLOUDFLARE FOREMAN UNAVAILABLE — NATIVE FALLBACK READY</span><br>' +
-            `<span class="text-purple-100/80">${error.message}</span>`
+            `<span class="text-red-400 font-bold">// OPENAI FOREMAN BACKEND UNAVAILABLE</span><br><span class="text-red-300">${error.message}</span>`
         );
     }
 }
@@ -131,6 +70,7 @@ function closeApiModal() {
 }
 
 function saveApiKey() {
+    // Compatibility shim. Deliberately does not persist secrets.
     openApiModal();
 }
 
@@ -178,6 +118,14 @@ async function askAI(mode) {
     const loading = getAILoading();
     const customInput = document.getElementById("ai-custom-input");
 
+    if (!MFA_AI_ENDPOINT) {
+        setAIMessage(
+            '<span class="text-yellow-400 font-bold">// OPENAI BACKEND NOT CONFIGURED</span><br>' +
+            '<span class="text-purple-100/80">Set <code>window.MFA_CONFIG.aiEndpoint</code> to the deployed MFA Foreman endpoint.</span>'
+        );
+        return;
+    }
+
     let prompt;
     try {
         prompt = buildPrompt(mode);
@@ -190,12 +138,6 @@ async function askAI(mode) {
     setAIMessage("");
 
     try {
-        if (!MFA_AI_ENDPOINT) {
-            const el = getAIContent();
-            if (el) el.textContent = buildNativeForeman(mode);
-            return;
-        }
-
         const response = await fetch(MFA_AI_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -217,20 +159,13 @@ async function askAI(mode) {
         const text = typeof data.text === "string" ? data.text : "";
         if (!text) throw new Error("Foreman returned no content.");
 
+        // Render as plain text. Do not inject model-generated HTML into the DOM.
         const el = getAIContent();
-        if (el) {
-            const suffix = data.degraded
-                ? "\n\n[MFA native fallback used — no paid API required.]"
-                : "";
-            el.textContent = text + suffix;
-        }
+        if (el) el.textContent = text;
     } catch (error) {
-        const el = getAIContent();
-        if (el) {
-            el.textContent =
-                buildNativeForeman(mode) +
-                "\n\n[MFA native fallback used because Cloudflare AI was unavailable.]";
-        }
+        setAIMessage(
+            `<span class="text-red-400 font-bold">// OPENAI FOREMAN FAILURE</span><br><span class="text-red-300">${error.message}</span>`
+        );
     } finally {
         if (loading) loading.classList.add("hidden");
         if (mode === "custom" && customInput) customInput.value = "";
@@ -240,7 +175,7 @@ async function askAI(mode) {
 document.addEventListener("DOMContentLoaded", () => {
     setAIMessage(
         MFA_AI_ENDPOINT
-            ? '<span class="text-purple-400/70 italic">// SENIOR FOREMAN READY · CLOUDFLARE AI WITH MFA NATIVE FALLBACK.</span>'
-            : '<span class="text-purple-400/70 italic">// MFA NATIVE FOREMAN READY · ZERO-COST FALLBACK ACTIVE.</span>'
+            ? '<span class="text-purple-400/70 italic">// OPENAI FOREMAN READY.</span>'
+            : '<span class="text-purple-500/50 italic">// OPENAI FOREMAN AWAITING BACKEND CONFIGURATION.</span>'
     );
 });

@@ -221,7 +221,6 @@ window.updateModuleSlots = function(armId) {
     const laserSelect = document.getElementById(`${armId}-laser`);
     if (!laserSelect) return;
 
-    syncLaserSelector(laserSelect.id);
     const selectedOption = laserSelect.options[laserSelect.selectedIndex];
     const slots = parseInt(selectedOption.dataset.slots) || 1; 
 
@@ -231,12 +230,15 @@ window.updateModuleSlots = function(armId) {
 
         if (i > slots) {
             modSelect.disabled = true;
-            modSelect.value = "None";
+            modSelect.value = "None"; 
+            modSelect.style.opacity = "0.3";
+            modSelect.style.cursor = "not-allowed";
         } else {
             modSelect.disabled = false;
+            modSelect.style.opacity = "1";
+            modSelect.style.cursor = "pointer";
         }
         window.togCheck(armId, i);
-        syncModuleSelector(modSelect.id);
     }
 };
 
@@ -675,23 +677,16 @@ function createArmConfigHtml(armIndex, ship) {
     let modHtml = '';
     const modOpts = getModOptions();
 
-    // Render all 3 slots. Native selects remain the calculation/state authority.
-    // A custom presentation layer is attached after render for readable names + attributes.
+    // Render all 3 slots (they will be disabled by updateModuleSlots if needed)
     for(let i=1; i<=3; i++) {
-        modHtml += `<div class="module-select-row mb-1">
-            <select id="${armId}-mod${i}" class="module-native-select" aria-label="Mining module slot ${i}" onchange="togCheck('${armId}', ${i});syncModuleSelector('${armId}-mod${i}');calculate()">${modOpts}</select>
-            <div class="module-select-host" data-select-id="${armId}-mod${i}"></div>
-            <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div>
-        </div>`;
+        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()">${modOpts}</select>
+        <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div></div>`;
     }
 
     // NOTE: Added onchange to the laser select to trigger slot locking
     return `<div id="${armId}" class="ship-arm-card p-3 mb-2 rounded bg-[var(--bg-card)] border border-[var(--border-main)]" data-ship="${ship.id}">
         <div class="flex justify-between mb-1"><span class="text-xs font-bold text-white">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
-        <div class="laser-select-row mb-2">
-        <select id="${armId}-laser" class="laser-native-select" aria-label="Mining laser head" onchange="updateModuleSlots('${armId}'); syncLaserSelector('${armId}-laser'); calculate()">${laserOpts}</select>
-        <div class="laser-select-host" data-select-id="${armId}-laser"></div>
-        </div>
+        <select id="${armId}-laser" class="w-full p-2 mb-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}'); calculate()">${laserOpts}</select>
         ${modHtml}
         <button onclick="this.parentElement.remove();calculate()" class="text-[9px] text-red-400 w-full text-right mt-1">REMOVE</button>
     </div>`;
@@ -702,220 +697,6 @@ function getModOptions() {
     const pas = sortedModules.filter(m => m.activation === 'Passive').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
     return `<option value="None">None</option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
 }
-
-function laserDisplayParts(option) {
-    if (!option) return { name: 'Unknown', meta: '' };
-    const text = String(option.textContent || '').trim();
-    const open = text.indexOf('(');
-    const close = text.lastIndexOf(')');
-    if (open > 0 && close > open) {
-        return {
-            name: text.slice(0, open).trim(),
-            meta: text.slice(open + 1, close).trim().replace(/\s+/g, ' · ')
-        };
-    }
-    return { name: text, meta: '' };
-}
-
-function buildLaserMenu(select) {
-    const host = document.querySelector(`.laser-select-host[data-select-id="${select.id}"]`);
-    if (!host) return;
-
-    const selectedOption = select.options[select.selectedIndex];
-    const current = laserDisplayParts(selectedOption);
-
-    const optionsHtml = [...select.options].map((option, index) => {
-        const parts = laserDisplayParts(option);
-        const selected = index === select.selectedIndex;
-        return `
-            <button type="button"
-                    class="laser-choice ${selected ? 'selected' : ''}"
-                    role="option"
-                    aria-selected="${selected}"
-                    data-option-index="${index}">
-                <span class="laser-choice-name">${escapeModuleHtml(parts.name)}</span>
-                <span class="laser-choice-meta">${escapeModuleHtml(parts.meta)}</span>
-            </button>`;
-    }).join('');
-
-    host.innerHTML = `
-        <div class="laser-combobox">
-            <button type="button"
-                    class="laser-combobox-trigger"
-                    aria-haspopup="listbox"
-                    aria-expanded="false">
-                <span class="laser-trigger-copy">
-                    <strong>${escapeModuleHtml(current.name)}</strong>
-                    <small>${escapeModuleHtml(current.meta)}</small>
-                </span>
-                <span class="laser-trigger-chevron" aria-hidden="true">▾</span>
-            </button>
-            <div class="laser-combobox-menu" role="listbox" hidden>
-                ${optionsHtml}
-            </div>
-        </div>`;
-
-    const trigger = host.querySelector('.laser-combobox-trigger');
-    const menu = host.querySelector('.laser-combobox-menu');
-
-    trigger?.addEventListener('click', () => {
-        document.querySelectorAll('.laser-combobox-menu:not([hidden]), .module-combobox-menu:not([hidden])').forEach(openMenu => {
-            if (openMenu !== menu) {
-                openMenu.hidden = true;
-                openMenu.closest('.laser-combobox, .module-combobox')
-                    ?.querySelector('.laser-combobox-trigger, .module-combobox-trigger')
-                    ?.setAttribute('aria-expanded', 'false');
-            }
-        });
-        menu.hidden = !menu.hidden;
-        trigger.setAttribute('aria-expanded', String(!menu.hidden));
-    });
-
-    host.querySelectorAll('.laser-choice').forEach(button => {
-        button.addEventListener('click', () => {
-            const index = Number(button.dataset.optionIndex);
-            if (!Number.isInteger(index) || index < 0 || index >= select.options.length) return;
-            select.selectedIndex = index;
-            select.dispatchEvent(new Event('change', { bubbles: true }));
-            if (menu) menu.hidden = true;
-            trigger?.setAttribute('aria-expanded', 'false');
-        });
-    });
-}
-
-function initLaserSelectors(root = document) {
-    root.querySelectorAll('select.laser-native-select').forEach(select => buildLaserMenu(select));
-}
-
-function syncLaserSelector(selectId) {
-    const select = document.getElementById(selectId);
-    if (select) buildLaserMenu(select);
-}
-
-function escapeModuleHtml(value) {
-    return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-}
-
-function moduleDisplayParts(moduleName) {
-    if (!moduleName || moduleName === 'None') {
-        return { name: 'None', meta: 'No module fitted', activation: 'none' };
-    }
-
-    const module = sortedModules.find(item => item.name === moduleName);
-    if (!module) {
-        return { name: moduleName, meta: '', activation: 'unknown' };
-    }
-
-    const formatted = getFormattedStats(module, 'module').trim();
-    const meta = formatted.startsWith('(') && formatted.endsWith(')')
-        ? formatted.slice(1, -1)
-        : formatted;
-
-    return {
-        name: module.name,
-        meta,
-        activation: String(module.activation || '').toLowerCase()
-    };
-}
-
-function buildModuleMenu(select) {
-    const host = document.querySelector(`.module-select-host[data-select-id="${select.id}"]`);
-    if (!host) return;
-
-    const current = moduleDisplayParts(select.value);
-    const active = sortedModules.filter(module => module.activation === 'Active');
-    const passive = sortedModules.filter(module => module.activation === 'Passive');
-
-    const optionsHtml = (items) => items.map(module => {
-        const parts = moduleDisplayParts(module.name);
-        const selected = select.value === module.name;
-        return `
-            <button type="button"
-                    class="module-choice ${selected ? 'selected' : ''}"
-                    role="option"
-                    aria-selected="${selected}"
-                    data-module-value="${escapeModuleHtml(module.name)}">
-                <span class="module-choice-name">${escapeModuleHtml(parts.name)}</span>
-                <span class="module-choice-meta">${escapeModuleHtml(parts.meta)}</span>
-            </button>`;
-    }).join('');
-
-    host.innerHTML = `
-        <div class="module-combobox ${select.disabled ? 'disabled' : ''}">
-            <button type="button"
-                    class="module-combobox-trigger"
-                    aria-haspopup="listbox"
-                    aria-expanded="false"
-                    ${select.disabled ? 'disabled' : ''}>
-                <span class="module-trigger-copy">
-                    <strong>${escapeModuleHtml(current.name)}</strong>
-                    <small>${escapeModuleHtml(current.meta)}</small>
-                </span>
-                <span class="module-trigger-chevron" aria-hidden="true">▾</span>
-            </button>
-            <div class="module-combobox-menu" role="listbox" hidden>
-                <button type="button"
-                        class="module-choice module-choice-none ${select.value === 'None' ? 'selected' : ''}"
-                        role="option"
-                        aria-selected="${select.value === 'None'}"
-                        data-module-value="None">
-                    <span class="module-choice-name">None</span>
-                    <span class="module-choice-meta">No module fitted</span>
-                </button>
-                <div class="module-choice-group">Active Modules</div>
-                ${optionsHtml(active)}
-                <div class="module-choice-group">Passive Modules</div>
-                ${optionsHtml(passive)}
-            </div>
-        </div>`;
-
-    const trigger = host.querySelector('.module-combobox-trigger');
-    const menu = host.querySelector('.module-combobox-menu');
-
-    trigger?.addEventListener('click', () => {
-        if (select.disabled) return;
-        document.querySelectorAll('.module-combobox-menu:not([hidden])').forEach(openMenu => {
-            if (openMenu !== menu) {
-                openMenu.hidden = true;
-                openMenu.closest('.module-combobox')?.querySelector('.module-combobox-trigger')?.setAttribute('aria-expanded', 'false');
-            }
-        });
-        menu.hidden = !menu.hidden;
-        trigger.setAttribute('aria-expanded', String(!menu.hidden));
-    });
-
-    host.querySelectorAll('.module-choice').forEach(button => {
-        button.addEventListener('click', () => {
-            if (select.disabled) return;
-            select.value = button.dataset.moduleValue || 'None';
-            select.dispatchEvent(new Event('change', { bubbles: true }));
-            if (menu) menu.hidden = true;
-            trigger?.setAttribute('aria-expanded', 'false');
-        });
-    });
-}
-
-function initModuleSelectors(root = document) {
-    root.querySelectorAll('select.module-native-select').forEach(select => buildModuleMenu(select));
-}
-
-function syncModuleSelector(selectId) {
-    const select = document.getElementById(selectId);
-    if (select) buildModuleMenu(select);
-}
-
-document.addEventListener('click', event => {
-    if (event.target.closest('.module-combobox')) return;
-    document.querySelectorAll('.module-combobox-menu:not([hidden])').forEach(menu => {
-        menu.hidden = true;
-        menu.closest('.module-combobox')?.querySelector('.module-combobox-trigger')?.setAttribute('aria-expanded', 'false');
-    });
-});
 
 // --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
 const MFA_THEMES = ['day', 'dusk', 'night'];
@@ -983,8 +764,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderGadgetAttributes = renderGadgetAttributes; 
     window.updateModuleSlots = updateModuleSlots; // Expose to global scope for HTML inline calls
     window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
-    window.initModuleSelectors = initModuleSelectors;
-    window.syncModuleSelector = syncModuleSelector;
-    window.initLaserSelectors = initLaserSelectors;
-    window.syncLaserSelector = syncLaserSelector;
 });
