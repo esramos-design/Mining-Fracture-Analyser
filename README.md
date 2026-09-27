@@ -58,7 +58,7 @@ Optional AI-assisted tactical guidance is available through a user-supplied Goog
 ## 📖 How to Use
 
 ### 1. Launch
-Open the live web application or a supported standalone build.
+Open the live web application.
 
 ### 2. Enter target data
 - **Manual:** enter Mass, Resistance, and Instability.
@@ -96,11 +96,6 @@ The project aims to remain useful to individual miners, multi-crew operators, an
 The tool is available as a Progressive Web App compatible with modern browsers.
 
 👉 [Launch MFA Dashboard](https://esramos-design.github.io/mfa.github.io/)
-
-### 🖥️ Standalone Windows Build
-Published standalone builds are available from the repository releases.
-
-📥 [Download MFA v5.35](https://github.com/esramos-design/Mining-Fracture-Analyser/releases/tag/v5.35-release)
 
 ---
 
