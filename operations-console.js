@@ -196,8 +196,8 @@
         if (inputMode !== "manual") setInputMode("manual");
     }
 
-    function markOcr(fields = ["mass", "resistance", "instability"]) {
-        fields.forEach(field => markSource(field, "OCR"));
+    function markOcr(fields = ["mass", "resistance", "instability"], source = "OCR") {
+        fields.forEach(field => markSource(field, source));
         setInputMode("ocr");
     }
 
@@ -425,7 +425,10 @@
 
         // Mark a successful OCR parse without coupling OCR to UI internals.
         window.addEventListener("mfa:ocr-applied", event => {
-            markOcr(event.detail?.fields || ["mass", "resistance", "instability"]);
+            markOcr(
+                event.detail?.fields || ["mass", "resistance", "instability"],
+                event.detail?.engine || "OCR"
+            );
         });
 
         setTimeout(syncVerdict, 50);

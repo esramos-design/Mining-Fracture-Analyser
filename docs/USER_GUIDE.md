@@ -54,13 +54,20 @@ For the most reliable solver result, use the **base/original rock values** befor
 
 ### Screenshot OCR
 
-The screenshot scanner is currently **experimental**.
+The screenshot scanner remains **experimental in Alpha**.
 
-It can help populate fields, but v5.36.0 does not consider it authoritative because Star Citizen mining HUD layouts and colours differ across ships, resolutions and cockpit presentations.
+The Alpha OCR path now uses a Regolith-compatible **PaddleOCR PP-OCRv4** engine as the primary recognizer. MFA also runs the previous Tesseract scanner as a shadow comparison and automatic fallback when PaddleOCR does not return a complete Mass / Resistance / Instability capture.
 
-Always visually verify OCR-derived values before using the recommendation.
+The OCR debug window reports both results and identifies which engine supplied the Target Acquisition values.
 
-A dedicated 4.10.1 Target Acquisition/OCR rebuild is planned after team testing with Prospector, MOLE and Golem screenshots.
+OCR remains input-only:
+
+- it may populate **Rock Mass**, **Resistance**, and **Instability**;
+- it does not change the audited 4.10.1 fracture mechanics;
+- it does not read or alter Fleet Planner quantities/loadouts;
+- it does not influence the Recommended Ideal Loadout other than through the Target Acquisition values it successfully captures.
+
+Always visually verify OCR-derived values during Alpha validation, especially across Prospector, MOLE and Golem cockpit layouts, resolutions and HUD colours.
 
 ---
 
