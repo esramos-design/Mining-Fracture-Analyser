@@ -101,6 +101,12 @@ When an Active module is recommended as part of the best plan, its required ON s
 
 When enabled, the solver may recommend a mining gadget.
 
+### Keep current active ship type in recommendation
+
+When enabled, MFA keeps the first currently **Active** Fleet Planner vessel type in the ideal solution and then searches for the minimum additional support needed.
+
+For example, if your current active vessel is a Prospector, MFA will not replace your operation with a MOLE-only recommendation. It will search Prospector-based and mixed solutions instead.
+
 ### Vessels available for recommendation
 
 Choose which mining-vessel types your team can actually provide:
