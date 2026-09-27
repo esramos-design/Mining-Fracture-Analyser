@@ -27,12 +27,10 @@ jobs:
           node --check v535-runtime.js
           node --check script.js
           node --check fleet.js
-          node --check ai-foreman.js
           node --check scanner.js
           node --check operations-console.js
           node --check cooperative-solver.js
           node --check unified-fleet-planner.js
-          node --check functions/api/foreman.js
           node --check scripts/build-pages.mjs
       - name: Validate operations console DOM contract
         run: node scripts/validate-operations-console.mjs
