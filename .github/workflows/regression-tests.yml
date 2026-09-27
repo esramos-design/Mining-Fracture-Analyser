@@ -24,5 +24,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install build dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
       - name: Run v5.35 regression tests
         run: npm test
+      - name: Validate production-obfuscated Pages build
+        run: npm run build:pages:production
