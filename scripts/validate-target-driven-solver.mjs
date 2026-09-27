@@ -31,12 +31,16 @@ if (!renderBlock.includes("solveIdeal(state,p,strat)")) {
   fail("render(ctx) does not call solveIdeal");
 }
 
-if (renderBlock.includes("solver-more-plans") || renderBlock.includes("other ideal / closest plan")) {
-  fail("Recommended Solutions still exposes multiple fleet plans instead of the single best result");
+if (!renderBlock.includes('var objective=p.optimizerObjective||"balanced-operations"')) {
+  fail("Recommended Solutions does not select an explicit v2 objective");
 }
 
-if (!renderBlock.includes("var best=solved.options[0]")) {
-  fail("Recommended Solutions does not select the top-ranked result");
+if (!renderBlock.includes("var best=solved.portfolio[objective]||solved.options[0]")) {
+  fail("Recommended Solutions does not select the top-ranked result for the selected objective");
+}
+
+if (!renderBlock.includes("portfolioHtml(solved,objective)")) {
+  fail("Recommended Solutions does not expose deterministic objective alternatives");
 }
 
 const solveStart = source.indexOf("function solveIdeal");
@@ -47,6 +51,9 @@ const solveBlock = source.slice(solveStart, solveEnd);
 if (solveBlock.includes("baseArms")) fail("solveIdeal still uses current fitted arms");
 if (solveBlock.includes("support.")) fail("solveIdeal still uses available support counts");
 if (!solveBlock.includes("m+pr+g")) fail("solveIdeal is not searching independent fleet compositions");
+if (!solveBlock.includes("buildVesselPlans(counts,vars)")) fail("solveIdeal is not searching vessel-specific loadouts");
+if (!solveBlock.includes("minimumMarginPct")) fail("solveIdeal is not applying the v2 recommendation safety margin");
+if (!solveBlock.includes("recommendationCaps")) fail("solveIdeal is not applying recommendation resource caps");
 
 const evaluateStart = source.indexOf("function evaluate(");
 const evaluateEnd = source.indexOf("function strategy", evaluateStart);

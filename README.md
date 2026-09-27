@@ -109,18 +109,23 @@ The deterministic engine calculates:
 
 Recommended Solutions is **target-driven** and does not use the Fleet Planner as a recommendation source.
 
-It returns one best ideal plan containing:
+Ideal Loadout v2 ranks deterministic plans inside a separate **Recommendation Resource Pool** with per-vessel quantity limits and a configurable minimum fracture margin.
 
-- exact vessel count;
-- exact vessel type;
-- exact mining head per active arm;
-- exact module slots;
+The highlighted plan includes:
+
+- exact vessel count and vessel-specific loadouts;
+- independent deterministic variants for duplicate vessels;
+- hull, operator, mining-head and consumable metrics;
+- exact mining heads and module slots;
 - Active module ON/OFF requirements;
 - gadget requirement;
-- calculated fracture capacity and margin;
+- calculated fracture capacity, margin and final instability;
+- deterministic “Why this plan” explanation;
 - per-vessel **Available to assist** confirmation.
 
-The user can then reproduce that ideal plan in the actual Fleet Planner for parity checking.
+The selected objective can be Balanced Operations, Minimum Hulls, Minimum Crew, Maximum Margin, Minimum Instability or Minimum Consumables. MFA also exposes materially different objective alternatives when they exist.
+
+The user can then reproduce the highlighted plan in the actual Fleet Planner for parity checking.
 
 ### 📚 Mining database
 

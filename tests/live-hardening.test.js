@@ -6,12 +6,12 @@ test("public mechanics guide documents current ideal-solver semantics", async ()
   const guide = await readFile(new URL("../docs/RECOMMENDED_IDEAL_LOADOUT_MECHANICS.md", import.meta.url), "utf8");
   const html = await readFile(new URL("../mechanics-guide.html", import.meta.url), "utf8");
 
-  assert.match(guide, /Minimum ships/);
-  assert.match(guide, /minimum vessel hull count/);
-  assert.match(guide, /repeated vessels share a variant/i);
-  assert.match(guide, /Fleet Planner influence/);
+  assert.match(guide, /Balanced operations/);
+  assert.match(guide, /Recommendation Resource Pool/);
+  assert.match(guide, /Duplicate-vessel specialization/);
   assert.match(guide, /Available to assist/);
-  assert.match(html, /Recommended Ideal Loadout — Mechanics Guide/);
+  assert.match(guide, /MFAV535\.calculateV535/);
+  assert.match(html, /Recommended Ideal Loadout Mechanics/);
 });
 
 test("Cloudflare build publishes OCR adapter, docs and public mechanics guide", async () => {
