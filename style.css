@@ -4659,3 +4659,330 @@ html[data-theme="night"] .fleet-search-wrap input::placeholder {
     opacity:.62;
     cursor:not-allowed;
 }
+
+
+/* =========================================================
+   READABLE MINING MODULE LISTBOXES
+   Native select remains state/calculation authority.
+   ========================================================= */
+.module-select-row {
+    position:relative;
+    width:100%;
+}
+
+.module-native-select {
+    position:absolute !important;
+    width:1px !important;
+    height:1px !important;
+    padding:0 !important;
+    margin:-1px !important;
+    overflow:hidden !important;
+    clip:rect(0,0,0,0) !important;
+    white-space:nowrap !important;
+    border:0 !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+}
+
+.module-select-host {
+    position:relative;
+    width:100%;
+    z-index:1;
+}
+
+.module-select-host:focus-within {
+    z-index:80;
+}
+
+.module-combobox {
+    position:relative;
+    width:100%;
+}
+
+.module-combobox-trigger {
+    width:100%;
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:8px 11px;
+    border:1px solid #49647D;
+    border-radius:7px;
+    background:#0D1823;
+    color:#F4F8FB;
+    text-align:left;
+    cursor:pointer;
+    box-shadow:none;
+}
+
+.module-combobox-trigger:hover,
+.module-combobox-trigger:focus-visible {
+    border-color:#6EB7E6;
+    background:#122334;
+    outline:none;
+    box-shadow:0 0 0 3px rgba(110,183,230,.15);
+}
+
+.module-trigger-copy {
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    gap:3px;
+}
+
+.module-trigger-copy strong {
+    color:#F8FAFC;
+    font:800 12px/1.15 var(--font-tech);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.module-trigger-copy small {
+    color:#8ED8FF;
+    font:700 10px/1.25 var(--font-tech);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.module-trigger-chevron {
+    flex:0 0 auto;
+    color:#8ED8FF;
+    font-size:13px;
+    transition:transform .15s ease;
+}
+
+.module-combobox-trigger[aria-expanded="true"] .module-trigger-chevron {
+    transform:rotate(180deg);
+}
+
+.module-combobox-menu {
+    position:absolute;
+    left:0;
+    right:0;
+    top:calc(100% + 5px);
+    z-index:100;
+    max-height:380px;
+    overflow:auto;
+    padding:5px;
+    border:1px solid #49647D;
+    border-radius:8px;
+    background:#07111B;
+    box-shadow:0 18px 42px rgba(0,0,0,.48);
+}
+
+.module-choice-group {
+    margin:5px -5px 4px;
+    padding:7px 10px;
+    background:#18364E;
+    color:#F5C36D;
+    border-top:1px solid rgba(255,255,255,.05);
+    border-bottom:1px solid rgba(255,255,255,.06);
+    font:900 10px/1 var(--font-tech);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    position:sticky;
+    top:-5px;
+    z-index:2;
+}
+
+.module-choice {
+    width:100%;
+    min-height:44px;
+    display:grid;
+    grid-template-columns:minmax(115px,.8fr) minmax(0,1.7fr);
+    gap:12px;
+    align-items:center;
+    padding:8px 10px;
+    border:1px solid transparent;
+    border-radius:6px;
+    background:transparent;
+    text-align:left;
+    cursor:pointer;
+}
+
+.module-choice:hover,
+.module-choice:focus-visible {
+    background:#11283A;
+    border-color:#315978;
+    outline:none;
+}
+
+.module-choice.selected {
+    background:#174268;
+    border-color:#65B7E8;
+}
+
+.module-choice-name {
+    color:#F8FAFC;
+    font:800 11px/1.25 var(--font-tech);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.module-choice-meta {
+    color:#8ED8FF;
+    font:700 10px/1.35 var(--font-tech);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.module-choice-none .module-choice-meta {
+    color:#A9B8C5;
+}
+
+.module-combobox.disabled {
+    opacity:.42;
+}
+
+.module-combobox.disabled .module-combobox-trigger {
+    cursor:not-allowed;
+    border-color:#3B4854;
+}
+
+.fleet-vessel-card.expanded,
+.vessel-arms-grid,
+.ship-arm-card {
+    overflow:visible;
+}
+
+/* Planner Day */
+html[data-theme="day"] .module-combobox-trigger {
+    background:#FFFFFF;
+    color:#17324D;
+    border-color:#8298AA;
+}
+html[data-theme="day"] .module-combobox-trigger:hover,
+html[data-theme="day"] .module-combobox-trigger:focus-visible {
+    background:#F5F8FA;
+    border-color:#A94E00;
+    box-shadow:0 0 0 3px rgba(169,78,0,.12);
+}
+html[data-theme="day"] .module-trigger-copy strong {
+    color:#17324D;
+}
+html[data-theme="day"] .module-trigger-copy small,
+html[data-theme="day"] .module-trigger-chevron {
+    color:#135F86;
+}
+html[data-theme="day"] .module-combobox-menu {
+    background:#FFFDF8;
+    border-color:#8298AA;
+    box-shadow:0 18px 42px rgba(31,58,95,.22);
+}
+html[data-theme="day"] .module-choice-group {
+    background:#DDE8EF;
+    color:#7B3900;
+    border-color:#AFC0CE;
+}
+html[data-theme="day"] .module-choice:hover,
+html[data-theme="day"] .module-choice:focus-visible {
+    background:#EAF2F7;
+    border-color:#7293AA;
+}
+html[data-theme="day"] .module-choice.selected {
+    background:#D5E8F2;
+    border-color:#367A9E;
+}
+html[data-theme="day"] .module-choice-name {
+    color:#17324D;
+}
+html[data-theme="day"] .module-choice-meta {
+    color:#135F86;
+}
+html[data-theme="day"] .module-choice-none .module-choice-meta {
+    color:#536B7E;
+}
+
+/* Planner Dusk */
+html[data-theme="dusk"] .module-combobox-trigger {
+    background:#272522;
+    color:#EEE7DC;
+    border-color:#756A60;
+}
+html[data-theme="dusk"] .module-combobox-trigger:hover,
+html[data-theme="dusk"] .module-combobox-trigger:focus-visible {
+    background:#302D2A;
+    border-color:#C78632;
+    box-shadow:0 0 0 3px rgba(199,134,50,.15);
+}
+html[data-theme="dusk"] .module-trigger-copy strong {
+    color:#FFF8EE;
+}
+html[data-theme="dusk"] .module-trigger-copy small,
+html[data-theme="dusk"] .module-trigger-chevron {
+    color:#F1C27D;
+}
+html[data-theme="dusk"] .module-combobox-menu {
+    background:#201E1C;
+    border-color:#756A60;
+}
+html[data-theme="dusk"] .module-choice-group {
+    background:#3B2E27;
+    color:#F1C27D;
+    border-color:#665247;
+}
+html[data-theme="dusk"] .module-choice:hover,
+html[data-theme="dusk"] .module-choice:focus-visible {
+    background:#35312E;
+    border-color:#8A714F;
+}
+html[data-theme="dusk"] .module-choice.selected {
+    background:#4A382B;
+    border-color:#C78632;
+}
+html[data-theme="dusk"] .module-choice-name {
+    color:#FFF8EE;
+}
+html[data-theme="dusk"] .module-choice-meta {
+    color:#F1C27D;
+}
+html[data-theme="dusk"] .module-choice-none .module-choice-meta {
+    color:#BFB2A3;
+}
+
+/* Planner Night */
+html[data-theme="night"] .module-combobox-trigger {
+    background:#0D1823;
+    color:#F4F8FB;
+    border-color:#49647D;
+}
+html[data-theme="night"] .module-trigger-copy strong {
+    color:#F8FAFC;
+}
+html[data-theme="night"] .module-trigger-copy small,
+html[data-theme="night"] .module-trigger-chevron {
+    color:#8ED8FF;
+}
+html[data-theme="night"] .module-combobox-menu {
+    background:#07111B;
+    border-color:#49647D;
+}
+html[data-theme="night"] .module-choice-group {
+    background:#18364E;
+    color:#F5C36D;
+}
+html[data-theme="night"] .module-choice-name {
+    color:#F8FAFC;
+}
+html[data-theme="night"] .module-choice-meta {
+    color:#8ED8FF;
+}
+
+@media (max-width:760px) {
+    .module-choice {
+        grid-template-columns:1fr;
+        gap:3px;
+    }
+    .module-choice-name,
+    .module-choice-meta {
+        white-space:normal;
+    }
+    .module-combobox-menu {
+        max-height:320px;
+    }
+}
