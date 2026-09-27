@@ -70,7 +70,9 @@ test("v2 safety floor distinguishes safe, thin and failed candidates", async () 
 test("duplicate vessels can receive different deterministic variants without permutation duplicates", async () => {
   const solver = await loadSolver();
   const variants = [{key:"primary"},{key:"backup-a"},{key:"backup-b"}];
-  const assignments = solver.variantAssignments(variants, 2).map(x => x.map(v => v.key));
+  const assignments = JSON.parse(JSON.stringify(
+    solver.variantAssignments(variants, 2).map(x => x.map(v => v.key))
+  ));
 
   assert.deepEqual(assignments, [
     ["primary","primary"],
