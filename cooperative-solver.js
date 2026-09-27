@@ -600,8 +600,17 @@
         var solved=solveIdeal(state,p,strat);
 
         if(!solved.options.length){
+            var primaryConflict=solved.primaryType && (
+                (solved.primaryType==="mole" && p.recommendMole===false) ||
+                (solved.primaryType==="prospector" && p.recommendProspector===false) ||
+                (solved.primaryType==="golem" && p.recommendGolem===false)
+            );
             box.innerHTML=basis+
-                '<div class="solver-no-option"><strong>NO IDEAL SOLUTION FOUND WITHIN THE CURRENT MISSION CONSTRAINTS</strong><span>Increase Max Fleet or allow additional equipment classes.</span></div>';
+                '<div class="solver-no-option"><strong>NO IDEAL SOLUTION FOUND WITHIN THE CURRENT MISSION CONSTRAINTS</strong><span>'+
+                (primaryConflict
+                    ? 'Current ship primary is enabled, but that active ship type is excluded from Vessels available for recommendation.'
+                    : 'Increase Max Fleet or allow additional vessel/equipment classes.')+
+                '</span></div>';
             return;
         }
 
