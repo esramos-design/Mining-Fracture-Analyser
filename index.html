@@ -135,15 +135,20 @@
                 <div class="subpanel-title">Mission Constraints</div>
                 <div class="constraint-grid">
                     <label>Objective
-                        <select id="optimizerObjective" onchange="MFAOps.savePreferences()">
-                            <option value="minimum-ships">Minimum ships</option>
+                        <select id="optimizerObjective" onchange="MFAOps.savePreferences();calculate()">
+                            <option value="balanced-operations">Balanced operations</option>
+                            <option value="minimum-hulls">Minimum hulls</option>
+                            <option value="minimum-crew">Minimum crew</option>
                             <option value="maximum-margin">Maximum fracture margin</option>
                             <option value="minimum-instability">Minimum instability</option>
                             <option value="minimum-consumables">Minimum consumables</option>
                         </select>
                     </label>
                     <label>Max fleet
-                        <input id="maxFleetSize" type="number" value="6" min="1" max="20" onchange="MFAOps.savePreferences()">
+                        <input id="maxFleetSize" type="number" value="6" min="1" max="20" onchange="MFAOps.savePreferences();calculate()">
+                    </label>
+                    <label>Minimum fracture margin
+                        <div class="constraint-value-row"><input id="minimumMarginPct" type="number" value="10" min="0" max="100" step="1" onchange="MFAOps.savePreferences();calculate()"><span>%</span></div>
                     </label>
                 </div>
                 <div class="toggle-list">
@@ -296,10 +301,10 @@
                         <strong>Recommendation Fleet Pool</strong>
                         <span>Select the vessel types your team can provide. MFA can combine any selected types in the ideal solution.</span>
                     </div>
-                    <div class="recommendation-vessel-pool-options">
-                        <label><input id="recommendMole" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> ARGO MOLE</label>
-                        <label><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> MISC Prospector</label>
-                        <label><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Drake Golem</label>
+                    <div class="recommendation-vessel-pool-options recommendation-vessel-caps">
+                        <label><span><input id="recommendMole" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('mole');MFAOps.savePreferences();calculate()"> ARGO MOLE</span><span class="recommend-cap">Max <input id="recommendMoleMax" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()"></span></label>
+                        <label><span><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('prospector');MFAOps.savePreferences();calculate()"> MISC Prospector</span><span class="recommend-cap">Max <input id="recommendProspectorMax" type="number" min="0" max="20" value="2" onchange="MFAOps.savePreferences();calculate()"></span></label>
+                        <label><span><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('golem');MFAOps.savePreferences();calculate()"> Drake Golem</span><span class="recommend-cap">Max <input id="recommendGolemMax" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()"></span></label>
                     </div>
                     <div class="recommendation-vessel-pool-note">Changing these immediately recalculates the Recommended Ideal Loadout. The later <b>Available to assist</b> checkbox only confirms whether a vessel already recommended by MFA can actually deploy.</div>
                 </div>
