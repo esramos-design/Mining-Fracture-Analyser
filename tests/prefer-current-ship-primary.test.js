@@ -30,7 +30,7 @@ test("ideal recommendation is not coupled to actual Fleet Planner primary vessel
 test("recommendation pool caps are authoritative for all checkbox combinations", async () => {
   const { solver } = await loadSolver();
   const max = 6;
-  const caps = prefs => solver.recommendationCaps(prefs, max);
+  const caps = prefs => ({...solver.recommendationCaps(prefs, max)});
 
   assert.deepEqual(caps({recommendMole:true,recommendProspector:false,recommendGolem:false}), {mole:6,prospector:0,golem:0});
   assert.deepEqual(caps({recommendMole:false,recommendProspector:true,recommendGolem:false}), {mole:0,prospector:6,golem:0});
