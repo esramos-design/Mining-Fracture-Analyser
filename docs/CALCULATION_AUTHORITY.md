@@ -4,7 +4,7 @@
 
 The MFA deterministic fracture calculation is the authoritative calculation baseline for this revision. As of the 2026-09-27 Star Citizen 4.10.1 audit, breakability uses the community-calibrated per-head transfer model documented in `docs/AUDIT_4.10.1_2026-09-27.md`.
 
-Telemetry, OCR, UI, Cloudflare, desktop packaging, AI Foreman, data-table refactors, and code cleanup may provide inputs to or present outputs from the calculation engine, but they must not silently change the established mechanics.
+Telemetry, OCR, UI, Cloudflare deployment, data-table refactors, and code cleanup may provide inputs to or present outputs from the calculation engine, but they must not silently change the established mechanics.
 
 ## Rules
 
@@ -12,9 +12,9 @@ Telemetry, OCR, UI, Cloudflare, desktop packaging, AI Foreman, data-table refact
    - A refactor is not permission to alter mathematical behaviour.
    - Variable renames, module extraction, UI redesign, data migration, and telemetry integration must preserve output parity.
 
-2. **No AI substitution**
-   - AI Foreman may interpret deterministic MFA results.
-   - AI Foreman may not replace, override, estimate, or "correct" the deterministic calculation result.
+2. **No presentation-layer substitution**
+   - UI, OCR, charts, summaries, deployment layers, or future optional integrations may present deterministic MFA results.
+   - They may not replace, override, estimate, or silently "correct" the deterministic calculation result.
 
 3. **Input-source independence**
    - The same validated target/fleet/loadout values must produce the same result whether they came from:
@@ -56,10 +56,10 @@ Authoritative deterministic calculation engine
 Result
   ├─ UI
   ├─ charts
-  └─ Foreman interpretation
+  └─ recommendation / operational presentation
 ```
 
-The direction of authority is one-way: input systems feed the calculator; presentation/AI systems do not alter it.
+The direction of authority is one-way: input systems feed the calculator; presentation systems do not alter it.
 
 
 ## 4.10.1 audited breakability baseline
