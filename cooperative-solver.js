@@ -500,69 +500,101 @@
         var slots=normalizedSlots(a).map(function(slot){return slot.name;});
         return esc(a.laser)+(slots.length?" + "+esc(slots.join(" + ")):"");
     }
-    function vesselHtml(id,count,v){
-        if(!count||!v)return"";
-        var rows=[];
-        for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
-            var assistId="assist-"+id+"-"+vesselIndex;
-            rows.push('<div class="solver-vessel solver-required-vessel assist-missing">'+
-                '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
-                '<label class="solver-assist-availability" for="'+assistId+'">'+
-                    '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
-                    '<span class="solver-assist-box" aria-hidden="true"></span>'+
-                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small><b class="solver-assist-state">NOT CONFIRMED</b></span>'+
-                '</label>'+
-                v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
-                '</div>');
-        }
-        return rows.join("");
+    function vesselPlanHtml(plan,withAssist){
+        var id=plan.shipId,v=plan.variant,vesselIndex=plan.vesselIndex;
+        var assistId="assist-"+id+"-"+vesselIndex;
+        return '<div class="solver-vessel solver-required-vessel '+(withAssist?'assist-missing':'')+'">'+
+            '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>'+esc(v.label)+' · REQUIRED LOADOUT</em></div>'+
+            (withAssist?'<label class="solver-assist-availability" for="'+assistId+'">'+
+                '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
+                '<span class="solver-assist-box" aria-hidden="true"></span>'+
+                '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small><b class="solver-assist-state">NOT CONFIRMED</b></span>'+
+            '</label>':'')+
+            v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
+            '</div>';
     }
 
-    function currentFleetLoadoutHtml(arms,gadgetName){
-        if(!arms.length)return"";
-        var groups={},order=[];
-        arms.forEach(function(a){
-            var key=a.vesselKey||a.shipId||"vessel";
-            if(!groups[key]){groups[key]={name:a.vesselName||LABEL[a.shipId]||"Vessel",arms:[]};order.push(key);}
-            groups[key].arms.push(a);
-        });
-        return '<div class="solver-current-loadouts">'+
-            '<div class="solver-loadout-heading"><span>ACTIVE VESSEL LOADOUTS</span><strong>Exact configuration currently producing this verdict</strong><em>Gadget: '+esc(gadgetName||"None")+'</em></div>'+
-            '<div class="solver-vessels">'+order.map(function(key,index){
-                var g=groups[key];
-                return '<div class="solver-vessel solver-current-vessel">'+
-                    '<div class="solver-vessel-title"><span>'+esc(g.name)+' #'+(index+1)+'</span><em>CURRENT FITTED</em></div>'+
-                    g.arms.sort(function(a,b){return n(a.armIndex)-n(b.armIndex);}).map(function(a,i){
-                        return armLoadoutHtml(a,i);
-                    }).join("")+
-                    '</div>';
-            }).join("")+'</div></div>';
+    function vesselPlansHtml(o,withAssist){
+        return (o.vesselPlans||[]).map(function(plan){return vesselPlanHtml(plan,withAssist);}).join("");
     }
 
-    function alternativeHtml(o,vars,s){
-        var rows=[];
-        ORDER.forEach(function(id){
-            if(!o.counts[id])return;
-            vars[id].filter(function(v){return v.key!==o.selection[id].key;}).forEach(function(v){
-                var proposed=[];
-                ORDER.forEach(function(t){if(o.counts[t])proposed=proposed.concat(repeat(t===id?v:o.selection[t],o.counts[t]));});
-                var e=evaluate(s.baseResistance,s.baseInstability,s.mass,proposed,o.gadget);
-                rows.push('<div class="solver-backup"><div><strong>'+esc(LABEL[id])+' · '+esc(v.label)+'</strong><span>'+
-                    (e.success?'Still viable · '+(e.marginPct>=0?'+':'')+e.marginPct.toFixed(1)+'% margin':'Not sufficient in this option · '+e.marginPct.toFixed(1)+'% margin')+
-                    '</span></div><div class="solver-backup-arms comprehensive">'+v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+'</div></div>');
-            });
-        });
-        return rows.length?'<details class="solver-alternatives"><summary>Secondary equipment alternatives</summary><div class="solver-alternative-list">'+rows.join("")+'</div></details>':"";
+    function qualityLabel(o,minMargin){
+        if(!o.evaluation.success)return"NOT VIABLE";
+        if(o.evaluation.marginPct>=minMargin)return"SAFE MARGIN";
+        return"THIN MARGIN";
     }
 
-    function optionHtml(o,vars,s){
-        var e=o.evaluation, status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
-        var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy every head/module shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
-        return '<article class="solver-option '+(e.success?'viable':'short')+'"><div class="solver-option-head"><div><span class="solver-option-label">BEST SOLUTION</span><h4>'+esc(compText(o.counts))+'</h4></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
-            '<div class="solver-option-metrics"><span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span><span>Required <strong class="'+(e.displayRequired>e.power?'power-shortfall':'')+'">'+Math.round(e.displayRequired).toLocaleString()+' MW</strong></span><span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span><span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span><span>Gadget <strong>'+esc(o.gadget)+'</strong></span></div>'+
-            reproduction+
+    function objectiveLabel(name){
+        return {
+            "balanced-operations":"Balanced operations",
+            "minimum-hulls":"Minimum hulls",
+            "minimum-crew":"Minimum crew",
+            "maximum-margin":"Maximum fracture margin",
+            "minimum-instability":"Minimum instability",
+            "minimum-consumables":"Minimum consumables"
+        }[name]||"Balanced operations";
+    }
+
+    function whyHtml(o,objective,minMargin){
+        var e=o.evaluation,r=o.resources,safe=e.success&&e.marginPct>=minMargin;
+        var points=[
+            (safe?"Meets":"Does not meet")+" "+minMargin.toFixed(0)+"% minimum margin",
+            r.operators+" operator"+(r.operators===1?"":"s"),
+            r.hulls+" hull"+(r.hulls===1?"":"s"),
+            r.heads+" active mining head"+(r.heads===1?"":"s"),
+            "Final instability "+e.finalInstability.toFixed(1)+"%",
+            r.consumables+" consumable action"+(r.consumables===1?"":"s")
+        ];
+        return '<div class="solver-why"><strong>WHY THIS PLAN · '+esc(objectiveLabel(objective))+'</strong><ul>'+
+            points.map(function(x){return'<li>'+esc(x)+'</li>';}).join("")+
+            '</ul></div>';
+    }
+
+    function optionHtml(o,objective,minMargin){
+        var e=o.evaluation,r=o.resources;
+        var status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
+        var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy each vessel-specific head/module loadout shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
+        return '<article class="solver-option '+(e.success?(e.marginPct>=minMargin?'viable':'thin'):'short')+'">'+
+            '<div class="solver-option-head"><div><span class="solver-option-label">RECOMMENDED · '+esc(objectiveLabel(objective))+'</span><h4>'+esc(compText(o.counts))+'</h4><small>'+esc(qualityLabel(o,minMargin))+'</small></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
+            '<div class="solver-option-metrics">'+
+                '<span>Hulls <strong>'+r.hulls+'</strong></span>'+
+                '<span>Operators <strong>'+r.operators+'</strong></span>'+
+                '<span>Mining heads <strong>'+r.heads+'</strong></span>'+
+                '<span>Consumables <strong>'+r.consumables+'</strong></span>'+
+                '<span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span>'+
+                '<span>Required <strong class="'+(e.displayRequired>e.power?'power-shortfall':'')+'">'+Math.round(e.displayRequired).toLocaleString()+' MW</strong></span>'+
+                '<span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span>'+
+                '<span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span>'+
+                '<span>Gadget <strong>'+esc(o.gadget)+'</strong></span>'+
+            '</div>'+
+            whyHtml(o,objective,minMargin)+reproduction+
             '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Ideal recommendation remains unchanged.</em></div>'+
-            '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,s)+'</article>';
+            '<div class="solver-vessels">'+vesselPlansHtml(o,true)+'</div>'+
+            '</article>';
+    }
+
+    function portfolioHtml(solved,selectedObjective){
+        var order=[
+            ["balanced-operations","Balanced"],
+            ["minimum-hulls","Fewest hulls"],
+            ["minimum-crew","Fewest operators"],
+            ["maximum-margin","Highest margin"],
+            ["minimum-instability","Lowest instability"],
+            ["minimum-consumables","Lowest consumables"]
+        ];
+        var selected=solved.portfolio[selectedObjective]||solved.options[0],seen={},rows=[];
+        if(selected)seen[stableKey(selected)]=true;
+        order.forEach(function(item){
+            var o=solved.portfolio[item[0]];
+            if(!o)return;
+            var key=stableKey(o);
+            if(seen[key])return;
+            seen[key]=true;
+            rows.push('<div class="solver-portfolio-alt"><div><strong>'+esc(item[1])+'</strong><span>'+esc(compText(o.counts))+'</span></div>'+
+                '<div><span>'+o.resources.operators+' ops · '+o.resources.hulls+' hulls · '+o.resources.consumables+' consumables</span><strong>'+
+                (o.evaluation.marginPct>=0?"+":"")+o.evaluation.marginPct.toFixed(1)+'% margin · '+o.evaluation.finalInstability.toFixed(1)+'% inst</strong></div></div>');
+        });
+        return rows.length?'<details class="solver-more-plans"><summary>Objective alternatives</summary><div class="solver-other-list">'+rows.join("")+'</div></details>':"";
     }
 
     function updateAvailabilitySummary(){
