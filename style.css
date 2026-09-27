@@ -5266,3 +5266,53 @@ html[data-theme="day"] .selected-color-meta {
 .solver-option-metrics .power-shortfall {
     color:var(--theme-danger) !important;
 }
+
+
+/* Recommendation vessel pool — mission constraint, independent of actual Fleet Planner. */
+.recommendation-vessel-pool {
+    margin-top:10px;
+    padding:10px;
+    border:1px solid var(--theme-border);
+    border-radius:9px;
+    background:var(--theme-card);
+}
+.recommendation-vessel-pool-head strong,
+.recommendation-vessel-pool-head span {
+    display:block;
+}
+.recommendation-vessel-pool-head strong {
+    color:var(--theme-strong);
+    font:900 10px var(--font-tech);
+    letter-spacing:.04em;
+}
+.recommendation-vessel-pool-head span {
+    margin-top:3px;
+    color:var(--theme-muted);
+    font:600 9px/1.35 var(--font-tech);
+}
+.recommendation-vessel-pool-options {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+    margin-top:8px;
+}
+.recommendation-vessel-pool-options label {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-height:34px;
+    padding:7px 8px;
+    border:1px solid var(--theme-border);
+    border-radius:7px;
+    background:var(--theme-card-alt);
+    color:var(--theme-text);
+    font:800 9px var(--font-tech);
+    cursor:pointer;
+}
+.recommendation-vessel-pool-options label:has(input:checked) {
+    border-color:var(--theme-primary);
+    background:color-mix(in srgb,var(--theme-primary) 10%,var(--theme-card-alt));
+}
+@media (max-width:700px) {
+    .recommendation-vessel-pool-options { grid-template-columns:1fr; }
+}
