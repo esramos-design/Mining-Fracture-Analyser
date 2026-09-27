@@ -5262,3 +5262,7 @@ html[data-theme="day"] .selected-color-meta {
     color:var(--theme-danger) !important;
     text-shadow:0 0 10px color-mix(in srgb,var(--theme-danger) 22%,transparent);
 }
+
+.solver-option-metrics .power-shortfall {
+    color:var(--theme-danger) !important;
+}
