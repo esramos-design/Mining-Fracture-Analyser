@@ -4659,3 +4659,77 @@ html[data-theme="night"] .fleet-search-wrap input::placeholder {
     opacity:.62;
     cursor:not-allowed;
 }
+
+
+/* =========================================================
+   MODULE LABEL / META COLOR CONTRAST ONLY
+   Progressive enhancement using customizable native select.
+   No layout, sizing, value, or onchange behavior changes.
+   ========================================================= */
+@supports (appearance: base-select) {
+    select.module-color-select,
+    select.module-color-select::picker(select) {
+        appearance: base-select;
+    }
+
+    select.module-color-select {
+        min-height: 28px;
+    }
+
+    select.module-color-select::picker(select) {
+        background: var(--bg-input);
+        border: 1px solid var(--border-main);
+        border-radius: 4px;
+    }
+
+    select.module-color-select option {
+        background: var(--bg-input);
+        color: inherit;
+        padding: 4px 10px;
+    }
+
+    select.module-color-select option:hover,
+    select.module-color-select option:focus,
+    select.module-color-select option:checked {
+        background: #17395a;
+    }
+
+    select.module-color-select .module-option-label {
+        color: #f5f8fc;
+        font-weight: 800;
+    }
+
+    select.module-color-select .module-option-meta {
+        color: #8fd3ff;
+        font-weight: 700;
+        margin-left: 3px;
+    }
+
+    select.module-color-select optgroup {
+        background: var(--bg-input);
+        color: #f6c56b;
+        font-weight: 800;
+    }
+
+    html[data-theme="dusk"] select.module-color-select .module-option-label {
+        color: #fff8ee;
+    }
+
+    html[data-theme="dusk"] select.module-color-select .module-option-meta {
+        color: #f0c674;
+    }
+
+    html[data-theme="day"] select.module-color-select .module-option-label {
+        color: #17324d;
+    }
+
+    html[data-theme="day"] select.module-color-select .module-option-meta {
+        color: #0b648e;
+    }
+
+    html[data-theme="day"] select.module-color-select option:hover,
+    html[data-theme="day"] select.module-color-select option:focus,
+    html[data-theme="day"] select.module-color-select option:checked {
+        background: #d5e8f2;
+    }
+}
