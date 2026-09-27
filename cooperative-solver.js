@@ -11,9 +11,11 @@
 
     function prefs(){
         return window.MFAOps && MFAOps.getPreferences ? MFAOps.getPreferences() : {
-            optimizerObjective:"minimum-ships", maxFleetSize:6, allowActiveModules:true,
+            optimizerObjective:"balanced-operations", maxFleetSize:6, minimumMarginPct:10, allowActiveModules:true,
             allowGadgets:true,
-            recommendMole:true, recommendProspector:true, recommendGolem:true,
+            recommendMole:true, recommendMoleMax:1,
+            recommendProspector:true, recommendProspectorMax:2,
+            recommendGolem:true, recommendGolemMax:1,
             fleetEnabledMole:true, fleetEnabledProspector:true, fleetEnabledGolem:true,
             fleetAvailableMole:1, fleetAvailableProspector:2, fleetAvailableGolem:1
         };
@@ -47,10 +49,14 @@
     }
 
     function recommendationCaps(p,maxFleet){
+        function cap(enabled,value,fallback){
+            if(enabled===false)return 0;
+            return Math.max(0,Math.min(maxFleet,Math.floor(n(value,fallback))));
+        }
         return {
-            mole:p.recommendMole===false?0:maxFleet,
-            prospector:p.recommendProspector===false?0:maxFleet,
-            golem:p.recommendGolem===false?0:maxFleet
+            mole:cap(p.recommendMole,p.recommendMoleMax,1),
+            prospector:cap(p.recommendProspector,p.recommendProspectorMax,2),
+            golem:cap(p.recommendGolem,p.recommendGolemMax,1)
         };
     }
 
@@ -280,16 +286,116 @@
         ];
     }
 
-    function repeat(v,count){var out=[];for(var i=0;i<count;i++)v.arms.forEach(function(a){out.push(Object.assign({},a,{vesselIndex:i+1}));});return out;}
     function gadgetChoices(p){
         if(!p.allowGadgets)return["None"];
         return gadgets.map(function(g){return g.name;});
     }
     function compText(c){var b=[];if(c.mole)b.push(c.mole+"× MOLE");if(c.prospector)b.push(c.prospector+"× Prospector");if(c.golem)b.push(c.golem+"× Golem");return b.join(" + ");}
 
+    function variantAssignments(list,count){
+        if(count<=0)return[[]];
+        var out=[];
+        function walk(depth,start,pick){
+            if(depth===count){out.push(pick.slice());return;}
+            for(var i=start;i<list.length;i++){
+                pick.push(list[i]);
+                walk(depth+1,i,pick);
+                pick.pop();
+            }
+        }
+        walk(0,0,[]);
+        return out;
+    }
+
+    function buildVesselPlans(counts,vars){
+        var active=ORDER.filter(function(id){return counts[id]>0;});
+        var choices={};
+        active.forEach(function(id){choices[id]=variantAssignments(vars[id],counts[id]);});
+        var out=[];
+        function walk(i,pick){
+            if(i===active.length){
+                var plans=[];
+                active.forEach(function(id){
+                    (pick[id]||[]).forEach(function(v,index){
+                        plans.push({shipId:id,vesselIndex:index+1,variant:v});
+                    });
+                });
+                out.push(plans);
+                return;
+            }
+            var id=active[i];
+            choices[id].forEach(function(combo){
+                pick[id]=combo;
+                walk(i+1,pick);
+            });
+            delete pick[id];
+        }
+        walk(0,{});
+        return out;
+    }
+
+    function proposedArms(plans){
+        var out=[];
+        (plans||[]).forEach(function(plan){
+            plan.variant.arms.forEach(function(a){
+                out.push(Object.assign({},a,{vesselIndex:plan.vesselIndex}));
+            });
+        });
+        return out;
+    }
+
+    function resourceMetrics(plans,evaluation,gadget){
+        var heads=0,operators=0;
+        (plans||[]).forEach(function(plan){
+            var activeHeads=plan.variant.arms.length;
+            heads+=activeHeads;
+            operators+=plan.shipId==="mole" ? 1+activeHeads : 1;
+        });
+        return {
+            hulls:(plans||[]).length,
+            heads:heads,
+            operators:operators,
+            consumables:evaluation.activeModules+(gadget==="None"?0:1)
+        };
+    }
+
+    function safetyClass(o,minMargin){
+        if(!o.evaluation.success)return 2;
+        return o.evaluation.marginPct>=minMargin?0:1;
+    }
+
+    function objectiveTuple(o,objective,minMargin){
+        var q=safetyClass(o,minMargin),r=o.resources,e=o.evaluation;
+        if(objective==="minimum-hulls")return[q,r.hulls,r.operators,-e.marginPct,e.finalInstability];
+        if(objective==="minimum-crew")return[q,r.operators,r.hulls,-e.marginPct,e.finalInstability];
+        if(objective==="maximum-margin")return[q,-e.marginPct,r.hulls,r.operators,e.finalInstability];
+        if(objective==="minimum-instability")return[q,e.finalInstability,r.hulls,r.operators,-e.marginPct];
+        if(objective==="minimum-consumables")return[q,r.consumables,r.hulls,r.operators,-e.marginPct];
+        return[q,r.operators,r.hulls,e.finalInstability,r.consumables,-e.marginPct];
+    }
+
+    function stableKey(o){
+        var plans=(o.vesselPlans||[]).map(function(plan){
+            return plan.shipId+"#"+plan.vesselIndex+":"+plan.variant.key;
+        }).join("|");
+        return [o.counts.mole,o.counts.prospector,o.counts.golem,plans,o.gadget].join("/");
+    }
+
+    function compareFor(objective,minMargin){
+        return function(a,b){
+            var x=objectiveTuple(a,objective,minMargin),y=objectiveTuple(b,objective,minMargin);
+            for(var i=0;i<Math.max(x.length,y.length);i++){
+                var d=(x[i]||0)-(y[i]||0);
+                if(d)return d;
+            }
+            return stableKey(a).localeCompare(stableKey(b));
+        };
+    }
+
     function solveIdeal(s,p,strat){
-        var vars={}, options=[];
+        var vars={},options=[];
         var maxFleet=Math.max(1,Math.floor(n(p.maxFleetSize,6)));
+        var minMargin=Math.max(0,n(p.minimumMarginPct,10));
         var caps=recommendationCaps(p,maxFleet);
         ORDER.forEach(function(id){vars[id]=variants(id,strat,p,s);});
 
@@ -297,96 +403,52 @@
             for(var pr=0;pr<=caps.prospector;pr++){
                 for(var g=0;g<=caps.golem;g++){
                     var total=m+pr+g;
-                    if(total<1 || total>maxFleet) continue;
-
+                    if(total<1 || total>maxFleet)continue;
                     var counts={mole:m,prospector:pr,golem:g,added:total};
-                    var active=ORDER.filter(function(id){return counts[id]>0;});
-
-                    function walk(i,pick){
-                        if(i<active.length){
-                            var id=active[i];
-                            vars[id].forEach(function(v){
-                                pick[id]=v;
-                                walk(i+1,pick);
-                            });
-                            delete pick[id];
-                            return;
-                        }
-
-                        var proposed=[];
-                        ORDER.forEach(function(id){
-                            if(counts[id]&&pick[id]){
-                                proposed=proposed.concat(repeat(pick[id],counts[id]));
-                            }
-                        });
-
+                    buildVesselPlans(counts,vars).forEach(function(plans){
+                        var arms=proposedArms(plans);
                         gadgetChoices(p).forEach(function(gadget){
+                            var evaluation=evaluate(s.baseResistance,s.baseInstability,s.mass,arms,gadget);
                             options.push({
                                 counts:counts,
-                                selection:Object.assign({},pick),
+                                vesselPlans:plans,
                                 gadget:gadget,
-                                evaluation:evaluate(
-                                    s.baseResistance,
-                                    s.baseInstability,
-                                    s.mass,
-                                    proposed,
-                                    gadget
-                                )
+                                evaluation:evaluation,
+                                resources:resourceMetrics(plans,evaluation,gadget)
                             });
                         });
-                    }
-
-                    walk(0,{});
+                    });
                 }
             }
         }
 
-        function tuple(o){
-            if(p.optimizerObjective==="maximum-margin"){
-                return[o.evaluation.success?0:1,-o.evaluation.marginPct,o.counts.added];
-            }
-            if(p.optimizerObjective==="minimum-instability"){
-                return[o.evaluation.success?0:1,o.counts.added,o.evaluation.finalInstability,-o.evaluation.marginPct];
-            }
-            if(p.optimizerObjective==="minimum-consumables"){
-                return[
-                    o.evaluation.success?0:1,
-                    o.counts.added,
-                    o.evaluation.activeModules+(o.gadget==="None"?0:1),
-                    -o.evaluation.marginPct
-                ];
-            }
-            return[o.evaluation.success?0:1,o.counts.added,-o.evaluation.marginPct];
-        }
-
-        options.sort(function(a,b){
-            var x=tuple(a),y=tuple(b);
-            for(var i=0;i<Math.max(x.length,y.length);i++){
-                var d=(x[i]||0)-(y[i]||0);
-                if(d)return d;
-            }
-
-            // Stable deterministic composition tie-break.
-            return (a.counts.mole-b.counts.mole) ||
-                (a.counts.prospector-b.counts.prospector) ||
-                (a.counts.golem-b.counts.golem) ||
-                String(a.gadget).localeCompare(String(b.gadget));
-        });
-
-        var seen={}, unique=[];
+        var unique=[],seen={};
         options.forEach(function(o){
-            var selectionKey=ORDER.map(function(id){
-                return o.selection[id]?o.selection[id].key:"-";
-            }).join("/");
-            var k=o.counts.mole+"/"+o.counts.prospector+"/"+o.counts.golem+"/"+selectionKey+"/"+o.gadget;
-            if(!seen[k]){
-                seen[k]=true;
-                unique.push(o);
-            }
+            var key=stableKey(o);
+            if(!seen[key]){seen[key]=true;unique.push(o);}
         });
 
-        var good=unique.filter(function(o){return o.evaluation.success;});
-        return {variants:vars,options:(good.length?good:unique).slice(0,5)};
+        var objective=p.optimizerObjective||"balanced-operations";
+        unique.sort(compareFor(objective,minMargin));
+
+        var portfolio={};
+        [
+            "balanced-operations",
+            "minimum-hulls",
+            "minimum-crew",
+            "maximum-margin",
+            "minimum-instability",
+            "minimum-consumables"
+        ].forEach(function(name){
+            portfolio[name]=unique.slice().sort(compareFor(name,minMargin))[0]||null;
+        });
+
+        return {
+            variants:vars,
+            options:unique.slice(0,5),
+            portfolio:portfolio,
+            minimumMarginPct:minMargin
+        };
     }
 
     function normalizedSlots(a){
