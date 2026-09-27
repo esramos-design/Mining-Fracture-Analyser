@@ -426,7 +426,17 @@ window.calculate = function() {
     const formattedPwr = totalPwr.toLocaleString(undefined, { maximumFractionDigits: 0 });
     const diff = assessDifficulty(finalInst, finalRes);
 
-    currentSimState = { mass: rockMass, resistance: finalRes, instability: finalInst, power: totalPwr, success: success, activeArms: activeArms };
+    currentSimState = {
+        mass: rockMass,
+        baseResistance: baseRes,
+        resistance: finalRes,
+        instability: finalInst,
+        power: totalPwr,
+        requiredPower: reqPwr,
+        baselineRequiredPower: calc.baselineRequiredPower,
+        success: success,
+        activeArms: activeArms
+    };
 
     generateAdvancedTelemetry(rockMass, baseRes, baseInst, reqPwr, totalPwr);
 
