@@ -150,6 +150,8 @@ A full operational guide is available here:
 
 👉 [MFA v5.36.0 User Guide](docs/USER_GUIDE.md)
 
+👉 [Recommended Ideal Loadout — Public Mechanics Guide](docs/RECOMMENDED_IDEAL_LOADOUT_MECHANICS.md)
+
 Quick workflow:
 
 1. Open the web app.

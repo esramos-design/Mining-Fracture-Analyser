@@ -91,6 +91,13 @@ export function calculateV535({
     ? mass / (5.0 * transferFactor)
     : 999999;
 
+  // Target-only baseline requirement before head/module/gadget resistance effects.
+  // This stays useful when the current fitted loadout is resistance-blocked.
+  const baseTransferFactor = Math.max(0, 1 - (baseRes / 100));
+  const baselineRequiredPower = baseTransferFactor > 0
+    ? mass / (5.0 * baseTransferFactor)
+    : mass / 5.0;
+
   const maxBreakableMass = 5.0 * effectivePwr;
   const success = totalPwr > 0 && mass > 0 && maxBreakableMass >= mass;
 
@@ -104,6 +111,7 @@ export function calculateV535({
     finalResistance: finalRes,
     finalInstability: finalInst,
     requiredPower: reqPwr,
+    baselineRequiredPower,
     success,
     activeArms
   };

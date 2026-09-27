@@ -13,6 +13,7 @@
         return window.MFAOps && MFAOps.getPreferences ? MFAOps.getPreferences() : {
             optimizerObjective:"minimum-ships", maxFleetSize:6, allowActiveModules:true,
             allowGadgets:true,
+            recommendMole:true, recommendProspector:true, recommendGolem:true,
             fleetEnabledMole:true, fleetEnabledProspector:true, fleetEnabledGolem:true,
             fleetAvailableMole:1, fleetAvailableProspector:2, fleetAvailableGolem:1
         };
@@ -44,6 +45,15 @@
             golem:Math.max(0,totals.golem-deployed.golem)
         };
     }
+
+    function recommendationCaps(p,maxFleet){
+        return {
+            mole:p.recommendMole===false?0:maxFleet,
+            prospector:p.recommendProspector===false?0:maxFleet,
+            golem:p.recommendGolem===false?0:maxFleet
+        };
+    }
+
 
     function laserSlotCount(laserName){
         var head=allLaserHeads.find(function(h){return h.name===laserName;});
@@ -164,6 +174,8 @@
             success:calc.success,
             power:calc.totalPower,
             required:calc.requiredPower>=999999?Infinity:calc.requiredPower,
+            displayRequired:calc.requiredPower>=999999?calc.baselineRequiredPower:calc.requiredPower,
+            resistanceBlocked:calc.requiredPower>=999999,
             finalResistance:calc.finalResistance,
             finalInstability:calc.finalInstability,
             marginPct:margin,
@@ -278,11 +290,12 @@
     function solveIdeal(s,p,strat){
         var vars={}, options=[];
         var maxFleet=Math.max(1,Math.floor(n(p.maxFleetSize,6)));
+        var caps=recommendationCaps(p,maxFleet);
         ORDER.forEach(function(id){vars[id]=variants(id,strat,p,s);});
 
-        for(var m=0;m<=maxFleet;m++){
-            for(var pr=0;pr<=maxFleet;pr++){
-                for(var g=0;g<=maxFleet;g++){
+        for(var m=0;m<=caps.mole;m++){
+            for(var pr=0;pr<=caps.prospector;pr++){
+                for(var g=0;g<=caps.golem;g++){
                     var total=m+pr+g;
                     if(total<1 || total>maxFleet) continue;
 
@@ -430,12 +443,12 @@
         var rows=[];
         for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
             var assistId="assist-"+id+"-"+vesselIndex;
-            rows.push('<div class="solver-vessel solver-required-vessel">'+
+            rows.push('<div class="solver-vessel solver-required-vessel assist-missing">'+
                 '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
                 '<label class="solver-assist-availability" for="'+assistId+'">'+
                     '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
                     '<span class="solver-assist-box" aria-hidden="true"></span>'+
-                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small></span>'+
+                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small><b class="solver-assist-state">NOT CONFIRMED</b></span>'+
                 '</label>'+
                 v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
                 '</div>');
@@ -484,7 +497,7 @@
         var e=o.evaluation, status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
         var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy every head/module shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
         return '<article class="solver-option '+(e.success?'viable':'short')+'"><div class="solver-option-head"><div><span class="solver-option-label">BEST SOLUTION</span><h4>'+esc(compText(o.counts))+'</h4></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
-            '<div class="solver-option-metrics"><span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span><span>Required <strong>'+(Number.isFinite(e.required)?Math.round(e.required).toLocaleString()+' MW':'Impossible')+'</strong></span><span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span><span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span><span>Gadget <strong>'+esc(o.gadget)+'</strong></span></div>'+
+            '<div class="solver-option-metrics"><span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span><span>Required <strong class="'+(e.displayRequired>e.power?'power-shortfall':'')+'">'+Math.round(e.displayRequired).toLocaleString()+' MW</strong></span><span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span><span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span><span>Gadget <strong>'+esc(o.gadget)+'</strong></span></div>'+
             reproduction+
             '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Ideal recommendation remains unchanged.</em></div>'+
             '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,s)+'</article>';
@@ -496,15 +509,34 @@
         var checks=[].slice.call(document.querySelectorAll("#configs .solver-assist-check"));
         var confirmed=checks.filter(function(input){return input.checked;}).length;
         var total=checks.length;
+        var missing=Math.max(0,total-confirmed);
         var strong=summary.querySelector("strong");
         var note=summary.querySelector("em");
-        if(strong)strong.textContent=confirmed+" of "+total+" required vessel"+(total===1?"":"s")+" confirmed";
+
+        checks.forEach(function(input){
+            var vessel=input.closest(".solver-required-vessel");
+            var label=input.closest(".solver-assist-availability");
+            var state=label?label.querySelector(".solver-assist-state"):null;
+            if(vessel){
+                vessel.classList.toggle("assist-confirmed",input.checked);
+                vessel.classList.toggle("assist-missing",!input.checked);
+            }
+            if(label)label.classList.toggle("confirmed",input.checked);
+            if(state)state.textContent=input.checked?"CONFIRMED AVAILABLE":"NOT CONFIRMED";
+        });
+
+        if(strong){
+            strong.textContent=total>0&&missing===0
+                ?"READY · all "+total+" required vessel"+(total===1?"":"s")+" confirmed"
+                :"NOT READY · "+missing+" vessel"+(missing===1?"":"s")+" still required";
+        }
         summary.classList.toggle("ready",total>0&&confirmed===total);
         summary.classList.toggle("partial",confirmed>0&&confirmed<total);
+        summary.classList.toggle("missing",total>0&&confirmed===0);
         if(note){
             note.textContent=total>0&&confirmed===total
                 ?"All vessels required by the ideal solution are confirmed available."
-                :"Ideal recommendation remains unchanged.";
+                :"Ideal loadout remains unchanged; availability only confirms whether the recommended support can actually deploy.";
         }
     }
 
@@ -526,6 +558,12 @@
             '<div><span>Max ideal fleet</span><strong>'+Math.max(1,Math.floor(n(p.maxFleetSize,6)))+'</strong></div>'+
             '<div><span>Active modules</span><strong>'+(p.allowActiveModules?'Allowed':'Passive only')+'</strong></div>'+
             '<div><span>Gadgets</span><strong>'+(p.allowGadgets?'Search allowed':'Disabled')+'</strong></div>'+
+            '<div><span>Recommendation vessels</span><strong>'+esc([
+                p.recommendMole!==false?'MOLE':null,
+                p.recommendProspector!==false?'Prospector':null,
+                p.recommendGolem!==false?'Golem':null
+            ].filter(Boolean).join(' + ')||'None selected')+'</strong></div>'+
+            '<div><span>Fleet Planner influence</span><strong>None · target-driven ideal</strong></div>'+
             '</div>';
     }
 
@@ -562,5 +600,5 @@
         updateAvailabilitySummary();
     }
 
-    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,updateAvailabilitySummary:updateAvailabilitySummary};
+    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,recommendationCaps:recommendationCaps,updateAvailabilitySummary:updateAvailabilitySummary};
 })();

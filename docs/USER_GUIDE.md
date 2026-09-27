@@ -54,13 +54,20 @@ For the most reliable solver result, use the **base/original rock values** befor
 
 ### Screenshot OCR
 
-The screenshot scanner is currently **experimental**.
+The screenshot scanner remains **experimental in Alpha**.
 
-It can help populate fields, but v5.36.0 does not consider it authoritative because Star Citizen mining HUD layouts and colours differ across ships, resolutions and cockpit presentations.
+The Alpha OCR path now uses a Regolith-compatible **PaddleOCR PP-OCRv4** engine as the primary recognizer. MFA also runs the previous Tesseract scanner as a shadow comparison and automatic fallback when PaddleOCR does not return a complete Mass / Resistance / Instability capture.
 
-Always visually verify OCR-derived values before using the recommendation.
+The OCR debug window reports both results and identifies which engine supplied the Target Acquisition values.
 
-A dedicated 4.10.1 Target Acquisition/OCR rebuild is planned after team testing with Prospector, MOLE and Golem screenshots.
+OCR remains input-only:
+
+- it may populate **Rock Mass**, **Resistance**, and **Instability**;
+- it does not change the audited 4.10.1 fracture mechanics;
+- it does not read or alter Fleet Planner quantities/loadouts;
+- it does not influence the Recommended Ideal Loadout other than through the Target Acquisition values it successfully captures.
+
+Always visually verify OCR-derived values during Alpha validation, especially across Prospector, MOLE and Golem cockpit layouts, resolutions and HUD colours.
 
 ---
 
@@ -100,6 +107,25 @@ When an Active module is recommended as part of the best plan, its required ON s
 ### Allow gadgets
 
 When enabled, the solver may recommend a mining gadget.
+
+### Vessels available for recommendation
+
+Choose which mining-vessel types your team can actually provide:
+
+- **ARGO MOLE**
+- **MISC Prospector**
+- **Drake Golem**
+
+This is a recommendation constraint only. It does not add vessels to the actual Fleet Planner.
+
+MFA may combine any selected vessel types when searching for the best viable plan. For example, with MOLE unavailable but Prospector and Golem selected, the solver may return a mixed Prospector + Golem solution.
+
+### Recommendation independence
+
+The **Recommended Ideal Loadout** is target-driven. Actual Fleet Planner quantities, Active/Available/Standby state, and fitted loadouts do not force a vessel type into the ideal recommendation.
+
+The **Vessels available for recommendation** checkboxes are authoritative. If a vessel type is unchecked, the ideal solver will not use that vessel type under any circumstance.
+
 
 ---
 

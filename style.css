@@ -5209,3 +5209,126 @@ html[data-theme="day"] .selected-color-label {
 html[data-theme="day"] .selected-color-meta {
     color:#007AA8 !important;
 }
+
+
+/* =========================================================
+   RECOMMENDED SUPPORT AVAILABILITY — operational feedback
+   Availability confirms deployability without changing the ideal solution.
+   ========================================================= */
+.solver-required-vessel.assist-missing {
+    border-color:var(--theme-warning) !important;
+    box-shadow:inset 3px 0 0 var(--theme-warning);
+}
+
+.solver-required-vessel.assist-confirmed {
+    border-color:var(--theme-success) !important;
+    box-shadow:inset 3px 0 0 var(--theme-success);
+}
+
+.solver-assist-availability.confirmed {
+    border-color:var(--theme-success);
+    background:color-mix(in srgb,var(--theme-success) 10%,var(--theme-panel));
+}
+
+.solver-assist-state {
+    display:inline-block;
+    margin-top:5px;
+    padding:3px 6px;
+    border:1px solid var(--theme-warning);
+    border-radius:5px;
+    color:var(--theme-warning);
+    font:900 8px var(--font-tech);
+    letter-spacing:.06em;
+}
+
+.solver-assist-availability.confirmed .solver-assist-state {
+    border-color:var(--theme-success);
+    color:var(--theme-success);
+}
+
+.solver-availability-summary.missing {
+    border-color:var(--theme-warning);
+    background:color-mix(in srgb,var(--theme-warning) 8%,var(--theme-card));
+}
+
+.solver-availability-summary.missing strong {
+    color:var(--theme-warning);
+}
+
+
+/* Required power remains numeric even when the current configuration is blocked. */
+#required-power.power-shortfall,
+#floating-required.power-shortfall {
+    color:var(--theme-danger) !important;
+    text-shadow:0 0 10px color-mix(in srgb,var(--theme-danger) 22%,transparent);
+}
+
+.solver-option-metrics .power-shortfall {
+    color:var(--theme-danger) !important;
+}
+
+
+/* Recommendation vessel pool — mission constraint, independent of actual Fleet Planner. */
+.recommendation-vessel-pool {
+    margin-top:10px;
+    padding:10px;
+    border:1px solid var(--theme-border);
+    border-radius:9px;
+    background:var(--theme-card);
+}
+.recommendation-vessel-pool-head strong,
+.recommendation-vessel-pool-head span {
+    display:block;
+}
+.recommendation-vessel-pool-head strong {
+    color:var(--theme-strong);
+    font:900 10px var(--font-tech);
+    letter-spacing:.04em;
+}
+.recommendation-vessel-pool-head span {
+    margin-top:3px;
+    color:var(--theme-muted);
+    font:600 9px/1.35 var(--font-tech);
+}
+.recommendation-vessel-pool-options {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+    margin-top:8px;
+}
+.recommendation-vessel-pool-options label {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-height:34px;
+    padding:7px 8px;
+    border:1px solid var(--theme-border);
+    border-radius:7px;
+    background:var(--theme-card-alt);
+    color:var(--theme-text);
+    font:800 9px var(--font-tech);
+    cursor:pointer;
+}
+.recommendation-vessel-pool-options label:has(input:checked) {
+    border-color:var(--theme-primary);
+    background:color-mix(in srgb,var(--theme-primary) 10%,var(--theme-card-alt));
+}
+@media (max-width:700px) {
+    .recommendation-vessel-pool-options { grid-template-columns:1fr; }
+}
+
+
+/* Recommendation pool is part of Recommended Solutions, not the actual Fleet Planner. */
+.recommendation-vessel-pool-inline {
+    margin:0 0 12px;
+}
+.recommendation-vessel-pool-note {
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid var(--theme-border);
+    color:var(--theme-muted);
+    font:600 9px/1.4 var(--font-tech);
+}
+.recommendation-vessel-pool-note b {
+    color:var(--theme-strong);
+}

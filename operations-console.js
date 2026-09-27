@@ -56,7 +56,7 @@
 
     function updateFloatingVerdict(required, available, marginText, statusText, stateClass) {
         const panel = ensureFloatingVerdict();
-        setText("floating-required", required === Infinity ? "IMPOSSIBLE" : formatPower(required));
+        setText("floating-required", formatPower(required));
         setText("floating-available", formatPower(available));
         setText("floating-margin", marginText || "—");
         setText("floating-verdict-status", statusText || "AWAITING FLEET");
@@ -88,9 +88,15 @@
 
     function deriveRequiredPower() {
         if (typeof currentSimState === "undefined") return 0;
-        if (!Number.isFinite(currentSimState.mass) || !Number.isFinite(currentSimState.resistance)) return 0;
-        if (currentSimState.resistance >= 100) return Infinity;
-        return (currentSimState.mass * (1 - currentSimState.resistance / 100)) / 5;
+
+        const audited = Number(currentSimState.requiredPower);
+        if (Number.isFinite(audited) && audited > 0 && audited < 999999) return audited;
+
+        const baseline = Number(currentSimState.baselineRequiredPower);
+        if (Number.isFinite(baseline) && baseline > 0) return baseline;
+
+        const mass = Number(currentSimState.mass) || 0;
+        return mass > 0 ? mass / 5 : 0;
     }
 
     function syncVerdict() {
@@ -103,7 +109,13 @@
         setText("available-power", formatPower(available));
         setText("final-resistance", Number.isFinite(currentSimState.resistance) ? currentSimState.resistance.toFixed(1) + "%" : "—");
         setText("final-instability", Number.isFinite(currentSimState.instability) ? currentSimState.instability.toFixed(1) + "%" : "—");
-        setText("required-power", required === Infinity ? "IMPOSSIBLE" : formatPower(required));
+        setText("required-power", formatPower(required));
+
+        const requiredEl = byId("required-power");
+        const floatingRequiredEl = byId("floating-required");
+        const shortfall = required > 0 && available < required;
+        if (requiredEl) requiredEl.classList.toggle("power-shortfall", shortfall);
+        if (floatingRequiredEl) floatingRequiredEl.classList.toggle("power-shortfall", shortfall);
 
         const status = byId("verdict-status");
         const title = byId("verdict-title");
@@ -123,21 +135,8 @@
             subtitle.textContent = "Target values are ready; no active mining arms are currently deployed.";
             marginValue.textContent = "—";
             fill.style.width = "0%";
-            if (scaleLabel) scaleLabel.textContent = required === Infinity ? "Resistance ≥100%" : "Required " + formatPower(required);
+            if (scaleLabel) scaleLabel.textContent = "Required " + formatPower(required);
             updateFloatingVerdict(required, available, "—", "AWAITING FLEET", "neutral");
-            return;
-        }
-
-        if (required === Infinity) {
-            status.className = "verdict-badge failure";
-            status.textContent = "RESISTANCE BLOCK";
-            title.textContent = "Current configuration cannot overcome the target resistance.";
-            subtitle.textContent = "Apply verified resistance-reduction equipment or revise the fleet configuration.";
-            marginValue.textContent = "N/A";
-            fill.style.width = "4%";
-            fill.classList.add("short");
-            if (scaleLabel) scaleLabel.textContent = "Resistance ≥100%";
-            updateFloatingVerdict(required, available, "N/A", "RESISTANCE BLOCK", "failure");
             return;
         }
 
@@ -148,6 +147,17 @@
         marginValue.textContent = (marginPct >= 0 ? "+" : "") + marginPct.toFixed(1) + "%";
         fill.style.width = Math.max(2, ratio * 100) + "%";
         if (scaleLabel) scaleLabel.textContent = "Required " + formatPower(required);
+
+        const resistanceBlocked = Number(currentSimState.resistance) >= 100;
+        if (resistanceBlocked && !currentSimState.success) {
+            status.className = "verdict-badge failure";
+            status.textContent = "RESISTANCE BLOCK";
+            title.textContent = "Current configuration cannot overcome the target resistance.";
+            subtitle.textContent = "Required power remains shown for planning; use resistance-reduction equipment and/or additional mining support.";
+            fill.classList.add("short");
+            updateFloatingVerdict(required, available, (marginPct >= 0 ? "+" : "") + marginPct.toFixed(1) + "%", "RESISTANCE BLOCK", "failure");
+            return;
+        }
 
         if (currentSimState.success) {
             status.className = "verdict-badge success";
@@ -186,8 +196,8 @@
         if (inputMode !== "manual") setInputMode("manual");
     }
 
-    function markOcr(fields = ["mass", "resistance", "instability"]) {
-        fields.forEach(field => markSource(field, "OCR"));
+    function markOcr(fields = ["mass", "resistance", "instability"], source = "OCR") {
+        fields.forEach(field => markSource(field, source));
         setInputMode("ocr");
     }
 
@@ -243,7 +253,9 @@
             maxFleetSize: Number(byId("maxFleetSize")?.value || 6),
             allowActiveModules: !!byId("allowActiveModules")?.checked,
             allowGadgets: !!byId("allowGadgets")?.checked,
-            preferCurrentShip: !!byId("preferCurrentShip")?.checked,
+            recommendMole: byId("recommendMole") ? !!byId("recommendMole").checked : true,
+            recommendProspector: byId("recommendProspector") ? !!byId("recommendProspector").checked : true,
+            recommendGolem: byId("recommendGolem") ? !!byId("recommendGolem").checked : true,
             fleetEnabledMole: !!byId("fleetEnabledMole")?.checked,
             fleetEnabledProspector: !!byId("fleetEnabledProspector")?.checked,
             fleetEnabledGolem: !!byId("fleetEnabledGolem")?.checked,
@@ -266,7 +278,9 @@
             if (saved.maxFleetSize && byId("maxFleetSize")) byId("maxFleetSize").value = saved.maxFleetSize;
             if (typeof saved.allowActiveModules === "boolean" && byId("allowActiveModules")) byId("allowActiveModules").checked = saved.allowActiveModules;
             if (typeof saved.allowGadgets === "boolean" && byId("allowGadgets")) byId("allowGadgets").checked = saved.allowGadgets;
-            if (typeof saved.preferCurrentShip === "boolean" && byId("preferCurrentShip")) byId("preferCurrentShip").checked = saved.preferCurrentShip;
+            if (typeof saved.recommendMole === "boolean" && byId("recommendMole")) byId("recommendMole").checked = saved.recommendMole;
+            if (typeof saved.recommendProspector === "boolean" && byId("recommendProspector")) byId("recommendProspector").checked = saved.recommendProspector;
+            if (typeof saved.recommendGolem === "boolean" && byId("recommendGolem")) byId("recommendGolem").checked = saved.recommendGolem;
             if (typeof saved.fleetEnabledMole === "boolean" && byId("fleetEnabledMole")) byId("fleetEnabledMole").checked = saved.fleetEnabledMole;
             if (typeof saved.fleetEnabledProspector === "boolean" && byId("fleetEnabledProspector")) byId("fleetEnabledProspector").checked = saved.fleetEnabledProspector;
             if (typeof saved.fleetEnabledGolem === "boolean" && byId("fleetEnabledGolem")) byId("fleetEnabledGolem").checked = saved.fleetEnabledGolem;
@@ -299,14 +313,12 @@
         let count = Math.max(0, Number(refs.count.value || 0));
 
         if (!refs.enabled.checked) {
-            refs.count.dataset.previousValue = count > 0 ? String(count) : (refs.count.dataset.previousValue || "1");
+            if (count > 0) refs.count.dataset.previousValue = String(count);
             refs.count.value = "0";
             refs.count.disabled = true;
         } else {
             refs.count.disabled = false;
-            if (count < 1) {
-                refs.count.value = refs.count.dataset.previousValue || "1";
-            }
+            refs.count.value = String(Math.max(0, Math.min(20, Math.floor(count))));
         }
 
         const row = refs.enabled.closest(".fleet-presence-row");
@@ -323,8 +335,7 @@
         const next = Math.max(0, Math.min(20, Number(refs.count.value || 0) + delta));
         refs.count.value = String(next);
 
-        if (next === 0) refs.enabled.checked = false;
-
+        // Quantity 0 is a valid enabled state: keep the ship type visible and selectable.
         syncFleetPresence(shipId);
         savePreferences();
         if (typeof calculate === "function") calculate();
@@ -414,7 +425,10 @@
 
         // Mark a successful OCR parse without coupling OCR to UI internals.
         window.addEventListener("mfa:ocr-applied", event => {
-            markOcr(event.detail?.fields || ["mass", "resistance", "instability"]);
+            markOcr(
+                event.detail?.fields || ["mass", "resistance", "instability"],
+                event.detail?.engine || "OCR"
+            );
         });
 
         setTimeout(syncVerdict, 50);

@@ -26,7 +26,7 @@
             <span class="status-chip"><span class="status-dot status-ok"></span><strong>MFA</strong>&nbsp;5.36.0</span>
             <span class="status-chip"><span class="status-dot status-ok"></span><strong>SC</strong>&nbsp;4.10.1 LIVE</span>
             <span class="status-chip" id="bridge-status"><span class="status-dot status-muted"></span>Bridge Offline</span>
-            <span class="status-chip"><span class="status-dot status-ok"></span>OCR Ready</span>
+            <span class="status-chip"><span class="status-dot status-ok"></span>OCR Paddle + Fallback</span>
             <span class="status-chip"><span class="status-dot status-warn"></span>Data Staged</span>
         </div>
 
@@ -149,7 +149,6 @@
                 <div class="toggle-list">
                     <label><input id="allowActiveModules" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Allow active modules</label>
                     <label><input id="allowGadgets" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Allow gadgets</label>
-                    <label><input id="preferCurrentShip" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Keep current ship primary</label>
                 </div>
 
 
@@ -234,7 +233,7 @@
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
+                                <input id="fleetAvailableMole" type="number" min="0" max="20" value="0" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
                             </span>
                         </label>
 
@@ -246,7 +245,7 @@
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="2" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
+                                <input id="fleetAvailableProspector" type="number" min="0" max="20" value="0" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
                             </span>
                         </label>
 
@@ -258,7 +257,7 @@
                             </span>
                             <span class="fleet-qty">
                                 <em>Qty</em>
-                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="1" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
+                                <input id="fleetAvailableGolem" type="number" min="0" max="20" value="0" inputmode="numeric" onchange="MFAFleetPlanner.syncFromControls()" oninput="MFAFleetPlanner.syncFromControls()">
                             </span>
                         </label>
                     </div>
@@ -291,6 +290,20 @@
                     <span class="mode-badge">DETERMINISTIC</span>
                 </div>
                 <p class="section-copy">MFA calculates the ideal vessel and loadout plan from Target Acquisition values and mission constraints using the audited 4.10.1 community-calibrated fracture model. Your actual Fleet Planner configuration is evaluated separately.</p>
+
+                <div class="recommendation-vessel-pool recommendation-vessel-pool-inline">
+                    <div class="recommendation-vessel-pool-head">
+                        <strong>Recommendation Fleet Pool</strong>
+                        <span>Select the vessel types your team can provide. MFA can combine any selected types in the ideal solution.</span>
+                    </div>
+                    <div class="recommendation-vessel-pool-options">
+                        <label><input id="recommendMole" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> ARGO MOLE</label>
+                        <label><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> MISC Prospector</label>
+                        <label><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Drake Golem</label>
+                    </div>
+                    <div class="recommendation-vessel-pool-note">Changing these immediately recalculates the Recommended Ideal Loadout. The later <b>Available to assist</b> checkbox only confirms whether a vessel already recommended by MFA can actually deploy.</div>
+                </div>
+
                 <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
             </section>
             </aside>
@@ -343,6 +356,7 @@
             <div class="resource-links">
                 <a href="https://uexcorp.space/" target="_blank">UEX Data</a>
                 <a href="https://regolith.rocks/" target="_blank">Regolith</a>
+                <a href="mechanics-guide.html">Ideal Loadout Mechanics</a>
                 <a href="https://github.com/esramos-design/Mining-Fracture-Analyser" target="_blank">GitHub</a>
                 <a href="https://robertsspaceindustries.com/citizens/CHIRONDRAGON" target="_blank">RSI Profile</a>
             </div>
@@ -362,6 +376,7 @@ window.MFA_CONFIG = {
 </script>
 <script src="v535-runtime.js"></script>
 <script src="script.js"></script>
+<script src="regolith-ocr.js"></script>
 <script src="scanner.js"></script>
 <script src="operations-console.js"></script>
 <script src="cooperative-solver.js"></script>
