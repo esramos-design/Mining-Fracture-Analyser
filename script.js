@@ -230,15 +230,12 @@ window.updateModuleSlots = function(armId) {
 
         if (i > slots) {
             modSelect.disabled = true;
-            modSelect.value = "None"; 
-            modSelect.style.opacity = "0.3";
-            modSelect.style.cursor = "not-allowed";
+            modSelect.value = "None";
         } else {
             modSelect.disabled = false;
-            modSelect.style.opacity = "1";
-            modSelect.style.cursor = "pointer";
         }
         window.togCheck(armId, i);
+        syncModuleSelector(modSelect.id);
     }
 };
 
@@ -677,10 +674,14 @@ function createArmConfigHtml(armIndex, ship) {
     let modHtml = '';
     const modOpts = getModOptions();
 
-    // Render all 3 slots (they will be disabled by updateModuleSlots if needed)
+    // Render all 3 slots. Native selects remain the calculation/state authority.
+    // A custom presentation layer is attached after render for readable names + attributes.
     for(let i=1; i<=3; i++) {
-        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()">${modOpts}</select>
-        <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div></div>`;
+        modHtml += `<div class="module-select-row mb-1">
+            <select id="${armId}-mod${i}" class="module-native-select" aria-label="Mining module slot ${i}" onchange="togCheck('${armId}', ${i});syncModuleSelector('${armId}-mod${i}');calculate()">${modOpts}</select>
+            <div class="module-select-host" data-select-id="${armId}-mod${i}"></div>
+            <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div>
+        </div>`;
     }
 
     // NOTE: Added onchange to the laser select to trigger slot locking
@@ -697,6 +698,131 @@ function getModOptions() {
     const pas = sortedModules.filter(m => m.activation === 'Passive').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
     return `<option value="None">None</option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
 }
+
+function escapeModuleHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function moduleDisplayParts(moduleName) {
+    if (!moduleName || moduleName === 'None') {
+        return { name: 'None', meta: 'No module fitted', activation: 'none' };
+    }
+
+    const module = sortedModules.find(item => item.name === moduleName);
+    if (!module) {
+        return { name: moduleName, meta: '', activation: 'unknown' };
+    }
+
+    const formatted = getFormattedStats(module, 'module').trim();
+    const meta = formatted.startsWith('(') && formatted.endsWith(')')
+        ? formatted.slice(1, -1)
+        : formatted;
+
+    return {
+        name: module.name,
+        meta,
+        activation: String(module.activation || '').toLowerCase()
+    };
+}
+
+function buildModuleMenu(select) {
+    const host = document.querySelector(`.module-select-host[data-select-id="${select.id}"]`);
+    if (!host) return;
+
+    const current = moduleDisplayParts(select.value);
+    const active = sortedModules.filter(module => module.activation === 'Active');
+    const passive = sortedModules.filter(module => module.activation === 'Passive');
+
+    const optionsHtml = (items) => items.map(module => {
+        const parts = moduleDisplayParts(module.name);
+        const selected = select.value === module.name;
+        return `
+            <button type="button"
+                    class="module-choice ${selected ? 'selected' : ''}"
+                    role="option"
+                    aria-selected="${selected}"
+                    data-module-value="${escapeModuleHtml(module.name)}">
+                <span class="module-choice-name">${escapeModuleHtml(parts.name)}</span>
+                <span class="module-choice-meta">${escapeModuleHtml(parts.meta)}</span>
+            </button>`;
+    }).join('');
+
+    host.innerHTML = `
+        <div class="module-combobox ${select.disabled ? 'disabled' : ''}">
+            <button type="button"
+                    class="module-combobox-trigger"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    ${select.disabled ? 'disabled' : ''}>
+                <span class="module-trigger-copy">
+                    <strong>${escapeModuleHtml(current.name)}</strong>
+                    <small>${escapeModuleHtml(current.meta)}</small>
+                </span>
+                <span class="module-trigger-chevron" aria-hidden="true">▾</span>
+            </button>
+            <div class="module-combobox-menu" role="listbox" hidden>
+                <button type="button"
+                        class="module-choice module-choice-none ${select.value === 'None' ? 'selected' : ''}"
+                        role="option"
+                        aria-selected="${select.value === 'None'}"
+                        data-module-value="None">
+                    <span class="module-choice-name">None</span>
+                    <span class="module-choice-meta">No module fitted</span>
+                </button>
+                <div class="module-choice-group">Active Modules</div>
+                ${optionsHtml(active)}
+                <div class="module-choice-group">Passive Modules</div>
+                ${optionsHtml(passive)}
+            </div>
+        </div>`;
+
+    const trigger = host.querySelector('.module-combobox-trigger');
+    const menu = host.querySelector('.module-combobox-menu');
+
+    trigger?.addEventListener('click', () => {
+        if (select.disabled) return;
+        document.querySelectorAll('.module-combobox-menu:not([hidden])').forEach(openMenu => {
+            if (openMenu !== menu) {
+                openMenu.hidden = true;
+                openMenu.closest('.module-combobox')?.querySelector('.module-combobox-trigger')?.setAttribute('aria-expanded', 'false');
+            }
+        });
+        menu.hidden = !menu.hidden;
+        trigger.setAttribute('aria-expanded', String(!menu.hidden));
+    });
+
+    host.querySelectorAll('.module-choice').forEach(button => {
+        button.addEventListener('click', () => {
+            if (select.disabled) return;
+            select.value = button.dataset.moduleValue || 'None';
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            if (menu) menu.hidden = true;
+            trigger?.setAttribute('aria-expanded', 'false');
+        });
+    });
+}
+
+function initModuleSelectors(root = document) {
+    root.querySelectorAll('select.module-native-select').forEach(select => buildModuleMenu(select));
+}
+
+function syncModuleSelector(selectId) {
+    const select = document.getElementById(selectId);
+    if (select) buildModuleMenu(select);
+}
+
+document.addEventListener('click', event => {
+    if (event.target.closest('.module-combobox')) return;
+    document.querySelectorAll('.module-combobox-menu:not([hidden])').forEach(menu => {
+        menu.hidden = true;
+        menu.closest('.module-combobox')?.querySelector('.module-combobox-trigger')?.setAttribute('aria-expanded', 'false');
+    });
+});
 
 // --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
 const MFA_THEMES = ['day', 'dusk', 'night'];
@@ -764,4 +890,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderGadgetAttributes = renderGadgetAttributes; 
     window.updateModuleSlots = updateModuleSlots; // Expose to global scope for HTML inline calls
     window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
+    window.initModuleSelectors = initModuleSelectors;
+    window.syncModuleSelector = syncModuleSelector;
 });
