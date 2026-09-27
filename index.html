@@ -152,18 +152,6 @@
                     <label><input id="preferCurrentShip" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Keep current ship primary</label>
                 </div>
 
-                <div class="recommendation-vessel-pool">
-                    <div class="recommendation-vessel-pool-head">
-                        <strong>Vessels available for recommendation</strong>
-                        <span>Select the ship types your team can actually provide. MFA may combine selected types.</span>
-                    </div>
-                    <div class="recommendation-vessel-pool-options">
-                        <label><input id="recommendMole" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> ARGO MOLE</label>
-                        <label><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> MISC Prospector</label>
-                        <label><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Drake Golem</label>
-                    </div>
-                </div>
-
 
             </div>
 
@@ -303,6 +291,20 @@
                     <span class="mode-badge">DETERMINISTIC</span>
                 </div>
                 <p class="section-copy">MFA calculates the ideal vessel and loadout plan from Target Acquisition values and mission constraints using the audited 4.10.1 community-calibrated fracture model. Your actual Fleet Planner configuration is evaluated separately.</p>
+
+                <div class="recommendation-vessel-pool recommendation-vessel-pool-inline">
+                    <div class="recommendation-vessel-pool-head">
+                        <strong>Recommendation Fleet Pool</strong>
+                        <span>Select the vessel types your team can provide. MFA can combine any selected types in the ideal solution.</span>
+                    </div>
+                    <div class="recommendation-vessel-pool-options">
+                        <label><input id="recommendMole" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> ARGO MOLE</label>
+                        <label><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> MISC Prospector</label>
+                        <label><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Drake Golem</label>
+                    </div>
+                    <div class="recommendation-vessel-pool-note">Changing these immediately recalculates the Recommended Ideal Loadout. The later <b>Available to assist</b> checkbox only confirms whether a vessel already recommended by MFA can actually deploy.</div>
+                </div>
+
                 <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
             </section>
             </aside>
