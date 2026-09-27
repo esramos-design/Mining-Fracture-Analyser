@@ -112,29 +112,63 @@
         return out;
     }
 
-    function armMetrics(a){
-        var power=n(a.basePower), res=1+n(a.resistanceEffect)/100, inst=1+n(a.instabilityEffect)/100, active=0;
-        (a.modules||[]).forEach(function(name){
-            var m=powerModules.find(function(x){return x.name===name;});
-            if(!m) return;
-            power*=n(m.multiplier,1); res*=1+n(m.resistanceEffect)/100; inst*=1+n(m.instabilityEffect)/100;
-            if(m.activation==="Active") active++;
-        });
-        return {power:power,res:res,inst:inst,active:active};
+    function recommendedArmToRuntime(a){
+        return {
+            enabled:true,
+            power:n(a.basePower),
+            resistanceEffect:n(a.resistanceEffect),
+            instabilityEffect:n(a.instabilityEffect),
+            modules:(a.modules||[]).map(function(name){
+                var m=powerModules.find(function(x){return x.name===name;});
+                if(!m)return null;
+                return {
+                    name:m.name,
+                    activation:m.activation,
+                    // Recommended Active modules are part of the required operating state.
+                    active:true,
+                    multiplier:m.multiplier,
+                    resistanceEffect:m.resistanceEffect,
+                    instabilityEffect:m.instabilityEffect
+                };
+            }).filter(Boolean)
+        };
     }
 
     function evaluate(baseRes,baseInst,mass,arms,gadgetName){
-        if(!arms.length) return {success:false,power:0,required:Infinity,finalResistance:baseRes,finalInstability:baseInst,marginPct:-Infinity,activeModules:0};
-        var power=0,resProd=1,instProd=1,active=0;
-        arms.forEach(function(a){var m=armMetrics(a);power+=m.power;resProd*=m.res;instProd*=m.inst;active+=m.active;});
-        var resMult=Math.pow(resProd,1/arms.length), instMult=Math.pow(instProd,1/arms.length);
-        var g=gadgets.find(function(x){return x.name===gadgetName;});
-        if(g){resMult*=1+n(g.reduction!=null?g.reduction:g.resistance)/100;instMult*=1+n(g.instabilityEffect)/100;}
-        var finalRes=Math.max(0,baseRes*resMult), finalInst=Math.max(0,baseInst*instMult);
-        var required=finalRes<100?mass*(1-finalRes/100)/5:Infinity;
-        var success=Number.isFinite(required)&&required>0&&power>=required;
-        var margin=Number.isFinite(required)&&required>0?(power-required)/required*100:-Infinity;
-        return {success:success,power:power,required:required,finalResistance:finalRes,finalInstability:finalInst,marginPct:margin,activeModules:active};
+        if(!window.MFAV535 || typeof window.MFAV535.calculateV535!=="function"){
+            throw new Error("Shared MFA v5.35 runtime engine is unavailable.");
+        }
+
+        var gadget=gadgets.find(function(x){return x.name===gadgetName;})||null;
+        var calc=window.MFAV535.calculateV535({
+            rockMass:mass,
+            resistance:baseRes,
+            instability:baseInst,
+            arms:(arms||[]).map(recommendedArmToRuntime),
+            gadget:gadget
+        });
+
+        var margin=calc.requiredPower>0 && calc.requiredPower<999999
+            ? (calc.totalPower-calc.requiredPower)/calc.requiredPower*100
+            : -Infinity;
+
+        var activeModules=0;
+        (arms||[]).forEach(function(a){
+            (a.modules||[]).forEach(function(name){
+                var m=powerModules.find(function(x){return x.name===name;});
+                if(m&&m.activation==="Active")activeModules++;
+            });
+        });
+
+        return {
+            success:calc.success,
+            power:calc.totalPower,
+            required:calc.requiredPower>=999999?Infinity:calc.requiredPower,
+            finalResistance:calc.finalResistance,
+            finalInstability:calc.finalInstability,
+            marginPct:margin,
+            activeModules:activeModules
+        };
     }
 
     function strategy(s){
@@ -143,7 +177,7 @@
             mole:[["Break","Lancet MH2",["Focus III","Focus III"]],["Stab","Lancet MH2",["Focus III","Focus III"]],["Extr","Impact II",["Torrent III","Torrent III","FLTR-XL"]]],
             prospector:[["Stab","Lancet MH1",["Focus III"]]], golem:[["Support","Pitman",["Focus III","Focus III"]]]
         };
-        if(s.baseResistance>60 || s.deficit>0) return {
+        if(s.baseResistance>60) return {
             name:"Resistance Breaker",
             mole:[["Break","Helix II",["Surge","Rieger-C3","Rieger-C3"]],["Stab","Lancet MH2",["Brandt","Focus III"]],["Extr","Impact II",["Torrent III","Torrent III","FLTR-XL"]]],
             prospector:[["Break","Helix I",["Surge","Rieger-C3"]]], golem:[["Break","Pitman",["Surge","Rieger-C3"]]]
@@ -176,7 +210,7 @@
     function scoreLaser(h,role,s){
         var p=n(h.power),r=n(h.resistanceEffect),i=n(h.instabilityEffect);
         if(role==="Stab"||s.baseInstability>45) return (-i*85)+p+(-r*20);
-        if(role==="Break"||s.baseResistance>55||s.deficit>0) return (-r*95)+p+(-i*15);
+        if(role==="Break"||s.baseResistance>55) return (-r*95)+p+(-i*15);
         if(role==="Extr") return n(h.extractionLaserPower)*1.3+p*.5+(-i*10);
         return p+(-r*55)+(-i*15);
     }
@@ -235,33 +269,109 @@
     }
 
     function repeat(v,count){var out=[];for(var i=0;i<count;i++)v.arms.forEach(function(a){out.push(Object.assign({},a,{vesselIndex:i+1}));});return out;}
-    function gadgetChoices(p){var selected=el("gadgetSelect")?el("gadgetSelect").value:"None";if(!p.allowGadgets)return["None"];if(selected!=="None")return[selected];return gadgets.map(function(g){return g.name;});}
+    function gadgetChoices(p){
+        if(!p.allowGadgets)return["None"];
+        return gadgets.map(function(g){return g.name;});
+    }
     function compText(c){var b=[];if(c.mole)b.push(c.mole+"× MOLE");if(c.prospector)b.push(c.prospector+"× Prospector");if(c.golem)b.push(c.golem+"× Golem");return b.join(" + ");}
 
-    function solve(s,baseArms,support,p,strat){
-        var vars={}, deployed=deployedCounts(), currentShips=deployed.mole+deployed.prospector+deployed.golem, options=[];
+    function solveIdeal(s,p,strat){
+        var vars={}, options=[];
+        var maxFleet=Math.max(1,Math.floor(n(p.maxFleetSize,6)));
         ORDER.forEach(function(id){vars[id]=variants(id,strat,p,s);});
-        for(var m=0;m<=support.mole;m++) for(var pr=0;pr<=support.prospector;pr++) for(var g=0;g<=support.golem;g++){
-            var added=m+pr+g;if(!added||currentShips+added>Math.max(1,n(p.maxFleetSize,6)))continue;
-            var counts={mole:m,prospector:pr,golem:g,added:added}, active=ORDER.filter(function(id){return counts[id]>0;});
-            function walk(i,pick){
-                if(i<active.length){var id=active[i];vars[id].forEach(function(v){pick[id]=v;walk(i+1,pick);});delete pick[id];return;}
-                var proposed=[];ORDER.forEach(function(id){if(counts[id]&&pick[id])proposed=proposed.concat(repeat(pick[id],counts[id]));});
-                gadgetChoices(p).forEach(function(gadget){
-                    options.push({counts:counts,selection:Object.assign({},pick),gadget:gadget,evaluation:evaluate(s.baseResistance,s.baseInstability,s.mass,baseArms.concat(proposed),gadget)});
-                });
+
+        for(var m=0;m<=maxFleet;m++){
+            for(var pr=0;pr<=maxFleet;pr++){
+                for(var g=0;g<=maxFleet;g++){
+                    var total=m+pr+g;
+                    if(total<1 || total>maxFleet) continue;
+
+                    var counts={mole:m,prospector:pr,golem:g,added:total};
+                    var active=ORDER.filter(function(id){return counts[id]>0;});
+
+                    function walk(i,pick){
+                        if(i<active.length){
+                            var id=active[i];
+                            vars[id].forEach(function(v){
+                                pick[id]=v;
+                                walk(i+1,pick);
+                            });
+                            delete pick[id];
+                            return;
+                        }
+
+                        var proposed=[];
+                        ORDER.forEach(function(id){
+                            if(counts[id]&&pick[id]){
+                                proposed=proposed.concat(repeat(pick[id],counts[id]));
+                            }
+                        });
+
+                        gadgetChoices(p).forEach(function(gadget){
+                            options.push({
+                                counts:counts,
+                                selection:Object.assign({},pick),
+                                gadget:gadget,
+                                evaluation:evaluate(
+                                    s.baseResistance,
+                                    s.baseInstability,
+                                    s.mass,
+                                    proposed,
+                                    gadget
+                                )
+                            });
+                        });
+                    }
+
+                    walk(0,{});
+                }
             }
-            walk(0,{});
         }
+
         function tuple(o){
-            if(p.optimizerObjective==="maximum-margin")return[o.evaluation.success?0:1,-o.evaluation.marginPct,o.counts.added];
-            if(p.optimizerObjective==="minimum-instability")return[o.evaluation.success?0:1,o.counts.added,o.evaluation.finalInstability,-o.evaluation.marginPct];
-            if(p.optimizerObjective==="minimum-consumables")return[o.evaluation.success?0:1,o.counts.added,o.evaluation.activeModules+(o.gadget==="None"?0:1),-o.evaluation.marginPct];
+            if(p.optimizerObjective==="maximum-margin"){
+                return[o.evaluation.success?0:1,-o.evaluation.marginPct,o.counts.added];
+            }
+            if(p.optimizerObjective==="minimum-instability"){
+                return[o.evaluation.success?0:1,o.counts.added,o.evaluation.finalInstability,-o.evaluation.marginPct];
+            }
+            if(p.optimizerObjective==="minimum-consumables"){
+                return[
+                    o.evaluation.success?0:1,
+                    o.counts.added,
+                    o.evaluation.activeModules+(o.gadget==="None"?0:1),
+                    -o.evaluation.marginPct
+                ];
+            }
             return[o.evaluation.success?0:1,o.counts.added,-o.evaluation.marginPct];
         }
-        options.sort(function(a,b){var x=tuple(a),y=tuple(b);for(var i=0;i<Math.max(x.length,y.length);i++){var d=(x[i]||0)-(y[i]||0);if(d)return d;}return 0;});
+
+        options.sort(function(a,b){
+            var x=tuple(a),y=tuple(b);
+            for(var i=0;i<Math.max(x.length,y.length);i++){
+                var d=(x[i]||0)-(y[i]||0);
+                if(d)return d;
+            }
+
+            // Stable deterministic composition tie-break.
+            return (a.counts.mole-b.counts.mole) ||
+                (a.counts.prospector-b.counts.prospector) ||
+                (a.counts.golem-b.counts.golem) ||
+                String(a.gadget).localeCompare(String(b.gadget));
+        });
+
         var seen={}, unique=[];
-        options.forEach(function(o){var k=o.counts.mole+"/"+o.counts.prospector+"/"+o.counts.golem+"/"+o.gadget;if(!seen[k]){seen[k]=true;unique.push(o);}});
+        options.forEach(function(o){
+            var selectionKey=ORDER.map(function(id){
+                return o.selection[id]?o.selection[id].key:"-";
+            }).join("/");
+            var k=o.counts.mole+"/"+o.counts.prospector+"/"+o.counts.golem+"/"+selectionKey+"/"+o.gadget;
+            if(!seen[k]){
+                seen[k]=true;
+                unique.push(o);
+            }
+        });
+
         var good=unique.filter(function(o){return o.evaluation.success;});
         return {variants:vars,options:(good.length?good:unique).slice(0,5)};
     }
@@ -319,8 +429,14 @@
         if(!count||!v)return"";
         var rows=[];
         for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
+            var assistId="assist-"+id+"-"+vesselIndex;
             rows.push('<div class="solver-vessel solver-required-vessel">'+
                 '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
+                '<label class="solver-assist-availability" for="'+assistId+'">'+
+                    '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
+                    '<span class="solver-assist-box" aria-hidden="true"></span>'+
+                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small></span>'+
+                '</label>'+
                 v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
                 '</div>');
         }
@@ -348,14 +464,14 @@
             }).join("")+'</div></div>';
     }
 
-    function alternativeHtml(o,vars,baseArms,s){
+    function alternativeHtml(o,vars,s){
         var rows=[];
         ORDER.forEach(function(id){
             if(!o.counts[id])return;
             vars[id].filter(function(v){return v.key!==o.selection[id].key;}).forEach(function(v){
                 var proposed=[];
                 ORDER.forEach(function(t){if(o.counts[t])proposed=proposed.concat(repeat(t===id?v:o.selection[t],o.counts[t]));});
-                var e=evaluate(s.baseResistance,s.baseInstability,s.mass,baseArms.concat(proposed),o.gadget);
+                var e=evaluate(s.baseResistance,s.baseInstability,s.mass,proposed,o.gadget);
                 rows.push('<div class="solver-backup"><div><strong>'+esc(LABEL[id])+' · '+esc(v.label)+'</strong><span>'+
                     (e.success?'Still viable · '+(e.marginPct>=0?'+':'')+e.marginPct.toFixed(1)+'% margin':'Not sufficient in this option · '+e.marginPct.toFixed(1)+'% margin')+
                     '</span></div><div class="solver-backup-arms comprehensive">'+v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+'</div></div>');
@@ -364,77 +480,87 @@
         return rows.length?'<details class="solver-alternatives"><summary>Secondary equipment alternatives</summary><div class="solver-alternative-list">'+rows.join("")+'</div></details>':"";
     }
 
-    function optionHtml(o,index,vars,baseArms,s){
+    function optionHtml(o,vars,s){
         var e=o.evaluation, status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
-        return '<article class="solver-option '+(e.success?'viable':'short')+'"><div class="solver-option-head"><div><span class="solver-option-label">OPTION '+String.fromCharCode(65+index)+'</span><h4>'+esc(compText(o.counts))+'</h4></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
+        var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy every head/module shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
+        return '<article class="solver-option '+(e.success?'viable':'short')+'"><div class="solver-option-head"><div><span class="solver-option-label">BEST SOLUTION</span><h4>'+esc(compText(o.counts))+'</h4></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
             '<div class="solver-option-metrics"><span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span><span>Required <strong>'+(Number.isFinite(e.required)?Math.round(e.required).toLocaleString()+' MW':'Impossible')+'</strong></span><span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span><span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span><span>Gadget <strong>'+esc(o.gadget)+'</strong></span></div>'+
-            '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,baseArms,s)+'</article>';
+            reproduction+
+            '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Ideal recommendation remains unchanged.</em></div>'+
+            '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,s)+'</article>';
     }
 
-    function fleetCountText(counts){
-        var parts=[];
-        ORDER.forEach(function(id){
-            var count=Math.max(0,Math.floor(n(counts[id])));
-            if(count>0)parts.push(count+" "+LABEL[id]);
-        });
-        return parts.join(" · ");
+    function updateAvailabilitySummary(){
+        var summary=el("solverAvailabilitySummary");
+        if(!summary)return;
+        var checks=[].slice.call(document.querySelectorAll("#configs .solver-assist-check"));
+        var confirmed=checks.filter(function(input){return input.checked;}).length;
+        var total=checks.length;
+        var strong=summary.querySelector("strong");
+        var note=summary.querySelector("em");
+        if(strong)strong.textContent=confirmed+" of "+total+" required vessel"+(total===1?"":"s")+" confirmed";
+        summary.classList.toggle("ready",total>0&&confirmed===total);
+        summary.classList.toggle("partial",confirmed>0&&confirmed<total);
+        if(note){
+            note.textContent=total>0&&confirmed===total
+                ?"All vessels required by the ideal solution are confirmed available."
+                :"Ideal recommendation remains unchanged.";
+        }
     }
 
-    function snapshot(t,d,s){
-        var rows=[];
-        var operation=fleetCountText(t), deployed=fleetCountText(d), assist=fleetCountText(s);
-        if(operation)rows.push('<div><span>Operation fleet</span><strong>'+esc(operation)+'</strong></div>');
-        if(deployed)rows.push('<div><span>Already deployed</span><strong>'+esc(deployed)+'</strong></div>');
-        if(assist)rows.push('<div><span>Available to assist</span><strong>'+esc(assist)+'</strong></div>');
-        return rows.length?'<div class="solver-fleet-snapshot snapshot-'+rows.length+'">'+rows.join("")+'</div>':"";
+    function targetBasisHtml(ctx,p){
+        var material=el("materialName")?el("materialName").value.trim():"";
+        var objectiveLabels={
+            "minimum-ships":"Minimum ships",
+            "maximum-margin":"Maximum margin",
+            "minimum-instability":"Minimum instability",
+            "minimum-consumables":"Minimum consumables"
+        };
+
+        return '<div class="solver-target-basis">'+
+            '<div><span>Target mass</span><strong>'+Math.round(n(ctx.mass)).toLocaleString()+' kg</strong></div>'+
+            '<div><span>Resistance</span><strong>'+n(ctx.baseResistance).toFixed(1)+'%</strong></div>'+
+            '<div><span>Instability</span><strong>'+n(ctx.baseInstability).toFixed(1)+'%</strong></div>'+
+            (material?'<div><span>Material</span><strong>'+esc(material)+'</strong></div>':'')+
+            '<div><span>Objective</span><strong>'+esc(objectiveLabels[p.optimizerObjective]||"Minimum ships")+'</strong></div>'+
+            '<div><span>Max ideal fleet</span><strong>'+Math.max(1,Math.floor(n(p.maxFleetSize,6)))+'</strong></div>'+
+            '<div><span>Active modules</span><strong>'+(p.allowActiveModules?'Allowed':'Passive only')+'</strong></div>'+
+            '<div><span>Gadgets</span><strong>'+(p.allowGadgets?'Search allowed':'Disabled')+'</strong></div>'+
+            '</div>';
     }
 
     function render(ctx){
-        var box=el("configs");if(!box)return;
-        var p=prefs(), d=deployedCounts();
-        var totals={
-            mole:p.fleetEnabledMole===false?0:Math.max(0,Math.floor(n(p.fleetAvailableMole))),
-            prospector:p.fleetEnabledProspector===false?0:Math.max(0,Math.floor(n(p.fleetAvailableProspector))),
-            golem:p.fleetEnabledGolem===false?0:Math.max(0,Math.floor(n(p.fleetAvailableGolem)))
+        var box=el("configs");
+        if(!box)return;
+
+        var p=prefs();
+        var state={
+            mass:n(ctx.mass),
+            baseResistance:n(ctx.baseResistance),
+            baseInstability:n(ctx.baseInstability)
         };
-        var support=availableCounts(totals,d);
-        var baseArms=currentArms(), selected=el("gadgetSelect")?el("gadgetSelect").value:"None";
-        var current=evaluate(ctx.baseResistance,ctx.baseInstability,ctx.mass,baseArms,selected);
-        var state={mass:ctx.mass,baseResistance:ctx.baseResistance,baseInstability:ctx.baseInstability,currentPower:ctx.currentPower,deficit:Math.max(0,n(ctx.legacyRequiredPower)-n(ctx.currentPower))};
-        var snap=snapshot(totals,d,support);
-        if(current.success){
-            box.innerHTML=snap+
-                '<div class="solver-current-ok solver-status-banner"><strong>CURRENT DEPLOYED FLEET IS SUFFICIENT</strong><span>'+(current.marginPct>=0?"+":"")+current.marginPct.toFixed(1)+'% deterministic fracture margin · no additional vessel required.</span></div>'+
-                currentFleetLoadoutHtml(baseArms,selected)+
-                '<div class="solver-method-note">This is the exact active configuration currently producing the viable verdict. MFA has not replaced your fitted equipment.</div>';
+
+        var basis=targetBasisHtml(ctx,p);
+        var strat=strategy(state);
+        var solved=solveIdeal(state,p,strat);
+
+        if(!solved.options.length){
+            box.innerHTML=basis+
+                '<div class="solver-no-option"><strong>NO IDEAL SOLUTION FOUND WITHIN THE CURRENT MISSION CONSTRAINTS</strong><span>Increase Max Fleet or allow additional equipment classes.</span></div>';
             return;
         }
 
-        var currentShort=Number.isFinite(current.marginPct)?Math.abs(current.marginPct).toFixed(1)+"% below required fracture capability":"fracture requirement not met";
-        var insufficient='<div class="solver-current-insufficient solver-status-banner"><strong>CURRENT DEPLOYED FLEET IS INSUFFICIENT</strong><span>'+esc(currentShort)+' · support or a loadout change is required.</span></div>';
-
-        if(support.mole+support.prospector+support.golem===0){
-            box.innerHTML=snap+insufficient+
-                currentFleetLoadoutHtml(baseArms,selected)+
-                '<div class="solver-no-option"><strong>NO UNDEPLOYED SUPPORT VESSELS ARE AVAILABLE</strong><span>Change one or more active vessel loadouts, or mark another selected vessel as Available.</span></div>';
-            return;
-        }
-        var strat=strategy(state), solved=solve(state,baseArms,support,p,strat);
-        if(!solved.options.length){box.innerHTML=snap+'<div class="solver-no-option"><strong>NO SOLUTION FOUND WITH THE AVAILABLE OPERATION FLEET</strong></div>';return;}
-        var viable=solved.options.filter(function(o){return o.evaluation.success;}).length;
         var best=solved.options[0];
-        var others=solved.options.slice(1);
-        var alternatives=others.length
-            ? '<details class="solver-more-plans"><summary>Show '+others.length+' other viable / closest plan'+(others.length===1?'':'s')+'</summary><div class="solver-other-list">'+
-              others.map(function(o,i){return optionHtml(o,i+1,solved.variants,baseArms,state);}).join('<div class="solver-or-divider"><span>OR</span></div>')+
-              '</div></details>'
-            : '';
-        box.innerHTML=snap+insufficient+'<div class="solver-portfolio-head"><div><span>BEST MATCH FOR THIS OPERATION</span><strong>'+(best.evaluation.success?'RECOMMENDED SUPPORT PLAN':'CLOSEST AVAILABLE PLAN')+'</strong></div><div>'+esc(strat.name)+'</div></div>'+
-            '<div class="solver-or-note">MFA lists every support vessel separately with the exact laser/head and module configuration required. Open alternatives only if the preferred ship or equipment is unavailable.</div>'+
-            '<div class="solver-best-option">'+optionHtml(best,0,solved.variants,baseArms,state)+'</div>'+
-            alternatives+
-            '<div class="solver-method-note">Your Fleet Planner loadouts are the actual fitted state and are never overwritten. Every recommendation is calculated separately with MFA’s existing deterministic power/resistance/instability mechanics. Secondary recommended loadouts are tested against the same formula. Other preserved mining attributes are not invented into the fracture formula until separately validated.</div>';
+
+        box.innerHTML=basis+
+            '<div class="solver-portfolio-head"><div><span>TARGET-DRIVEN IDEAL SOLUTION</span><strong>'+
+                (best.evaluation.success?'RECOMMENDED IDEAL LOADOUT':'CLOSEST PLAN WITHIN CONSTRAINTS')+
+            '</strong></div><div>'+esc(strat.name)+'</div></div>'+
+            '<div class="solver-or-note"><strong>Fleet Planner independent.</strong> MFA evaluates candidate solutions internally and shows only the best result for the Target Acquisition requirements. Your actual vessels and fitted loadouts do not bias this recommendation.</div>'+
+            '<div class="solver-best-option">'+optionHtml(best,solved.variants,state)+'</div>'+
+            '<div class="solver-method-note">Only the highest-ranked solution is presented. Availability checkboxes confirm whether the recommended vessels can actually assist; they do not alter the ideal calculation. Secondary equipment alternatives remain collapsed inside the recommended card for cases where preferred equipment is unavailable. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
+        updateAvailabilitySummary();
     }
 
-    window.MFACoopSolver={render:render,evaluate:evaluate};
+    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,updateAvailabilitySummary:updateAvailabilitySummary};
 })();

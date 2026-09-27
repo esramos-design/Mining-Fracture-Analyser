@@ -24,11 +24,17 @@ jobs:
           node-version: 20
       - name: Check JavaScript syntax
         run: |
+          node --check v535-runtime.js
           node --check script.js
-          node --check ai-foreman.js
+          node --check fleet.js
           node --check scanner.js
           node --check operations-console.js
           node --check cooperative-solver.js
           node --check unified-fleet-planner.js
+          node --check scripts/build-pages.mjs
       - name: Validate operations console DOM contract
         run: node scripts/validate-operations-console.mjs
+      - name: Validate target-driven recommendation architecture
+        run: node scripts/validate-target-driven-solver.mjs
+      - name: Validate Cloudflare Pages build
+        run: npm run build:pages

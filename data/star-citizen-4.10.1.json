@@ -4,8 +4,8 @@
   "targetPatch": "4.10.1",
   "launcherBuild": "4.10.1-live.12660092",
   "importedAt": "2026-09-21",
-  "status": "staged-reference-data",
-  "activationNote": "This dataset is staged for reconciliation and tests. v5.35 calculation behaviour remains unchanged until validated and approved.",
+  "status": "verified-reference-data",
+  "activationNote": "4.10.1 component tables re-audited on 2026-09-27 against current UEX mining component data. Fracture breakability mechanics are activated through the dedicated 4.10.1 mechanics audit; unknown attributes remain null.",
   "sources": [
     {
       "name": "Roberts Space Industries",
@@ -773,11 +773,18 @@
       "sourceItemVersion": "4.3.2"
     }
   ],
-  "lastVerifiedAt": "2026-09-21",
+  "lastVerifiedAt": "2026-09-27",
   "verification": {
-    "source": "UEX mining components / item specifications",
+    "source": "RSI live patch/status + UEX mining component/item specifications",
     "supportedPatch": "4.10.1",
-    "scope": "Mining modules and gadgets reconciled for complete UI/reference attributes",
-    "calculationPolicy": "Verified display/reference attributes are separate from protected v5.35 calculation aliases unless mechanics are explicitly revalidated."
+    "launcherBuild": "4.10.1-live.12660092",
+    "verifiedAt": "2026-09-27",
+    "counts": {
+      "miningLaserHeads": 17,
+      "miningModules": 26,
+      "gadgets": 6
+    },
+    "scope": "17 mining laser heads, 26 functional mining modules and 6 gadgets reconciled; no component stat changes required during this audit.",
+    "calculationPolicy": "Breakability uses the separately documented 4.10.1 community-calibrated fracture model. Unknown or unsupported mechanics remain unimplemented."
   }
 }

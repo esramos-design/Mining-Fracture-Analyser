@@ -15,14 +15,16 @@ test("no fleet: preserves target modifiers and cannot fracture", () => {
   });
 
   assert.equal(r.totalPower, 0);
+  assert.equal(r.effectivePower, 0);
+  assert.equal(r.maxBreakableMass, 0);
   approx(r.finalResistance, 16);
   approx(r.finalInstability, 20);
-  approx(r.requiredPower, 23922 * 0.84 / 5);
+  approx(r.requiredPower, 23922 / (5 * 0.84));
   assert.equal(r.success, false);
   assert.equal(r.activeArms, 0);
 });
 
-test("single Helix I baseline", () => {
+test("single Helix I baseline uses resistance as a power penalty", () => {
   const r = calculateV535({
     rockMass: 10000,
     resistance: 20,
@@ -38,9 +40,49 @@ test("single Helix I baseline", () => {
 
   approx(r.finalResistance, 14);
   approx(r.finalInstability, 10);
-  approx(r.requiredPower, 1720);
+  approx(r.effectivePower, 3150 * 0.86);
+  approx(r.maxBreakableMass, 5 * 3150 * 0.86);
+  approx(r.requiredPower, 10000 / (5 * 0.86));
   assert.equal(r.totalPower, 3150);
   assert.equal(r.success, true);
+});
+
+test("higher resistance increases required raw laser power", () => {
+  const low = calculateV535({
+    rockMass: 9000,
+    resistance: 0,
+    instability: 0,
+    arms: [{ enabled: true, power: 1890, resistanceEffect: 0, instabilityEffect: 0, modules: [] }]
+  });
+  const high = calculateV535({
+    rockMass: 9000,
+    resistance: 50,
+    instability: 0,
+    arms: [{ enabled: true, power: 1890, resistanceEffect: 0, instabilityEffect: 0, modules: [] }]
+  });
+
+  approx(low.requiredPower, 1800);
+  approx(high.requiredPower, 3600);
+  assert.ok(high.requiredPower > low.requiredPower);
+  assert.ok(high.maxBreakableMass < low.maxBreakableMass);
+});
+
+test("1890 power calibrated baseline breaks about 9450 kg at zero resistance", () => {
+  const atLimit = calculateV535({
+    rockMass: 9450,
+    resistance: 0,
+    instability: 0,
+    arms: [{ enabled: true, power: 1890, resistanceEffect: 0, instabilityEffect: 0, modules: [] }]
+  });
+  const overLimit = calculateV535({
+    rockMass: 9451,
+    resistance: 0,
+    instability: 0,
+    arms: [{ enabled: true, power: 1890, resistanceEffect: 0, instabilityEffect: 0, modules: [] }]
+  });
+
+  assert.equal(atLimit.success, true);
+  assert.equal(overLimit.success, false);
 });
 
 test("active module only applies when toggled active", () => {
@@ -89,6 +131,7 @@ test("active module only applies when toggled active", () => {
   approx(inactive.finalResistance, 14);
   approx(active.finalResistance, 11.9);
   approx(active.finalInstability, 11);
+  assert.ok(active.maxBreakableMass > inactive.maxBreakableMass);
 });
 
 test("passive module always applies", () => {
@@ -114,9 +157,10 @@ test("passive module always applies", () => {
   approx(r.totalPower, 2415);
   approx(r.finalResistance, 27.5);
   approx(r.finalInstability, 27);
+  approx(r.effectivePower, 2415 * 0.725);
 });
 
-test("multiple arms use geometric mean for resistance and instability modifiers", () => {
+test("multiple heads sum independent effective fracture contributions", () => {
   const r = calculateV535({
     rockMass: 15000,
     resistance: 20,
@@ -127,14 +171,19 @@ test("multiple arms use geometric mean for resistance and instability modifiers"
     ]
   });
 
-  const expectedResMult = Math.sqrt(0.7 * 1.1);
+  const expectedEffective = (3150 * 0.86) + (2100 * 0.78);
+  const expectedTransfer = expectedEffective / 5250;
   const expectedInstMult = Math.sqrt(1.0 * 0.9);
-  approx(r.finalResistance, 20 * expectedResMult);
-  approx(r.finalInstability, 40 * expectedInstMult);
+
   assert.equal(r.totalPower, 5250);
+  approx(r.effectivePower, expectedEffective);
+  approx(r.maxBreakableMass, 5 * expectedEffective);
+  approx(r.finalResistance, 100 * (1 - expectedTransfer));
+  approx(r.finalInstability, 40 * expectedInstMult);
+  approx(r.requiredPower, 15000 / (5 * expectedTransfer));
 });
 
-test("gadget applies after arm aggregation", () => {
+test("gadget resistance modifier applies to each head capacity", () => {
   const r = calculateV535({
     rockMass: 15000,
     resistance: 20,
@@ -151,9 +200,10 @@ test("gadget applies after arm aggregation", () => {
 
   approx(r.finalResistance, 7);
   approx(r.finalInstability, 46);
+  approx(r.effectivePower, 3150 * 0.93);
 });
 
-test("100 percent or greater final resistance uses impossible sentinel", () => {
+test("100 percent or greater effective resistance uses impossible sentinel", () => {
   const r = calculateV535({
     rockMass: 10000,
     resistance: 100,
@@ -168,10 +218,11 @@ test("100 percent or greater final resistance uses impossible sentinel", () => {
   });
 
   assert.equal(r.requiredPower, 999999);
+  assert.equal(r.maxBreakableMass, 0);
   assert.equal(r.success, false);
 });
 
-test("negative final modifiers are clamped to zero", () => {
+test("negative effective resistance is clamped to zero", () => {
   const r = calculateV535({
     rockMass: 10000,
     resistance: 20,
@@ -187,4 +238,5 @@ test("negative final modifiers are clamped to zero", () => {
 
   assert.equal(r.finalResistance, 0);
   assert.equal(r.finalInstability, 0);
+  approx(r.maxBreakableMass, 5000);
 });

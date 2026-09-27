@@ -23,6 +23,7 @@
         </div>
 
         <div class="ops-status-strip">
+            <span class="status-chip"><span class="status-dot status-ok"></span><strong>MFA</strong>&nbsp;5.36.0</span>
             <span class="status-chip"><span class="status-dot status-ok"></span><strong>SC</strong>&nbsp;4.10.1 LIVE</span>
             <span class="status-chip" id="bridge-status"><span class="status-dot status-muted"></span>Bridge Offline</span>
             <span class="status-chip"><span class="status-dot status-ok"></span>OCR Ready</span>
@@ -33,16 +34,16 @@
             <a href="data-reference.html" class="ops-button secondary">Mining Database</a>
             <a href="fleet.html" class="ops-button secondary">Fleet Roster</a>
             <details class="theme-picker" id="themePicker">
-                <summary class="ops-button secondary"><span id="theme-icon">☀️</span><span id="theme-label">Day</span></summary>
+                <summary class="ops-button secondary"><span id="theme-icon">☀️</span><span id="theme-label">Planner Day</span></summary>
                 <div class="theme-menu">
                     <button type="button" data-theme-choice="day" onclick="setTheme('day')">
-                        <span>☀️</span><strong>Day</strong><small>Bright · warm · maximum clarity</small>
+                        <span>☀️</span><strong>Planner Day</strong><small>Muted daylight · navy structure · amber controls</small>
                     </button>
                     <button type="button" data-theme-choice="dusk" onclick="setTheme('dusk')">
-                        <span>🌇</span><strong>Dusk</strong><small>Cinematic · elegant · signature MFA</small>
+                        <span>🌇</span><strong>Planner Dusk</strong><small>Planner Suite warm charcoal · amber/gold · ivory text</small>
                     </button>
                     <button type="button" data-theme-choice="night" onclick="setTheme('night')">
-                        <span>🌙</span><strong>Night</strong><small>Tactical · focused · high contrast</small>
+                        <span>🌙</span><strong>Planner Night</strong><small>Deep blue-black · crisp panels · operational contrast</small>
                     </button>
                 </div>
             </details>
@@ -173,7 +174,7 @@
                 <div class="verdict-main">
                     <div>
                         <div id="verdict-title" class="verdict-title">Deploy a mining vessel to evaluate this rock.</div>
-                        <div id="verdict-subtitle" class="verdict-subtitle">MFA uses the deterministic v5.35 calculation mechanics.</div>
+                        <div id="verdict-subtitle" class="verdict-subtitle">MFA uses the audited 4.10.1 community-calibrated fracture model.</div>
                     </div>
                     <div class="margin-gauge">
                         <span>Power margin</span>
@@ -276,7 +277,7 @@
                 </div>
 
                 <div id="auto-fleet-note" class="solver-note">
-                    <strong>Auto Solver:</strong> uses this fleet as the available ship pool. Active vessels contribute to the current fracture verdict; Available vessels may be recommended as support; Standby vessels are ignored.
+                    <strong>Auto Solver:</strong> uses this fleet as the available ship pool. Active vessels contribute to the current fracture verdict; Available and Standby states describe your real operation only. Ideal Recommended Solutions are calculated independently from Target Acquisition.
                 </div>
             </section>
 
@@ -289,34 +290,8 @@
                     </div>
                     <span class="mode-badge">DETERMINISTIC</span>
                 </div>
-                <p class="section-copy">MFA shows the best viable plan first. Additional viable fleet/loadout combinations stay collapsed until you need them.</p>
+                <p class="section-copy">MFA calculates the ideal vessel and loadout plan from Target Acquisition values and mission constraints using the audited 4.10.1 community-calibrated fracture model. Your actual Fleet Planner configuration is evaluated separately.</p>
                 <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
-            </section>
-            <section class="foreman-panel glass-panel" id="ai-section">
-                <div class="section-heading">
-                    <div>
-                        <span class="step-number">05</span>
-                        <h2>Senior Foreman</h2>
-                    </div>
-                    <button onclick="openApiModal()" class="status-link">OpenAI status</button>
-                </div>
-
-                <div class="foreman-actions">
-                    <button onclick="askAI('strategy')">Explain Solution</button>
-                    <button onclick="askAI('risk')">Risk Analysis</button>
-                    <button onclick="askAI('briefing')">Crew Briefing</button>
-                </div>
-
-                <div id="ai-loading" class="hidden foreman-loading">FOREMAN ANALYSING VERIFIED MFA STATE…</div>
-                <div id="ai-content" class="foreman-output">// SYSTEM READY. MFA CALCULATIONS REMAIN AUTHORITATIVE.</div>
-
-                <details class="foreman-custom">
-                    <summary>Advanced Foreman query</summary>
-                    <div class="custom-query">
-                        <input type="text" id="ai-custom-input" placeholder="Ask about the current verified MFA state…">
-                        <button onclick="askAI('custom')">Send</button>
-                    </div>
-                </details>
             </section>
             </aside>
         </section>
@@ -375,19 +350,18 @@
     </section>
 
     <footer>
-        <span>MFA · Esramos Design · OpenAI Foreman</span>
+        <span>MFA · Esramos Design</span>
         <span>Fan-made tool. Not affiliated with Cloud Imperium Games or Roberts Space Industries.</span>
     </footer>
 </div>
 
 <script>
 window.MFA_CONFIG = {
-    gameVersion: "4.10.1-live.12660092",
-    aiEndpoint: ""
+    gameVersion: "4.10.1-live.12660092"
 };
 </script>
+<script src="v535-runtime.js"></script>
 <script src="script.js"></script>
-<script src="ai-foreman.js"></script>
 <script src="scanner.js"></script>
 <script src="operations-console.js"></script>
 <script src="cooperative-solver.js"></script>

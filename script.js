@@ -222,7 +222,8 @@ window.updateModuleSlots = function(armId) {
     if (!laserSelect) return;
 
     const selectedOption = laserSelect.options[laserSelect.selectedIndex];
-    const slots = parseInt(selectedOption.dataset.slots) || 1; 
+    const slots = parseInt(selectedOption.dataset.slots) || 1;
+    syncSelectedColor(laserSelect);
 
     for (let i = 1; i <= 3; i++) {
         const modSelect = document.getElementById(`${armId}-mod${i}`);
@@ -239,6 +240,7 @@ window.updateModuleSlots = function(armId) {
             modSelect.style.cursor = "pointer";
         }
         window.togCheck(armId, i);
+        syncSelectedColor(modSelect);
     }
 };
 
@@ -360,67 +362,67 @@ window.calculate = function() {
     const baseInst = parseFloat(instEl.value) || 0;
     const rockMass = parseFloat(massEl.value) || 0;
 
-    let totalPwr = 0; 
-    let totalResMult = 1.0; 
-    let totalInstMult = 1.0; 
-    let activeArms = 0;
+    if (!window.MFAV535 || typeof window.MFAV535.calculateV535 !== 'function') {
+        console.error('MFA v5.35 runtime engine is unavailable.');
+        return;
+    }
 
+    const arms = [];
     document.querySelectorAll('.ship-arm-card').forEach(arm => {
-        if(!document.getElementById(arm.id+'-enable').checked) return;
-        activeArms++;
-        const sel = document.getElementById(arm.id+'-laser');
-        const pwr = parseFloat(sel.value)||0;
-        const opt = sel.options[sel.selectedIndex];
-        const rEff = parseFloat(opt.dataset.resistance)||0;
-        const iEff = parseFloat(opt.dataset.instability)||0;
+        const enabled = document.getElementById(arm.id + '-enable');
+        if (!enabled || !enabled.checked) return;
 
-        let armRes = 1 + (rEff/100);
-        let armInst = 1 + (iEff/100);
-        let armPwr = 1.0;
+        const sel = document.getElementById(arm.id + '-laser');
+        if (!sel || sel.selectedIndex < 0) return;
+
+        const opt = sel.options[sel.selectedIndex];
+        const modules = [];
 
         for (let i = 1; i <= 3; i++) {
-            const mSel = document.getElementById(arm.id+`-mod${i}`);
-            // CHECK IF DISABLED (NEW LOGIC)
-            if (mSel && !mSel.disabled && mSel.value !== 'None') {
-                const m = powerModules.find(x => x.name === mSel.value);
-                const tog = document.getElementById(arm.id+`-mod${i}-active-toggle`);
-                const active = m.activation !== 'Active' || (tog && tog.checked);
-                if(active) {
-                    armPwr *= m.multiplier;
-                    armRes *= (1 + (m.resistanceEffect||0)/100);
-                    armInst *= (1 + (m.instabilityEffect||0)/100);
-                }
-            }
+            const mSel = document.getElementById(arm.id + `-mod${i}`);
+            if (!mSel || mSel.disabled || mSel.value === 'None') continue;
+
+            const m = powerModules.find(x => x.name === mSel.value);
+            if (!m) continue;
+
+            const tog = document.getElementById(arm.id + `-mod${i}-active-toggle`);
+            modules.push({
+                name: m.name,
+                activation: m.activation,
+                active: m.activation !== 'Active' || !!(tog && tog.checked),
+                multiplier: m.multiplier,
+                resistanceEffect: m.resistanceEffect,
+                instabilityEffect: m.instabilityEffect
+            });
         }
-        totalPwr += pwr * armPwr;
-        totalResMult *= armRes;
-        totalInstMult *= armInst;
+
+        arms.push({
+            enabled: true,
+            power: parseFloat(sel.value) || 0,
+            resistanceEffect: parseFloat(opt.dataset.resistance) || 0,
+            instabilityEffect: parseFloat(opt.dataset.instability) || 0,
+            modules
+        });
     });
 
-    if(activeArms > 0) {
-        totalResMult = Math.pow(totalResMult, 1/activeArms);
-        totalInstMult = Math.pow(totalInstMult, 1/activeArms);
-    }
-
     const gEl = document.getElementById('gadgetSelect');
-    const gadg = gadgets.find(g => g.name === gEl.value);
-    if(gadg) {
-        let gR = gadg.reduction || gadg.resistance || 0;
-        totalResMult *= (1 + gR/100);
-        totalInstMult *= (1 + (gadg.instabilityEffect||0)/100);
-    }
+    const gadget = gEl ? gadgets.find(g => g.name === gEl.value) || null : null;
 
-    let finalRes = Math.max(0, baseRes * totalResMult);
-    let finalInst = Math.max(0, baseInst * totalInstMult);
-    
-    let reqPwr = 0;
-    if((finalRes/100) < 1.0) {
-        reqPwr = (rockMass * (1.0 - finalRes/100)) / 5.0;
-    } else {
-        reqPwr = 999999; // Impossible
-    }
+    const calc = window.MFAV535.calculateV535({
+        rockMass,
+        resistance: baseRes,
+        instability: baseInst,
+        arms,
+        gadget
+    });
 
-    const success = totalPwr >= reqPwr && reqPwr > 0;
+    const totalPwr = calc.totalPower;
+    const finalRes = calc.finalResistance;
+    const finalInst = calc.finalInstability;
+    const reqPwr = calc.requiredPower;
+    const success = calc.success;
+    const activeArms = calc.activeArms;
+
     const formattedPwr = totalPwr.toLocaleString(undefined, { maximumFractionDigits: 0 });
     const diff = assessDifficulty(finalInst, finalRes);
 
@@ -670,8 +672,9 @@ function createArmConfigHtml(armIndex, ship) {
 
     const laserOpts = heads.map(h => {
         let sel = (ship.id==='mole'&&h.name.includes('Helix II')) || (ship.id==='prospector'&&h.name.includes('Helix I')) || (ship.id==='golem'&&h.name.includes('Pitman'));
-        // NOTE: added updateModuleSlots onchange
-        return `<option value="${h.power}" data-slots="${h.moduleSlots}" data-resistance="${h.resistanceEffect}" data-instability="${h.instabilityEffect}" ${sel?'selected':''}>${h.name}${getFormattedStats(h,'laser')}</option>`;
+        const stats = getFormattedStats(h,'laser');
+        // Rich option content is progressive enhancement; unsupported browsers keep the same text fallback.
+        return `<option value="${h.power}" data-slots="${h.moduleSlots}" data-resistance="${h.resistanceEffect}" data-instability="${h.instabilityEffect}" ${sel?'selected':''}><span class="select-option-label">${h.name}</span><span class="select-option-meta">${stats}</span></option>`;
     }).join('');
 
     let modHtml = '';
@@ -679,31 +682,75 @@ function createArmConfigHtml(armIndex, ship) {
 
     // Render all 3 slots (they will be disabled by updateModuleSlots if needed)
     for(let i=1; i<=3; i++) {
-        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()">${modOpts}</select>
+        modHtml += `<div class="flex gap-1 mb-1"><div class="select-color-shell w-full"><select id="${armId}-mod${i}" class="module-color-select w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});syncSelectedColor(this);calculate()">${modOpts}</select><span class="selected-color-overlay" aria-hidden="true"></span></div>
         <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div></div>`;
     }
 
     // NOTE: Added onchange to the laser select to trigger slot locking
     return `<div id="${armId}" class="ship-arm-card p-3 mb-2 rounded bg-[var(--bg-card)] border border-[var(--border-main)]" data-ship="${ship.id}">
-        <div class="flex justify-between mb-1"><span class="text-xs font-bold text-white">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
-        <select id="${armId}-laser" class="w-full p-2 mb-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}'); calculate()">${laserOpts}</select>
+        <div class="flex justify-between mb-1"><span class="ship-arm-title text-xs font-bold">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
+        <div class="select-color-shell mb-2"><select id="${armId}-laser" class="laser-color-select w-full p-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}');syncSelectedColor(this);calculate()">${laserOpts}</select><span class="selected-color-overlay" aria-hidden="true"></span></div>
         ${modHtml}
         <button onclick="this.parentElement.remove();calculate()" class="text-[9px] text-red-400 w-full text-right mt-1">REMOVE</button>
     </div>`;
 }
 
+function splitSelectedOption(option) {
+    if (!option) return { label:'', meta:'' };
+    const labelNode = option.querySelector?.('.select-option-label');
+    const metaNode = option.querySelector?.('.select-option-meta');
+    if (labelNode || metaNode) {
+        return {
+            label:(labelNode?.textContent || '').trim(),
+            meta:(metaNode?.textContent || '').trim()
+        };
+    }
+    const text = String(option.textContent || '').trim();
+    const open = text.indexOf('(');
+    return open > 0
+        ? { label:text.slice(0,open).trim(), meta:text.slice(open).trim() }
+        : { label:text, meta:'' };
+}
+
+function syncSelectedColor(select) {
+    if (!select) return;
+    const shell = select.closest('.select-color-shell');
+    const overlay = shell?.querySelector('.selected-color-overlay');
+    if (!overlay) return;
+
+    const parts = splitSelectedOption(select.options[select.selectedIndex]);
+    overlay.innerHTML = '';
+    const label = document.createElement('span');
+    label.className = 'selected-color-label';
+    label.textContent = parts.label;
+    overlay.appendChild(label);
+
+    if (parts.meta) {
+        const meta = document.createElement('span');
+        meta.className = 'selected-color-meta';
+        meta.textContent = parts.meta;
+        overlay.appendChild(meta);
+    }
+    overlay.classList.toggle('is-disabled', !!select.disabled);
+}
+
+function getModuleOptionMarkup(module) {
+    const stats = getFormattedStats(module,'module');
+    return `<option value="${module.name}"><span class="select-option-label">${module.name}</span><span class="select-option-meta">${stats}</span></option>`;
+}
+
 function getModOptions() {
-    const act = sortedModules.filter(m => m.activation === 'Active').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
-    const pas = sortedModules.filter(m => m.activation === 'Passive').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
-    return `<option value="None">None</option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
+    const act = sortedModules.filter(m => m.activation === 'Active').map(getModuleOptionMarkup).join('');
+    const pas = sortedModules.filter(m => m.activation === 'Passive').map(getModuleOptionMarkup).join('');
+    return `<option value="None"><span class="select-option-label">None</span></option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
 }
 
 // --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
 const MFA_THEMES = ['day', 'dusk', 'night'];
 const MFA_THEME_META = {
-    day: { icon: '☀️', label: 'Day' },
-    dusk: { icon: '🌇', label: 'Dusk' },
-    night: { icon: '🌙', label: 'Night' }
+    day: { icon: '☀️', label: 'Planner Day' },
+    dusk: { icon: '🌇', label: 'Planner Dusk' },
+    night: { icon: '🌙', label: 'Planner Night' }
 };
 
 function initTheme() {
@@ -764,4 +811,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderGadgetAttributes = renderGadgetAttributes; 
     window.updateModuleSlots = updateModuleSlots; // Expose to global scope for HTML inline calls
     window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
+    window.syncSelectedColor = syncSelectedColor;
 });
