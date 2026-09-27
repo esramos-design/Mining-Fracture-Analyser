@@ -636,27 +636,22 @@
 
     function targetBasisHtml(ctx,p){
         var material=el("materialName")?el("materialName").value.trim():"";
-        var objectiveLabels={
-            "minimum-ships":"Minimum ships",
-            "maximum-margin":"Maximum margin",
-            "minimum-instability":"Minimum instability",
-            "minimum-consumables":"Minimum consumables"
-        };
-
+        var caps=recommendationCaps(p,Math.max(1,Math.floor(n(p.maxFleetSize,6))));
         return '<div class="solver-target-basis">'+
             '<div><span>Target mass</span><strong>'+Math.round(n(ctx.mass)).toLocaleString()+' kg</strong></div>'+
             '<div><span>Resistance</span><strong>'+n(ctx.baseResistance).toFixed(1)+'%</strong></div>'+
             '<div><span>Instability</span><strong>'+n(ctx.baseInstability).toFixed(1)+'%</strong></div>'+
             (material?'<div><span>Material</span><strong>'+esc(material)+'</strong></div>':'')+
-            '<div><span>Objective</span><strong>'+esc(objectiveLabels[p.optimizerObjective]||"Minimum ships")+'</strong></div>'+
+            '<div><span>Objective</span><strong>'+esc(objectiveLabel(p.optimizerObjective))+'</strong></div>'+
+            '<div><span>Minimum margin</span><strong>'+Math.max(0,n(p.minimumMarginPct,10)).toFixed(0)+'%</strong></div>'+
             '<div><span>Max ideal fleet</span><strong>'+Math.max(1,Math.floor(n(p.maxFleetSize,6)))+'</strong></div>'+
             '<div><span>Active modules</span><strong>'+(p.allowActiveModules?'Allowed':'Passive only')+'</strong></div>'+
             '<div><span>Gadgets</span><strong>'+(p.allowGadgets?'Search allowed':'Disabled')+'</strong></div>'+
-            '<div><span>Recommendation vessels</span><strong>'+esc([
-                p.recommendMole!==false?'MOLE':null,
-                p.recommendProspector!==false?'Prospector':null,
-                p.recommendGolem!==false?'Golem':null
-            ].filter(Boolean).join(' + ')||'None selected')+'</strong></div>'+
+            '<div><span>Recommendation resources</span><strong>'+esc([
+                caps.mole?'MOLE ≤ '+caps.mole:null,
+                caps.prospector?'Prospector ≤ '+caps.prospector:null,
+                caps.golem?'Golem ≤ '+caps.golem:null
+            ].filter(Boolean).join(' · ')||'None selected')+'</strong></div>'+
             '<div><span>Fleet Planner influence</span><strong>None · target-driven ideal</strong></div>'+
             '</div>';
     }
@@ -682,17 +677,20 @@
             return;
         }
 
-        var best=solved.options[0];
+        var objective=p.optimizerObjective||"balanced-operations";
+        var best=solved.portfolio[objective]||solved.options[0];
+        var safe=best.evaluation.success&&best.evaluation.marginPct>=solved.minimumMarginPct;
 
         box.innerHTML=basis+
-            '<div class="solver-portfolio-head"><div><span>TARGET-DRIVEN IDEAL SOLUTION</span><strong>'+
-                (best.evaluation.success?'RECOMMENDED IDEAL LOADOUT':'CLOSEST PLAN WITHIN CONSTRAINTS')+
+            '<div class="solver-portfolio-head"><div><span>IDEAL LOADOUT v2 · TARGET-DRIVEN</span><strong>'+
+                (safe?'RECOMMENDED OPERATIONAL LOADOUT':best.evaluation.success?'VIABLE · BELOW SAFETY MARGIN':'CLOSEST PLAN WITHIN CONSTRAINTS')+
             '</strong></div><div>'+esc(strat.name)+'</div></div>'+
-            '<div class="solver-or-note"><strong>Fleet Planner independent.</strong> MFA evaluates candidate solutions internally and shows only the best result for the Target Acquisition requirements. Your actual vessels and fitted loadouts do not bias this recommendation.</div>'+
-            '<div class="solver-best-option">'+optionHtml(best,solved.variants,state)+'</div>'+
-            '<div class="solver-method-note">Only the highest-ranked solution is presented. Availability checkboxes confirm whether the recommended vessels can actually assist; they do not alter the ideal calculation. Secondary equipment alternatives remain collapsed inside the recommended card for cases where preferred equipment is unavailable. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
+            '<div class="solver-or-note"><strong>Fleet Planner independent.</strong> MFA searches vessel-specific loadouts within the recommendation resource limits. Duplicate vessels may use different deterministic variants. The protected 4.10.1 fracture engine evaluates every candidate.</div>'+
+            '<div class="solver-best-option">'+optionHtml(best,objective,solved.minimumMarginPct)+'</div>'+
+            portfolioHtml(solved,objective)+
+            '<div class="solver-method-note">The highlighted plan is ranked under '+esc(objectiveLabel(objective))+'. Objective alternatives expose materially different plans without changing the selected recommendation. Availability confirmation remains post-recommendation only. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
         updateAvailabilitySummary();
     }
 
-    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,recommendationCaps:recommendationCaps,updateAvailabilitySummary:updateAvailabilitySummary};
+    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,recommendationCaps:recommendationCaps,resourceMetrics:resourceMetrics,objectiveTuple:objectiveTuple,variantAssignments:variantAssignments,updateAvailabilitySummary:updateAvailabilitySummary};
 })();
