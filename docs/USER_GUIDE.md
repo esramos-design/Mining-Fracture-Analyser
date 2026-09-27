@@ -113,22 +113,12 @@ This is a recommendation constraint only. It does not add vessels to the actual 
 
 MFA may combine any selected vessel types when searching for the best viable plan. For example, with MOLE unavailable but Prospector and Golem selected, the solver may return a mixed Prospector + Golem solution.
 
-### Keep current ship primary
+### Recommendation independence
 
-When enabled, MFA detects the first **Active** vessel type in the actual Fleet Planner and requires at least one vessel of that type in every ideal recommendation.
+The **Recommended Ideal Loadout** is target-driven. Actual Fleet Planner quantities, Active/Available/Standby state, and fitted loadouts do not force a vessel type into the ideal recommendation.
 
-Example: if your current Active vessel is a Prospector, the solver may recommend:
+The **Vessels available for recommendation** checkboxes are authoritative. If a vessel type is unchecked, the ideal solver will not use that vessel type under any circumstance.
 
-- 1 Prospector;
-- 2 Prospectors;
-- 1 Prospector + 1 Golem;
-- 1 Prospector + 1 MOLE;
-
-but it will not recommend a MOLE-only or Golem-only plan while the option is enabled.
-
-This constraint preserves the current **ship type**, not the current fitted mining head/modules. The ideal solver is still free to recommend a better loadout for that ship.
-
-If no vessel is Active, the control has no ship-type constraint until an Active vessel exists.
 
 ---
 
