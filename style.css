@@ -4836,3 +4836,233 @@ html[data-theme="night"] .fleet-search-wrap input::placeholder {
         color:#7b3900;
     }
 }
+
+
+/* =========================================================
+   SELECTED VALUE VISIBILITY — native select preserved
+   Non-interactive overlay only; no control geometry changes.
+   ========================================================= */
+.select-color-shell {
+    position:relative;
+    min-width:0;
+}
+
+.select-color-shell > select {
+    position:relative;
+    z-index:1;
+}
+
+.selected-color-overlay {
+    position:absolute;
+    z-index:2;
+    left:10px;
+    right:28px;
+    top:50%;
+    transform:translateY(-50%);
+    display:flex;
+    align-items:center;
+    gap:3px;
+    min-width:0;
+    overflow:hidden;
+    pointer-events:none;
+    white-space:nowrap;
+    line-height:1.2;
+    background:var(--theme-input);
+}
+
+.selected-color-label,
+.selected-color-meta {
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.selected-color-label {
+    flex:0 0 auto;
+    font-weight:800;
+}
+
+.selected-color-meta {
+    flex:1 1 auto;
+    min-width:0;
+    font-weight:700;
+}
+
+.selected-color-overlay.is-disabled {
+    opacity:.3;
+}
+
+/* Ensure the original selected text is visually covered, while the native
+   control, arrow, focus, click, keyboard and option list remain untouched. */
+html[data-theme="night"] .selected-color-overlay {
+    background:#07111b;
+}
+html[data-theme="night"] .selected-color-label {
+    color:#f8fbff;
+}
+html[data-theme="night"] .selected-color-meta {
+    color:#58c9ff;
+}
+
+html[data-theme="dusk"] .selected-color-overlay {
+    background:#201d1a;
+}
+html[data-theme="dusk"] .selected-color-label {
+    color:#fffaf2;
+}
+html[data-theme="dusk"] .selected-color-meta {
+    color:#ffc45e;
+}
+
+html[data-theme="day"] .selected-color-overlay {
+    background:#fffdf8;
+}
+html[data-theme="day"] .selected-color-label {
+    color:#17324d;
+}
+html[data-theme="day"] .selected-color-meta {
+    color:#007aa8;
+}
+
+/* =========================================================
+   PLANNER DUSK — vivid contrast pass
+   Palette-only refinement; no layout changes.
+   ========================================================= */
+html[data-theme="dusk"] {
+    --theme-page:#1F1C1A;
+    --theme-page-2:#171513;
+    --theme-panel:#292522;
+    --theme-card:#25211E;
+    --theme-card-alt:#302A25;
+    --theme-input:#201D1A;
+    --theme-input-focus:#29231F;
+    --theme-text:#F4EEE7;
+    --theme-strong:#FFF9F0;
+    --theme-muted:#D0C2B2;
+    --theme-border:#6E5B49;
+    --theme-border-strong:#8B6B49;
+    --theme-primary:#E39A32;
+    --theme-secondary:#E8B04F;
+    --theme-success:#4FD8A0;
+    --theme-warning:#FFC45E;
+    --theme-danger:#EA665F;
+    --theme-header-1:#35271F;
+    --theme-header-2:#211A16;
+    --theme-header-text:#FFF9F0;
+    --theme-select-menu:#201D1A;
+    --theme-select-menu-text:#FFF9F0;
+    --theme-optgroup:#4B3525;
+    --theme-optgroup-text:#FFD48A;
+    --theme-shadow:rgba(0,0,0,.56);
+    --theme-console:#1B1816;
+    --theme-console-text:#F2E8DC;
+}
+
+html[data-theme="dusk"] body {
+    background:
+        radial-gradient(circle at 16% 0%, rgba(227,154,50,.10), transparent 24%),
+        linear-gradient(145deg,#211E1B 0%,#181513 62%,#121110 100%) !important;
+}
+
+html[data-theme="dusk"] .glass-panel {
+    background:#292522 !important;
+    border-color:#6E5B49 !important;
+    box-shadow:0 14px 32px rgba(0,0,0,.48) !important;
+}
+
+html[data-theme="dusk"] .target-field,
+html[data-theme="dusk"] .subpanel,
+html[data-theme="dusk"] .metric,
+html[data-theme="dusk"] .unified-fleet-planner,
+html[data-theme="dusk"] .fleet-presence-row,
+html[data-theme="dusk"] .fleet-vessel-card,
+html[data-theme="dusk"] .vessel-arms-grid .ship-arm-card,
+html[data-theme="dusk"] .solver-fleet-snapshot > div,
+html[data-theme="dusk"] .solver-option,
+html[data-theme="dusk"] .solver-vessel,
+html[data-theme="dusk"] .solver-backup,
+html[data-theme="dusk"] .solver-more-plans,
+html[data-theme="dusk"] .gadget-attribute-card {
+    background:#25211E !important;
+    color:#F4EEE7 !important;
+    border-color:#6E5B49 !important;
+}
+
+html[data-theme="dusk"] .vessel-card-head,
+html[data-theme="dusk"] .solver-option-head {
+    background:#302A25 !important;
+    border-color:#7C624A !important;
+}
+
+html[data-theme="dusk"] input,
+html[data-theme="dusk"] select,
+html[data-theme="dusk"] textarea,
+html[data-theme="dusk"] .vessel-arms-grid select {
+    background:#201D1A !important;
+    color:#FFF9F0 !important;
+    border-color:#806448 !important;
+}
+
+html[data-theme="dusk"] .section-heading h2,
+html[data-theme="dusk"] .fleet-roster-head strong,
+html[data-theme="dusk"] .fleet-loadout-heading strong,
+html[data-theme="dusk"] .gadget-attribute-head strong,
+html[data-theme="dusk"] .verdict-title {
+    color:#FFC45E !important;
+}
+
+html[data-theme="dusk"] .section-copy,
+html[data-theme="dusk"] .fleet-planner-intro,
+html[data-theme="dusk"] .verdict-subtitle,
+html[data-theme="dusk"] .fleet-roster-head span,
+html[data-theme="dusk"] .fleet-loadout-heading span,
+html[data-theme="dusk"] .vessel-card-head small,
+html[data-theme="dusk"] .solver-method-note,
+html[data-theme="dusk"] .gadget-choice small,
+html[data-theme="dusk"] .gadget-attribute-card p {
+    color:#D8CBBB !important;
+}
+
+html[data-theme="dusk"] .ops-topbar {
+    background:
+        radial-gradient(circle at 78% 0%, rgba(255,178,75,.15), transparent 28%),
+        linear-gradient(135deg,#3A291F,#211A16) !important;
+    border-color:#78593E !important;
+}
+
+@supports (appearance: base-select) {
+    html[data-theme="dusk"] select.module-color-select,
+    html[data-theme="dusk"] select.laser-color-select,
+    html[data-theme="dusk"] select.module-color-select::picker(select),
+    html[data-theme="dusk"] select.laser-color-select::picker(select),
+    html[data-theme="dusk"] select.module-color-select option,
+    html[data-theme="dusk"] select.laser-color-select option {
+        background:#201D1A !important;
+        color:#FFF9F0 !important;
+        border-color:#806448 !important;
+    }
+
+    html[data-theme="dusk"] select.module-color-select .select-option-label,
+    html[data-theme="dusk"] select.laser-color-select .select-option-label {
+        color:#FFF9F0 !important;
+    }
+
+    html[data-theme="dusk"] select.module-color-select .select-option-meta,
+    html[data-theme="dusk"] select.laser-color-select .select-option-meta {
+        color:#FFC45E !important;
+    }
+
+    html[data-theme="dusk"] select.module-color-select option:hover,
+    html[data-theme="dusk"] select.module-color-select option:focus,
+    html[data-theme="dusk"] select.module-color-select option:checked,
+    html[data-theme="dusk"] select.laser-color-select option:hover,
+    html[data-theme="dusk"] select.laser-color-select option:focus,
+    html[data-theme="dusk"] select.laser-color-select option:checked {
+        background:#B96D16 !important;
+    }
+
+    html[data-theme="dusk"] select.module-color-select optgroup {
+        background:#4B3525 !important;
+        color:#FFD48A !important;
+    }
+}
