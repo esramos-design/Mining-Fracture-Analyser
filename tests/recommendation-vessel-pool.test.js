@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 
-test("mission constraints expose independent recommendation vessel pool", async () => {
+test("Recommended Solutions exposes independent recommendation vessel pool", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   const ops = await readFile(new URL("../operations-console.js", import.meta.url), "utf8");
 
   assert.match(html, /id="recommendMole"[^>]*checked/);
   assert.match(html, /id="recommendProspector"[^>]*checked/);
   assert.match(html, /id="recommendGolem"[^>]*checked/);
-  assert.match(html, /MFA may combine selected types/);
+  assert.match(html, /MFA can combine any selected types in the ideal solution/);
 
   assert.match(ops, /recommendMole:/);
   assert.match(ops, /recommendProspector:/);
