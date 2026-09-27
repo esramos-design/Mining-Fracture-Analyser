@@ -315,8 +315,9 @@
             if (!enabled.checked) {
                 if (sanitizeQty(qty.value) > 0) qty.dataset.previousValue = qty.value;
                 qty.value = "0";
-            } else if (sanitizeQty(qty.value) < 1) {
-                qty.value = qty.dataset.previousValue || "1";
+            } else {
+                // Zero is a valid starting quantity. The user explicitly adds only ships present.
+                qty.value = String(sanitizeQty(qty.value));
             }
         });
 
