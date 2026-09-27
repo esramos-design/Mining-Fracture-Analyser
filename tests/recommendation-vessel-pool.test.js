@@ -22,13 +22,13 @@ test("Recommended Solutions exposes independent recommendation vessel pool", asy
 test("ideal solver restricts each vessel dimension independently and retains mixed combinations", async () => {
   const solver = await readFile(new URL("../cooperative-solver.js", import.meta.url), "utf8");
 
-  assert.match(solver, /moleMax=\(p\.recommendMole===false && primaryShip!=="mole"\)\?0:maxFleet/);
-  assert.match(solver, /prospectorMax=\(p\.recommendProspector===false && primaryShip!=="prospector"\)\?0:maxFleet/);
-  assert.match(solver, /golemMax=\(p\.recommendGolem===false && primaryShip!=="golem"\)\?0:maxFleet/);
+  assert.match(solver, /mole:p\.recommendMole===false\?0:maxFleet/);
+  assert.match(solver, /prospector:p\.recommendProspector===false\?0:maxFleet/);
+  assert.match(solver, /golem:p\.recommendGolem===false\?0:maxFleet/);
 
-  assert.match(solver, /for\(var m=0;m<=moleMax;m\+\+\)/);
-  assert.match(solver, /for\(var pr=0;pr<=prospectorMax;pr\+\+\)/);
-  assert.match(solver, /for\(var g=0;g<=golemMax;g\+\+\)/);
+  assert.match(solver, /for\(var m=0;m<=caps\.mole;m\+\+\)/);
+  assert.match(solver, /for\(var pr=0;pr<=caps\.prospector;pr\+\+\)/);
+  assert.match(solver, /for\(var g=0;g<=caps\.golem;g\+\+\)/);
   assert.match(solver, /var total=m\+pr\+g/);
   assert.match(solver, /Recommendation vessels/);
 });

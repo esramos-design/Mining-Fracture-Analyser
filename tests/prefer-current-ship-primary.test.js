@@ -1,21 +1,42 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import vm from "node:vm";
 import { readFile } from "node:fs/promises";
 
-test("Keep current ship primary is consumed by the ideal solver", async () => {
-  const solver = await readFile(new URL("../cooperative-solver.js", import.meta.url), "utf8");
+async function loadSolver() {
+  const source = await readFile(new URL("../cooperative-solver.js", import.meta.url), "utf8");
+  const context = {
+    window: {},
+    document: {
+      getElementById() { return null; },
+      querySelectorAll() { return []; }
+    },
+    console
+  };
+  vm.createContext(context);
+  vm.runInContext(source, context);
+  return { source, solver: context.window.MFACoopSolver };
+}
 
-  assert.match(solver, /function primaryShipConstraint\(p\)/);
-  assert.match(solver, /if\(!p\.preferCurrentShip\) return null/);
-  assert.match(solver, /if\(primaryShip && counts\[primaryShip\]<1\) continue/);
-  assert.match(solver, /Current ship primary/);
-  assert.match(solver, /required in every ideal plan/);
+test("ideal recommendation is not coupled to actual Fleet Planner primary vessel", async () => {
+  const { source } = await loadSolver();
+
+  assert.doesNotMatch(source, /primaryShipConstraint/);
+  assert.doesNotMatch(source, /preferCurrentShip/);
+  assert.match(source, /Fleet Planner influence/);
+  assert.match(source, /None · target-driven ideal/);
 });
 
-test("current primary ship may remain eligible even if recommendation-pool checkbox is off", async () => {
-  const solver = await readFile(new URL("../cooperative-solver.js", import.meta.url), "utf8");
+test("recommendation pool caps are authoritative for all checkbox combinations", async () => {
+  const { solver } = await loadSolver();
+  const max = 6;
+  const caps = prefs => ({...solver.recommendationCaps(prefs, max)});
 
-  assert.match(solver, /recommendMole===false && primaryShip!=="mole"/);
-  assert.match(solver, /recommendProspector===false && primaryShip!=="prospector"/);
-  assert.match(solver, /recommendGolem===false && primaryShip!=="golem"/);
+  assert.deepEqual(caps({recommendMole:true,recommendProspector:false,recommendGolem:false}), {mole:6,prospector:0,golem:0});
+  assert.deepEqual(caps({recommendMole:false,recommendProspector:true,recommendGolem:false}), {mole:0,prospector:6,golem:0});
+  assert.deepEqual(caps({recommendMole:false,recommendProspector:false,recommendGolem:true}), {mole:0,prospector:0,golem:6});
+  assert.deepEqual(caps({recommendMole:false,recommendProspector:true,recommendGolem:true}), {mole:0,prospector:6,golem:6});
+  assert.deepEqual(caps({recommendMole:true,recommendProspector:true,recommendGolem:false}), {mole:6,prospector:6,golem:0});
+  assert.deepEqual(caps({recommendMole:true,recommendProspector:true,recommendGolem:true}), {mole:6,prospector:6,golem:6});
+  assert.deepEqual(caps({recommendMole:false,recommendProspector:false,recommendGolem:false}), {mole:0,prospector:0,golem:0});
 });

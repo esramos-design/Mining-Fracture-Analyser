@@ -253,7 +253,6 @@
             maxFleetSize: Number(byId("maxFleetSize")?.value || 6),
             allowActiveModules: !!byId("allowActiveModules")?.checked,
             allowGadgets: !!byId("allowGadgets")?.checked,
-            preferCurrentShip: !!byId("preferCurrentShip")?.checked,
             recommendMole: byId("recommendMole") ? !!byId("recommendMole").checked : true,
             recommendProspector: byId("recommendProspector") ? !!byId("recommendProspector").checked : true,
             recommendGolem: byId("recommendGolem") ? !!byId("recommendGolem").checked : true,
@@ -279,7 +278,6 @@
             if (saved.maxFleetSize && byId("maxFleetSize")) byId("maxFleetSize").value = saved.maxFleetSize;
             if (typeof saved.allowActiveModules === "boolean" && byId("allowActiveModules")) byId("allowActiveModules").checked = saved.allowActiveModules;
             if (typeof saved.allowGadgets === "boolean" && byId("allowGadgets")) byId("allowGadgets").checked = saved.allowGadgets;
-            if (typeof saved.preferCurrentShip === "boolean" && byId("preferCurrentShip")) byId("preferCurrentShip").checked = saved.preferCurrentShip;
             if (typeof saved.recommendMole === "boolean" && byId("recommendMole")) byId("recommendMole").checked = saved.recommendMole;
             if (typeof saved.recommendProspector === "boolean" && byId("recommendProspector")) byId("recommendProspector").checked = saved.recommendProspector;
             if (typeof saved.recommendGolem === "boolean" && byId("recommendGolem")) byId("recommendGolem").checked = saved.recommendGolem;
