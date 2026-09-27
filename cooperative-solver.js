@@ -13,6 +13,7 @@
         return window.MFAOps && MFAOps.getPreferences ? MFAOps.getPreferences() : {
             optimizerObjective:"minimum-ships", maxFleetSize:6, allowActiveModules:true,
             allowGadgets:true,
+            recommendMole:true, recommendProspector:true, recommendGolem:true,
             fleetEnabledMole:true, fleetEnabledProspector:true, fleetEnabledGolem:true,
             fleetAvailableMole:1, fleetAvailableProspector:2, fleetAvailableGolem:1
         };
@@ -282,9 +283,13 @@
         var maxFleet=Math.max(1,Math.floor(n(p.maxFleetSize,6)));
         ORDER.forEach(function(id){vars[id]=variants(id,strat,p,s);});
 
-        for(var m=0;m<=maxFleet;m++){
-            for(var pr=0;pr<=maxFleet;pr++){
-                for(var g=0;g<=maxFleet;g++){
+        var moleMax=p.recommendMole===false?0:maxFleet;
+        var prospectorMax=p.recommendProspector===false?0:maxFleet;
+        var golemMax=p.recommendGolem===false?0:maxFleet;
+
+        for(var m=0;m<=moleMax;m++){
+            for(var pr=0;pr<=prospectorMax;pr++){
+                for(var g=0;g<=golemMax;g++){
                     var total=m+pr+g;
                     if(total<1 || total>maxFleet) continue;
 
@@ -547,6 +552,11 @@
             '<div><span>Max ideal fleet</span><strong>'+Math.max(1,Math.floor(n(p.maxFleetSize,6)))+'</strong></div>'+
             '<div><span>Active modules</span><strong>'+(p.allowActiveModules?'Allowed':'Passive only')+'</strong></div>'+
             '<div><span>Gadgets</span><strong>'+(p.allowGadgets?'Search allowed':'Disabled')+'</strong></div>'+
+            '<div><span>Recommendation vessels</span><strong>'+esc([
+                p.recommendMole!==false?'MOLE':null,
+                p.recommendProspector!==false?'Prospector':null,
+                p.recommendGolem!==false?'Golem':null
+            ].filter(Boolean).join(' + ')||'None selected')+'</strong></div>'+
             '</div>';
     }
 

@@ -152,6 +152,18 @@
                     <label><input id="preferCurrentShip" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Keep current ship primary</label>
                 </div>
 
+                <div class="recommendation-vessel-pool">
+                    <div class="recommendation-vessel-pool-head">
+                        <strong>Vessels available for recommendation</strong>
+                        <span>Select the ship types your team can actually provide. MFA may combine selected types.</span>
+                    </div>
+                    <div class="recommendation-vessel-pool-options">
+                        <label><input id="recommendMole" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> ARGO MOLE</label>
+                        <label><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> MISC Prospector</label>
+                        <label><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.savePreferences();calculate()"> Drake Golem</label>
+                    </div>
+                </div>
+
 
             </div>
 

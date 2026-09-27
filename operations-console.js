@@ -254,6 +254,9 @@
             allowActiveModules: !!byId("allowActiveModules")?.checked,
             allowGadgets: !!byId("allowGadgets")?.checked,
             preferCurrentShip: !!byId("preferCurrentShip")?.checked,
+            recommendMole: byId("recommendMole") ? !!byId("recommendMole").checked : true,
+            recommendProspector: byId("recommendProspector") ? !!byId("recommendProspector").checked : true,
+            recommendGolem: byId("recommendGolem") ? !!byId("recommendGolem").checked : true,
             fleetEnabledMole: !!byId("fleetEnabledMole")?.checked,
             fleetEnabledProspector: !!byId("fleetEnabledProspector")?.checked,
             fleetEnabledGolem: !!byId("fleetEnabledGolem")?.checked,
@@ -277,6 +280,9 @@
             if (typeof saved.allowActiveModules === "boolean" && byId("allowActiveModules")) byId("allowActiveModules").checked = saved.allowActiveModules;
             if (typeof saved.allowGadgets === "boolean" && byId("allowGadgets")) byId("allowGadgets").checked = saved.allowGadgets;
             if (typeof saved.preferCurrentShip === "boolean" && byId("preferCurrentShip")) byId("preferCurrentShip").checked = saved.preferCurrentShip;
+            if (typeof saved.recommendMole === "boolean" && byId("recommendMole")) byId("recommendMole").checked = saved.recommendMole;
+            if (typeof saved.recommendProspector === "boolean" && byId("recommendProspector")) byId("recommendProspector").checked = saved.recommendProspector;
+            if (typeof saved.recommendGolem === "boolean" && byId("recommendGolem")) byId("recommendGolem").checked = saved.recommendGolem;
             if (typeof saved.fleetEnabledMole === "boolean" && byId("fleetEnabledMole")) byId("fleetEnabledMole").checked = saved.fleetEnabledMole;
             if (typeof saved.fleetEnabledProspector === "boolean" && byId("fleetEnabledProspector")) byId("fleetEnabledProspector").checked = saved.fleetEnabledProspector;
             if (typeof saved.fleetEnabledGolem === "boolean" && byId("fleetEnabledGolem")) byId("fleetEnabledGolem").checked = saved.fleetEnabledGolem;

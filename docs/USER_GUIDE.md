@@ -101,6 +101,18 @@ When an Active module is recommended as part of the best plan, its required ON s
 
 When enabled, the solver may recommend a mining gadget.
 
+### Vessels available for recommendation
+
+Choose which mining-vessel types your team can actually provide:
+
+- **ARGO MOLE**
+- **MISC Prospector**
+- **Drake Golem**
+
+This is a recommendation constraint only. It does not add vessels to the actual Fleet Planner.
+
+MFA may combine any selected vessel types when searching for the best viable plan. For example, with MOLE unavailable but Prospector and Golem selected, the solver may return a mixed Prospector + Golem solution.
+
 ---
 
 ## 6. Configure the actual Fleet Planner
