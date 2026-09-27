@@ -430,12 +430,12 @@
         var rows=[];
         for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
             var assistId="assist-"+id+"-"+vesselIndex;
-            rows.push('<div class="solver-vessel solver-required-vessel">'+
+            rows.push('<div class="solver-vessel solver-required-vessel assist-missing">'+
                 '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
                 '<label class="solver-assist-availability" for="'+assistId+'">'+
                     '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
                     '<span class="solver-assist-box" aria-hidden="true"></span>'+
-                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small></span>'+
+                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small><b class="solver-assist-state">NOT CONFIRMED</b></span>'+
                 '</label>'+
                 v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
                 '</div>');
@@ -496,15 +496,34 @@
         var checks=[].slice.call(document.querySelectorAll("#configs .solver-assist-check"));
         var confirmed=checks.filter(function(input){return input.checked;}).length;
         var total=checks.length;
+        var missing=Math.max(0,total-confirmed);
         var strong=summary.querySelector("strong");
         var note=summary.querySelector("em");
-        if(strong)strong.textContent=confirmed+" of "+total+" required vessel"+(total===1?"":"s")+" confirmed";
+
+        checks.forEach(function(input){
+            var vessel=input.closest(".solver-required-vessel");
+            var label=input.closest(".solver-assist-availability");
+            var state=label?label.querySelector(".solver-assist-state"):null;
+            if(vessel){
+                vessel.classList.toggle("assist-confirmed",input.checked);
+                vessel.classList.toggle("assist-missing",!input.checked);
+            }
+            if(label)label.classList.toggle("confirmed",input.checked);
+            if(state)state.textContent=input.checked?"CONFIRMED AVAILABLE":"NOT CONFIRMED";
+        });
+
+        if(strong){
+            strong.textContent=total>0&&missing===0
+                ?"READY · all "+total+" required vessel"+(total===1?"":"s")+" confirmed"
+                :"NOT READY · "+missing+" vessel"+(missing===1?"":"s")+" still required";
+        }
         summary.classList.toggle("ready",total>0&&confirmed===total);
         summary.classList.toggle("partial",confirmed>0&&confirmed<total);
+        summary.classList.toggle("missing",total>0&&confirmed===0);
         if(note){
             note.textContent=total>0&&confirmed===total
                 ?"All vessels required by the ideal solution are confirmed available."
-                :"Ideal recommendation remains unchanged.";
+                :"Ideal loadout remains unchanged; availability only confirms whether the recommended support can actually deploy.";
         }
     }
 

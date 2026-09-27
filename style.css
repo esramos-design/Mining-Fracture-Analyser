@@ -5209,3 +5209,48 @@ html[data-theme="day"] .selected-color-label {
 html[data-theme="day"] .selected-color-meta {
     color:#007AA8 !important;
 }
+
+
+/* =========================================================
+   RECOMMENDED SUPPORT AVAILABILITY — operational feedback
+   Availability confirms deployability without changing the ideal solution.
+   ========================================================= */
+.solver-required-vessel.assist-missing {
+    border-color:var(--theme-warning) !important;
+    box-shadow:inset 3px 0 0 var(--theme-warning);
+}
+
+.solver-required-vessel.assist-confirmed {
+    border-color:var(--theme-success) !important;
+    box-shadow:inset 3px 0 0 var(--theme-success);
+}
+
+.solver-assist-availability.confirmed {
+    border-color:var(--theme-success);
+    background:color-mix(in srgb,var(--theme-success) 10%,var(--theme-panel));
+}
+
+.solver-assist-state {
+    display:inline-block;
+    margin-top:5px;
+    padding:3px 6px;
+    border:1px solid var(--theme-warning);
+    border-radius:5px;
+    color:var(--theme-warning);
+    font:900 8px var(--font-tech);
+    letter-spacing:.06em;
+}
+
+.solver-assist-availability.confirmed .solver-assist-state {
+    border-color:var(--theme-success);
+    color:var(--theme-success);
+}
+
+.solver-availability-summary.missing {
+    border-color:var(--theme-warning);
+    background:color-mix(in srgb,var(--theme-warning) 8%,var(--theme-card));
+}
+
+.solver-availability-summary.missing strong {
+    color:var(--theme-warning);
+}
