@@ -11,7 +11,8 @@ test("5.36.0 release metadata and README are current", async () => {
   assert.match(readme, /MFA\) v5\.36\.0/);
   assert.match(readme, /mining-fracture-analyser\.pages\.dev/);
   assert.doesNotMatch(readme, /esramos-design\.github\.io\/mfa\.github\.io/);
-  assert.doesNotMatch(readme, /AI Foreman|Gemini API key|optional AI-assisted guidance/i);
+  assert.doesNotMatch(readme, /optional AI-assisted guidance|Google Gemini API key|OpenAI API key required/i);
+  assert.match(readme, /no AI runtime dependency/i);
   assert.match(html, /MFA<\/strong>&nbsp;5\.36\.0/);
 });
 
