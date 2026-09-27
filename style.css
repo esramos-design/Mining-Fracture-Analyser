@@ -5254,3 +5254,11 @@ html[data-theme="day"] .selected-color-meta {
 .solver-availability-summary.missing strong {
     color:var(--theme-warning);
 }
+
+
+/* Required power remains numeric even when the current configuration is blocked. */
+#required-power.power-shortfall,
+#floating-required.power-shortfall {
+    color:var(--theme-danger) !important;
+    text-shadow:0 0 10px color-mix(in srgb,var(--theme-danger) 22%,transparent);
+}
