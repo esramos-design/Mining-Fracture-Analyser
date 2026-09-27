@@ -148,7 +148,9 @@ Theme work is presentation-only and does not alter calculation state.
 
 A full operational guide is available here:
 
-👉 [MFA v5.36.0 User Guide](docs/USER_GUIDE.md)\n\n👉 [Recommended Ideal Loadout — Public Mechanics Guide](docs/RECOMMENDED_IDEAL_LOADOUT_MECHANICS.md)
+👉 [MFA v5.36.0 User Guide](docs/USER_GUIDE.md)
+
+👉 [Recommended Ideal Loadout — Public Mechanics Guide](docs/RECOMMENDED_IDEAL_LOADOUT_MECHANICS.md)
 
 Quick workflow:
 
