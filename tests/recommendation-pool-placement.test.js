@@ -13,9 +13,9 @@ test("recommendation vessel pool is shown inside Recommended Solutions", async (
   assert.ok(poolIndex > solutionIndex);
   assert.ok(configsIndex > poolIndex);
 
-  assert.match(html, /id="recommendMole"[^>]*onchange="MFAOps\.savePreferences\(\);calculate\(\)"/);
-  assert.match(html, /id="recommendProspector"[^>]*onchange="MFAOps\.savePreferences\(\);calculate\(\)"/);
-  assert.match(html, /id="recommendGolem"[^>]*onchange="MFAOps\.savePreferences\(\);calculate\(\)"/);
+  assert.match(html, /id="recommendMole"[^>]*onchange="MFAOps\.syncRecommendationPool\('mole'\);MFAOps\.savePreferences\(\);calculate\(\)"/);
+  assert.match(html, /id="recommendProspector"[^>]*onchange="MFAOps\.syncRecommendationPool\('prospector'\);MFAOps\.savePreferences\(\);calculate\(\)"/);
+  assert.match(html, /id="recommendGolem"[^>]*onchange="MFAOps\.syncRecommendationPool\('golem'\);MFAOps\.savePreferences\(\);calculate\(\)"/);
 
   assert.equal((html.match(/id="recommendMole"/g) || []).length, 1);
   assert.equal((html.match(/id="recommendProspector"/g) || []).length, 1);
