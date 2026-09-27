@@ -56,7 +56,7 @@
 
     function updateFloatingVerdict(required, available, marginText, statusText, stateClass) {
         const panel = ensureFloatingVerdict();
-        setText("floating-required", required === Infinity ? "IMPOSSIBLE" : formatPower(required));
+        setText("floating-required", formatPower(required));
         setText("floating-available", formatPower(available));
         setText("floating-margin", marginText || "—");
         setText("floating-verdict-status", statusText || "AWAITING FLEET");
@@ -88,9 +88,15 @@
 
     function deriveRequiredPower() {
         if (typeof currentSimState === "undefined") return 0;
-        if (!Number.isFinite(currentSimState.mass) || !Number.isFinite(currentSimState.resistance)) return 0;
-        if (currentSimState.resistance >= 100) return Infinity;
-        return (currentSimState.mass * (1 - currentSimState.resistance / 100)) / 5;
+
+        const audited = Number(currentSimState.requiredPower);
+        if (Number.isFinite(audited) && audited > 0 && audited < 999999) return audited;
+
+        const baseline = Number(currentSimState.baselineRequiredPower);
+        if (Number.isFinite(baseline) && baseline > 0) return baseline;
+
+        const mass = Number(currentSimState.mass) || 0;
+        return mass > 0 ? mass / 5 : 0;
     }
 
     function syncVerdict() {
@@ -103,7 +109,13 @@
         setText("available-power", formatPower(available));
         setText("final-resistance", Number.isFinite(currentSimState.resistance) ? currentSimState.resistance.toFixed(1) + "%" : "—");
         setText("final-instability", Number.isFinite(currentSimState.instability) ? currentSimState.instability.toFixed(1) + "%" : "—");
-        setText("required-power", required === Infinity ? "IMPOSSIBLE" : formatPower(required));
+        setText("required-power", formatPower(required));
+
+        const requiredEl = byId("required-power");
+        const floatingRequiredEl = byId("floating-required");
+        const shortfall = required > 0 && available < required;
+        if (requiredEl) requiredEl.classList.toggle("power-shortfall", shortfall);
+        if (floatingRequiredEl) floatingRequiredEl.classList.toggle("power-shortfall", shortfall);
 
         const status = byId("verdict-status");
         const title = byId("verdict-title");
@@ -123,21 +135,8 @@
             subtitle.textContent = "Target values are ready; no active mining arms are currently deployed.";
             marginValue.textContent = "—";
             fill.style.width = "0%";
-            if (scaleLabel) scaleLabel.textContent = required === Infinity ? "Resistance ≥100%" : "Required " + formatPower(required);
+            if (scaleLabel) scaleLabel.textContent = "Required " + formatPower(required);
             updateFloatingVerdict(required, available, "—", "AWAITING FLEET", "neutral");
-            return;
-        }
-
-        if (required === Infinity) {
-            status.className = "verdict-badge failure";
-            status.textContent = "RESISTANCE BLOCK";
-            title.textContent = "Current configuration cannot overcome the target resistance.";
-            subtitle.textContent = "Apply verified resistance-reduction equipment or revise the fleet configuration.";
-            marginValue.textContent = "N/A";
-            fill.style.width = "4%";
-            fill.classList.add("short");
-            if (scaleLabel) scaleLabel.textContent = "Resistance ≥100%";
-            updateFloatingVerdict(required, available, "N/A", "RESISTANCE BLOCK", "failure");
             return;
         }
 
@@ -148,6 +147,17 @@
         marginValue.textContent = (marginPct >= 0 ? "+" : "") + marginPct.toFixed(1) + "%";
         fill.style.width = Math.max(2, ratio * 100) + "%";
         if (scaleLabel) scaleLabel.textContent = "Required " + formatPower(required);
+
+        const resistanceBlocked = Number(currentSimState.resistance) >= 100;
+        if (resistanceBlocked && !currentSimState.success) {
+            status.className = "verdict-badge failure";
+            status.textContent = "RESISTANCE BLOCK";
+            title.textContent = "Current configuration cannot overcome the target resistance.";
+            subtitle.textContent = "Required power remains shown for planning; use resistance-reduction equipment and/or additional mining support.";
+            fill.classList.add("short");
+            updateFloatingVerdict(required, available, (marginPct >= 0 ? "+" : "") + marginPct.toFixed(1) + "%", "RESISTANCE BLOCK", "failure");
+            return;
+        }
 
         if (currentSimState.success) {
             status.className = "verdict-badge success";

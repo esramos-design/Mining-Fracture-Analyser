@@ -84,6 +84,13 @@
             ? mass / (5.0 * transferFactor)
             : 999999;
 
+        // Target-only baseline requirement before head/module/gadget resistance effects.
+        // This stays useful when the current fitted loadout is resistance-blocked.
+        var baseTransferFactor = Math.max(0, 1 - (baseRes / 100));
+        var baselineRequiredPower = baseTransferFactor > 0
+            ? mass / (5.0 * baseTransferFactor)
+            : mass / 5.0;
+
         var maxBreakableMass = 5.0 * effectivePwr;
         var success = totalPwr > 0 && mass > 0 && maxBreakableMass >= mass;
 
@@ -97,6 +104,7 @@
             finalResistance: finalRes,
             finalInstability: finalInst,
             requiredPower: reqPwr,
+            baselineRequiredPower: baselineRequiredPower,
             success: success,
             activeArms: activeArms
         };
