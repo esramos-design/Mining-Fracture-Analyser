@@ -4986,3 +4986,239 @@ html[data-theme="night"] .module-choice-meta {
         max-height:320px;
     }
 }
+
+
+/* =========================================================
+   READABLE MINING LASER LISTBOXES
+   Native select remains state/calculation authority.
+   ========================================================= */
+.laser-select-row {
+    position:relative;
+    width:100%;
+}
+.laser-native-select {
+    position:absolute !important;
+    width:1px !important;
+    height:1px !important;
+    padding:0 !important;
+    margin:-1px !important;
+    overflow:hidden !important;
+    clip:rect(0,0,0,0) !important;
+    white-space:nowrap !important;
+    border:0 !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+}
+.laser-select-host {
+    position:relative;
+    width:100%;
+    z-index:2;
+}
+.laser-select-host:focus-within {
+    z-index:90;
+}
+.laser-combobox {
+    position:relative;
+    width:100%;
+}
+.laser-combobox-trigger {
+    width:100%;
+    min-height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:9px 11px;
+    border:1px solid #49647D;
+    border-radius:7px;
+    background:#0D1823;
+    color:#F4F8FB;
+    text-align:left;
+    cursor:pointer;
+}
+.laser-combobox-trigger:hover,
+.laser-combobox-trigger:focus-visible {
+    background:#122334;
+    border-color:#6EB7E6;
+    outline:none;
+    box-shadow:0 0 0 3px rgba(110,183,230,.15);
+}
+.laser-trigger-copy {
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+.laser-trigger-copy strong {
+    color:#FFFFFF;
+    font:900 12px/1.15 var(--font-tech);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.laser-trigger-copy small {
+    color:#79D0FF;
+    font:800 10px/1.25 var(--font-tech);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.laser-trigger-chevron {
+    flex:0 0 auto;
+    color:#79D0FF;
+    font-size:13px;
+    transition:transform .15s ease;
+}
+.laser-combobox-trigger[aria-expanded="true"] .laser-trigger-chevron {
+    transform:rotate(180deg);
+}
+.laser-combobox-menu {
+    position:absolute;
+    left:0;
+    right:0;
+    top:calc(100% + 5px);
+    z-index:110;
+    max-height:390px;
+    overflow:auto;
+    padding:5px;
+    border:1px solid #49647D;
+    border-radius:8px;
+    background:#07111B;
+    box-shadow:0 18px 42px rgba(0,0,0,.48);
+}
+.laser-choice {
+    width:100%;
+    min-height:46px;
+    display:grid;
+    grid-template-columns:minmax(135px,.85fr) minmax(0,1.65fr);
+    gap:14px;
+    align-items:center;
+    padding:8px 10px;
+    border:1px solid transparent;
+    border-radius:6px;
+    background:transparent;
+    text-align:left;
+    cursor:pointer;
+}
+.laser-choice:hover,
+.laser-choice:focus-visible {
+    background:#11283A;
+    border-color:#315978;
+    outline:none;
+}
+.laser-choice.selected {
+    background:#174268;
+    border-color:#65B7E8;
+}
+.laser-choice-name {
+    color:#FFFFFF;
+    font:900 11px/1.25 var(--font-tech);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.laser-choice-meta {
+    color:#79D0FF;
+    font:800 10px/1.35 var(--font-tech);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+/* Planner Day */
+html[data-theme="day"] .laser-combobox-trigger {
+    background:#FFFFFF;
+    border-color:#8298AA;
+}
+html[data-theme="day"] .laser-trigger-copy strong,
+html[data-theme="day"] .laser-choice-name {
+    color:#17324D;
+}
+html[data-theme="day"] .laser-trigger-copy small,
+html[data-theme="day"] .laser-trigger-chevron,
+html[data-theme="day"] .laser-choice-meta {
+    color:#0B648E;
+}
+html[data-theme="day"] .laser-combobox-trigger:hover,
+html[data-theme="day"] .laser-combobox-trigger:focus-visible {
+    background:#F5F8FA;
+    border-color:#A94E00;
+    box-shadow:0 0 0 3px rgba(169,78,0,.12);
+}
+html[data-theme="day"] .laser-combobox-menu {
+    background:#FFFDF8;
+    border-color:#8298AA;
+    box-shadow:0 18px 42px rgba(31,58,95,.22);
+}
+html[data-theme="day"] .laser-choice:hover,
+html[data-theme="day"] .laser-choice:focus-visible {
+    background:#EAF2F7;
+    border-color:#7293AA;
+}
+html[data-theme="day"] .laser-choice.selected {
+    background:#D5E8F2;
+    border-color:#367A9E;
+}
+
+/* Planner Dusk */
+html[data-theme="dusk"] .laser-combobox-trigger {
+    background:#272522;
+    border-color:#756A60;
+}
+html[data-theme="dusk"] .laser-trigger-copy strong,
+html[data-theme="dusk"] .laser-choice-name {
+    color:#FFF8EE;
+}
+html[data-theme="dusk"] .laser-trigger-copy small,
+html[data-theme="dusk"] .laser-trigger-chevron,
+html[data-theme="dusk"] .laser-choice-meta {
+    color:#F1C27D;
+}
+html[data-theme="dusk"] .laser-combobox-trigger:hover,
+html[data-theme="dusk"] .laser-combobox-trigger:focus-visible {
+    background:#302D2A;
+    border-color:#C78632;
+    box-shadow:0 0 0 3px rgba(199,134,50,.15);
+}
+html[data-theme="dusk"] .laser-combobox-menu {
+    background:#201E1C;
+    border-color:#756A60;
+}
+html[data-theme="dusk"] .laser-choice:hover,
+html[data-theme="dusk"] .laser-choice:focus-visible {
+    background:#35312E;
+    border-color:#8A714F;
+}
+html[data-theme="dusk"] .laser-choice.selected {
+    background:#4A382B;
+    border-color:#C78632;
+}
+
+/* Planner Night */
+html[data-theme="night"] .laser-combobox-trigger {
+    background:#0D1823;
+    border-color:#49647D;
+}
+html[data-theme="night"] .laser-trigger-copy strong,
+html[data-theme="night"] .laser-choice-name {
+    color:#FFFFFF;
+}
+html[data-theme="night"] .laser-trigger-copy small,
+html[data-theme="night"] .laser-trigger-chevron,
+html[data-theme="night"] .laser-choice-meta {
+    color:#79D0FF;
+}
+
+@media (max-width:760px) {
+    .laser-choice {
+        grid-template-columns:1fr;
+        gap:3px;
+    }
+    .laser-choice-name,
+    .laser-choice-meta {
+        white-space:normal;
+    }
+    .laser-combobox-menu {
+        max-height:320px;
+    }
+}
