@@ -46,6 +46,17 @@
         };
     }
 
+    function primaryShipConstraint(p){
+        if(!p.preferCurrentShip) return null;
+        var deployed=deployedCounts();
+        for(var i=0;i<ORDER.length;i++){
+            var id=ORDER[i];
+            if(n(deployed[id])>0) return id;
+        }
+        return null;
+    }
+
+
     function laserSlotCount(laserName){
         var head=allLaserHeads.find(function(h){return h.name===laserName;});
         return Math.max(0,Math.floor(n(head&&head.moduleSlots)));
@@ -281,11 +292,12 @@
     function solveIdeal(s,p,strat){
         var vars={}, options=[];
         var maxFleet=Math.max(1,Math.floor(n(p.maxFleetSize,6)));
+        var primaryShip=primaryShipConstraint(p);
         ORDER.forEach(function(id){vars[id]=variants(id,strat,p,s);});
 
-        var moleMax=p.recommendMole===false?0:maxFleet;
-        var prospectorMax=p.recommendProspector===false?0:maxFleet;
-        var golemMax=p.recommendGolem===false?0:maxFleet;
+        var moleMax=(p.recommendMole===false && primaryShip!=="mole")?0:maxFleet;
+        var prospectorMax=(p.recommendProspector===false && primaryShip!=="prospector")?0:maxFleet;
+        var golemMax=(p.recommendGolem===false && primaryShip!=="golem")?0:maxFleet;
 
         for(var m=0;m<=moleMax;m++){
             for(var pr=0;pr<=prospectorMax;pr++){
@@ -294,6 +306,7 @@
                     if(total<1 || total>maxFleet) continue;
 
                     var counts={mole:m,prospector:pr,golem:g,added:total};
+                    if(primaryShip && counts[primaryShip]<1) continue;
                     var active=ORDER.filter(function(id){return counts[id]>0;});
 
                     function walk(i,pick){
@@ -557,6 +570,12 @@
                 p.recommendProspector!==false?'Prospector':null,
                 p.recommendGolem!==false?'Golem':null
             ].filter(Boolean).join(' + ')||'None selected')+'</strong></div>'+
+            '<div><span>Current ship primary</span><strong>'+esc((function(){
+                var primary=primaryShipConstraint(p);
+                if(!p.preferCurrentShip) return 'Disabled';
+                if(!primary) return 'Enabled · no Active vessel';
+                return LABEL[primary]+' required in every ideal plan';
+            })())+'</strong></div>'+
             '</div>';
     }
 
