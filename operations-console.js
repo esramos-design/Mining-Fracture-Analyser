@@ -299,14 +299,12 @@
         let count = Math.max(0, Number(refs.count.value || 0));
 
         if (!refs.enabled.checked) {
-            refs.count.dataset.previousValue = count > 0 ? String(count) : (refs.count.dataset.previousValue || "1");
+            if (count > 0) refs.count.dataset.previousValue = String(count);
             refs.count.value = "0";
             refs.count.disabled = true;
         } else {
             refs.count.disabled = false;
-            if (count < 1) {
-                refs.count.value = refs.count.dataset.previousValue || "1";
-            }
+            refs.count.value = String(Math.max(0, Math.min(20, Math.floor(count))));
         }
 
         const row = refs.enabled.closest(".fleet-presence-row");
@@ -323,8 +321,7 @@
         const next = Math.max(0, Math.min(20, Number(refs.count.value || 0) + delta));
         refs.count.value = String(next);
 
-        if (next === 0) refs.enabled.checked = false;
-
+        // Quantity 0 is a valid enabled state: keep the ship type visible and selectable.
         syncFleetPresence(shipId);
         savePreferences();
         if (typeof calculate === "function") calculate();
