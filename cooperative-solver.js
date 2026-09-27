@@ -46,6 +46,18 @@
         };
     }
 
+    function currentPrimaryShipType(){
+        var activeCard=document.querySelector(".fleet-vessel-card.role-active");
+        if(activeCard && ORDER.indexOf(activeCard.dataset.ship)>=0) return activeCard.dataset.ship;
+
+        var deployed=deployedCounts();
+        for(var i=0;i<ORDER.length;i++){
+            if(n(deployed[ORDER[i]])>0) return ORDER[i];
+        }
+        return null;
+    }
+
+
     function laserSlotCount(laserName){
         var head=allLaserHeads.find(function(h){return h.name===laserName;});
         return Math.max(0,Math.floor(n(head&&head.moduleSlots)));
@@ -283,6 +295,8 @@
         var maxFleet=Math.max(1,Math.floor(n(p.maxFleetSize,6)));
         ORDER.forEach(function(id){vars[id]=variants(id,strat,p,s);});
 
+        var primaryType=p.preferCurrentShip?currentPrimaryShipType():null;
+
         var moleMax=p.recommendMole===false?0:maxFleet;
         var prospectorMax=p.recommendProspector===false?0:maxFleet;
         var golemMax=p.recommendGolem===false?0:maxFleet;
@@ -292,6 +306,11 @@
                 for(var g=0;g<=golemMax;g++){
                     var total=m+pr+g;
                     if(total<1 || total>maxFleet) continue;
+
+                    if(primaryType){
+                        var primaryCount=primaryType==="mole"?m:(primaryType==="prospector"?pr:g);
+                        if(primaryCount<1) continue;
+                    }
 
                     var counts={mole:m,prospector:pr,golem:g,added:total};
                     var active=ORDER.filter(function(id){return counts[id]>0;});
@@ -380,7 +399,11 @@
         });
 
         var good=unique.filter(function(o){return o.evaluation.success;});
-        return {variants:vars,options:(good.length?good:unique).slice(0,5)};
+        return {
+            variants:vars,
+            options:(good.length?good:unique).slice(0,5),
+            primaryType:primaryType
+        };
     }
 
     function normalizedSlots(a){
@@ -557,6 +580,7 @@
                 p.recommendProspector!==false?'Prospector':null,
                 p.recommendGolem!==false?'Golem':null
             ].filter(Boolean).join(' + ')||'None selected')+'</strong></div>'+
+            '<div><span>Current ship primary</span><strong>'+(p.preferCurrentShip?esc(LABEL[currentPrimaryShipType()]||'No active vessel'):'Off')+'</strong></div>'+
             '</div>';
     }
 
