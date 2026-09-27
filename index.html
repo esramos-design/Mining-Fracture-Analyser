@@ -292,32 +292,6 @@
                 <p class="section-copy">MFA calculates the ideal vessel and loadout plan from Target Acquisition values and mission constraints using the audited 4.10.1 community-calibrated fracture model. Your actual Fleet Planner configuration is evaluated separately.</p>
                 <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
             </section>
-            <section class="foreman-panel glass-panel" id="ai-section">
-                <div class="section-heading">
-                    <div>
-                        <span class="step-number">05</span>
-                        <h2>Senior Foreman</h2>
-                    </div>
-                    <button onclick="openApiModal()" class="status-link">OpenAI status</button>
-                </div>
-
-                <div class="foreman-actions">
-                    <button onclick="askAI('strategy')">Explain Solution</button>
-                    <button onclick="askAI('risk')">Risk Analysis</button>
-                    <button onclick="askAI('briefing')">Crew Briefing</button>
-                </div>
-
-                <div id="ai-loading" class="hidden foreman-loading">FOREMAN ANALYSING VERIFIED MFA STATE…</div>
-                <div id="ai-content" class="foreman-output">// SYSTEM READY. MFA CALCULATIONS REMAIN AUTHORITATIVE.</div>
-
-                <details class="foreman-custom">
-                    <summary>Advanced Foreman query</summary>
-                    <div class="custom-query">
-                        <input type="text" id="ai-custom-input" placeholder="Ask about the current verified MFA state…">
-                        <button onclick="askAI('custom')">Send</button>
-                    </div>
-                </details>
-            </section>
             </aside>
         </section>
     </main>
@@ -375,20 +349,18 @@
     </section>
 
     <footer>
-        <span>MFA · Esramos Design · OpenAI Foreman</span>
+        <span>MFA · Esramos Design</span>
         <span>Fan-made tool. Not affiliated with Cloud Imperium Games or Roberts Space Industries.</span>
     </footer>
 </div>
 
 <script>
 window.MFA_CONFIG = {
-    gameVersion: "4.10.1-live.12660092",
-    aiEndpoint: ""
+    gameVersion: "4.10.1-live.12660092"
 };
 </script>
 <script src="v535-runtime.js"></script>
 <script src="script.js"></script>
-<script src="ai-foreman.js"></script>
 <script src="scanner.js"></script>
 <script src="operations-console.js"></script>
 <script src="cooperative-solver.js"></script>
