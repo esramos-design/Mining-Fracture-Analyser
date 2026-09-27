@@ -679,7 +679,7 @@ function createArmConfigHtml(armIndex, ship) {
 
     // Render all 3 slots (they will be disabled by updateModuleSlots if needed)
     for(let i=1; i<=3; i++) {
-        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()">${modOpts}</select>
+        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="module-color-select w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()">${modOpts}</select>
         <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div></div>`;
     }
 
@@ -692,10 +692,15 @@ function createArmConfigHtml(armIndex, ship) {
     </div>`;
 }
 
+function getModuleOptionMarkup(module) {
+    const stats = getFormattedStats(module,'module');
+    return `<option value="${module.name}"><span class="module-option-label">${module.name}</span><span class="module-option-meta">${stats}</span></option>`;
+}
+
 function getModOptions() {
-    const act = sortedModules.filter(m => m.activation === 'Active').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
-    const pas = sortedModules.filter(m => m.activation === 'Passive').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
-    return `<option value="None">None</option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
+    const act = sortedModules.filter(m => m.activation === 'Active').map(getModuleOptionMarkup).join('');
+    const pas = sortedModules.filter(m => m.activation === 'Passive').map(getModuleOptionMarkup).join('');
+    return `<option value="None"><span class="module-option-label">None</span></option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
 }
 
 // --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
