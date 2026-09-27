@@ -11,6 +11,8 @@ function approx(actual, expected, epsilon = 1e-9) {
 
 function assertSameResult(actual, expected) {
   approx(actual.totalPower, expected.totalPower);
+  approx(actual.effectivePower, expected.effectivePower);
+  approx(actual.maxBreakableMass, expected.maxBreakableMass);
   approx(actual.finalResistance, expected.finalResistance);
   approx(actual.finalInstability, expected.finalInstability);
   approx(actual.requiredPower, expected.requiredPower);
@@ -18,7 +20,7 @@ function assertSameResult(actual, expected) {
   assert.equal(actual.activeArms, expected.activeArms);
 }
 
-test("browser runtime remains identical to protected v5.35 core", () => {
+test("browser runtime remains identical to audited deterministic core", () => {
   const input = {
     rockMass: 23922,
     resistance: 16,

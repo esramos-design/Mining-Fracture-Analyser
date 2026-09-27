@@ -2,7 +2,7 @@
 
 ## Status: mandatory
 
-The current MFA deterministic fracture calculation is the authoritative calculation baseline for this revision.
+The MFA deterministic fracture calculation is the authoritative calculation baseline for this revision. As of the 2026-09-27 Star Citizen 4.10.1 audit, breakability uses the community-calibrated per-head transfer model documented in `docs/AUDIT_4.10.1_2026-09-27.md`.
 
 Telemetry, OCR, UI, Cloudflare, desktop packaging, AI Foreman, data-table refactors, and code cleanup may provide inputs to or present outputs from the calculation engine, but they must not silently change the established mechanics.
 
@@ -60,3 +60,10 @@ Result
 ```
 
 The direction of authority is one-way: input systems feed the calculator; presentation/AI systems do not alter it.
+
+
+## 4.10.1 audited breakability baseline
+
+For Star Citizen 4.10.1, resistance is treated as a penalty on delivered fracture power. Each active mining head contributes independently after its own head/module/gadget resistance modifiers, and combined fracture capacity is the sum of those per-head contributions.
+
+This is a community-calibrated model, not a CIG-published formula. Any future replacement requires the same mechanics-change gate described above and new patch-scoped evidence.
