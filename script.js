@@ -670,8 +670,9 @@ function createArmConfigHtml(armIndex, ship) {
 
     const laserOpts = heads.map(h => {
         let sel = (ship.id==='mole'&&h.name.includes('Helix II')) || (ship.id==='prospector'&&h.name.includes('Helix I')) || (ship.id==='golem'&&h.name.includes('Pitman'));
-        // NOTE: added updateModuleSlots onchange
-        return `<option value="${h.power}" data-slots="${h.moduleSlots}" data-resistance="${h.resistanceEffect}" data-instability="${h.instabilityEffect}" ${sel?'selected':''}>${h.name}${getFormattedStats(h,'laser')}</option>`;
+        const stats = getFormattedStats(h,'laser');
+        // Rich option content is progressive enhancement; unsupported browsers keep the same text fallback.
+        return `<option value="${h.power}" data-slots="${h.moduleSlots}" data-resistance="${h.resistanceEffect}" data-instability="${h.instabilityEffect}" ${sel?'selected':''}><span class="select-option-label">${h.name}</span><span class="select-option-meta">${stats}</span></option>`;
     }).join('');
 
     let modHtml = '';
@@ -679,14 +680,14 @@ function createArmConfigHtml(armIndex, ship) {
 
     // Render all 3 slots (they will be disabled by updateModuleSlots if needed)
     for(let i=1; i<=3; i++) {
-        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="module-color-select w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()">${modOpts}</select>
+        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="module-color-select w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()"><button type="button"><selectedcontent></selectedcontent></button>${modOpts}</select>
         <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div></div>`;
     }
 
     // NOTE: Added onchange to the laser select to trigger slot locking
     return `<div id="${armId}" class="ship-arm-card p-3 mb-2 rounded bg-[var(--bg-card)] border border-[var(--border-main)]" data-ship="${ship.id}">
         <div class="flex justify-between mb-1"><span class="text-xs font-bold text-white">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
-        <select id="${armId}-laser" class="w-full p-2 mb-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}'); calculate()">${laserOpts}</select>
+        <select id="${armId}-laser" class="laser-color-select w-full p-2 mb-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}'); calculate()"><button type="button"><selectedcontent></selectedcontent></button>${laserOpts}</select>
         ${modHtml}
         <button onclick="this.parentElement.remove();calculate()" class="text-[9px] text-red-400 w-full text-right mt-1">REMOVE</button>
     </div>`;
@@ -694,13 +695,13 @@ function createArmConfigHtml(armIndex, ship) {
 
 function getModuleOptionMarkup(module) {
     const stats = getFormattedStats(module,'module');
-    return `<option value="${module.name}"><span class="module-option-label">${module.name}</span><span class="module-option-meta">${stats}</span></option>`;
+    return `<option value="${module.name}"><span class="select-option-label">${module.name}</span><span class="select-option-meta">${stats}</span></option>`;
 }
 
 function getModOptions() {
     const act = sortedModules.filter(m => m.activation === 'Active').map(getModuleOptionMarkup).join('');
     const pas = sortedModules.filter(m => m.activation === 'Passive').map(getModuleOptionMarkup).join('');
-    return `<option value="None"><span class="module-option-label">None</span></option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
+    return `<option value="None"><span class="select-option-label">None</span></option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
 }
 
 // --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
