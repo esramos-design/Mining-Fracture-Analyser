@@ -688,7 +688,7 @@ function createArmConfigHtml(armIndex, ship) {
 
     // NOTE: Added onchange to the laser select to trigger slot locking
     return `<div id="${armId}" class="ship-arm-card p-3 mb-2 rounded bg-[var(--bg-card)] border border-[var(--border-main)]" data-ship="${ship.id}">
-        <div class="flex justify-between mb-1"><span class="text-xs font-bold text-white">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
+        <div class="flex justify-between mb-1"><span class="ship-arm-title text-xs font-bold">${ship.name} #${armIndex}</span><input type="checkbox" id="${armId}-enable" checked onchange="calculate()"></div>
         <div class="select-color-shell mb-2"><select id="${armId}-laser" class="laser-color-select w-full p-2 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-xs" onchange="updateModuleSlots('${armId}');syncSelectedColor(this);calculate()">${laserOpts}</select><span class="selected-color-overlay" aria-hidden="true"></span></div>
         ${modHtml}
         <button onclick="this.parentElement.remove();calculate()" class="text-[9px] text-red-400 w-full text-right mt-1">REMOVE</button>
