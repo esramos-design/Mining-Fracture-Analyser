@@ -5152,3 +5152,60 @@ html[data-theme="dusk"] .vessel-arms-grid .ship-arm-card > div:first-child .ship
 html[data-theme="night"] .vessel-arms-grid .ship-arm-card > div:first-child .ship-arm-title {
     color:#79D0FF !important;
 }
+
+
+/* =========================================================
+   PLANNER DAY — OPEN LASER/MODULE POPUP CONTRAST
+   Open popup only. Closed selected field keeps Day colors.
+   ========================================================= */
+@supports (appearance: base-select) {
+    html[data-theme="day"] select.module-color-select::picker(select),
+    html[data-theme="day"] select.laser-color-select::picker(select) {
+        background:#0B1620 !important;
+        color:#F8FBFF !important;
+        border-color:#52718D !important;
+    }
+
+    html[data-theme="day"] select.module-color-select option,
+    html[data-theme="day"] select.laser-color-select option {
+        background:#0B1620 !important;
+        color:#F8FBFF !important;
+    }
+
+    html[data-theme="day"] select.module-color-select option .select-option-label,
+    html[data-theme="day"] select.laser-color-select option .select-option-label {
+        color:#F8FBFF !important;
+    }
+
+    html[data-theme="day"] select.module-color-select option .select-option-meta,
+    html[data-theme="day"] select.laser-color-select option .select-option-meta {
+        color:#39C5FF !important;
+    }
+
+    html[data-theme="day"] select.module-color-select option:hover,
+    html[data-theme="day"] select.module-color-select option:focus,
+    html[data-theme="day"] select.module-color-select option:checked,
+    html[data-theme="day"] select.laser-color-select option:hover,
+    html[data-theme="day"] select.laser-color-select option:focus,
+    html[data-theme="day"] select.laser-color-select option:checked {
+        background:#1769C2 !important;
+        color:#FFFFFF !important;
+    }
+
+    html[data-theme="day"] select.module-color-select optgroup {
+        background:#D9E2EA !important;
+        color:#17324D !important;
+        font-weight:900 !important;
+    }
+}
+
+/* Closed selected value remains Day-theme light-field styling. */
+html[data-theme="day"] .selected-color-overlay {
+    background:#FFFDF8 !important;
+}
+html[data-theme="day"] .selected-color-label {
+    color:#17324D !important;
+}
+html[data-theme="day"] .selected-color-meta {
+    color:#007AA8 !important;
+}
