@@ -5137,3 +5137,18 @@ html[data-theme="night"] .select-option-meta,
 html[data-theme="night"] .selected-color-meta {
     color:#58C9FF !important;
 }
+
+
+/* Final arm-title specificity correction.
+   Overrides the legacy .vessel-arms-grid .ship-arm-card > div:first-child span rule only. */
+html[data-theme="day"] .vessel-arms-grid .ship-arm-card > div:first-child .ship-arm-title {
+    color:#17324D !important;
+}
+
+html[data-theme="dusk"] .vessel-arms-grid .ship-arm-card > div:first-child .ship-arm-title {
+    color:#FFC45E !important;
+}
+
+html[data-theme="night"] .vessel-arms-grid .ship-arm-card > div:first-child .ship-arm-title {
+    color:#79D0FF !important;
+}
