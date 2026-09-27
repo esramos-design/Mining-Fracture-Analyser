@@ -3,12 +3,7 @@ compatibility_date = "2026-09-21"
 pages_build_output_dir = "./dist"
 
 [vars]
-FOREMAN_MODEL = "@cf/zai-org/glm-4.7-flash"
+OPENAI_MODEL = "gpt-5.6-terra"
 
-[ai]
-binding = "AI"
-
-# Senior Foreman uses Cloudflare Workers AI when available.
-# The selected model is available on the Workers Free plan.
-# If the free AI allocation is unavailable or exhausted, MFA falls back
-# to deterministic native guidance and remains usable without a paid API.
+# OPENAI_API_KEY must be configured as an encrypted Cloudflare secret.
+# Never commit API credentials.
