@@ -239,6 +239,7 @@ window.updateModuleSlots = function(armId) {
             modSelect.style.cursor = "pointer";
         }
         window.togCheck(armId, i);
+        syncModuleContrastSelect(modSelect);
     }
 };
 
@@ -679,7 +680,7 @@ function createArmConfigHtml(armIndex, ship) {
 
     // Render all 3 slots (they will be disabled by updateModuleSlots if needed)
     for(let i=1; i<=3; i++) {
-        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i});calculate()">${modOpts}</select>
+        modHtml += `<div class="flex gap-1 mb-1"><select id="${armId}-mod${i}" class="module-contrast-select w-full p-1 bg-[var(--bg-input)] border border-[var(--border-main)] rounded text-[10px]" onchange="togCheck('${armId}', ${i}); syncModuleContrastSelect(this); calculate()">${modOpts}</select>
         <div id="${armId}-mod${i}-box" class="hidden"><input type="checkbox" id="${armId}-mod${i}-active-toggle" checked onchange="calculate()"></div></div>`;
     }
 
@@ -697,6 +698,101 @@ function getModOptions() {
     const pas = sortedModules.filter(m => m.activation === 'Passive').map(m => `<option value="${m.name}">${m.name}${getFormattedStats(m,'module')}</option>`).join('');
     return `<option value="None">None</option><optgroup label="Active Modules">${act}</optgroup><optgroup label="Passive Modules">${pas}</optgroup>`;
 }
+
+function moduleContrastEscape(value) {
+    return String(value ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+}
+
+function moduleContrastParts(option) {
+    if (!option || option.value === 'None') return { name:'None', meta:'' };
+    const text = String(option.textContent || '');
+    const open = text.indexOf('(');
+    const close = text.lastIndexOf(')');
+    if (open > 0 && close > open) {
+        return {
+            name:text.slice(0,open).trim(),
+            meta:text.slice(open,close+1).trim()
+        };
+    }
+    return { name:text.trim(), meta:'' };
+}
+
+function syncModuleContrastSelect(select) {
+    if (!select || !select.classList.contains('module-contrast-select')) return;
+
+    let shell = select.nextElementSibling;
+    if (!shell || !shell.classList.contains('module-contrast-shell')) {
+        shell = document.createElement('div');
+        shell.className = 'module-contrast-shell';
+        select.insertAdjacentElement('afterend', shell);
+    }
+
+    const current = moduleContrastParts(select.options[select.selectedIndex]);
+    const groups = [...select.children].map(child => {
+        if (child.tagName === 'OPTION') {
+            const parts = moduleContrastParts(child);
+            return `<button type="button" class="module-contrast-option ${child.selected ? 'selected' : ''}" data-value="${moduleContrastEscape(child.value)}"><span class="module-contrast-name">${moduleContrastEscape(parts.name)}</span><span class="module-contrast-meta">${moduleContrastEscape(parts.meta)}</span></button>`;
+        }
+        if (child.tagName === 'OPTGROUP') {
+            const options = [...child.children].map(option => {
+                const parts = moduleContrastParts(option);
+                return `<button type="button" class="module-contrast-option ${option.selected ? 'selected' : ''}" data-value="${moduleContrastEscape(option.value)}"><span class="module-contrast-name">${moduleContrastEscape(parts.name)}</span><span class="module-contrast-meta">${moduleContrastEscape(parts.meta)}</span></button>`;
+            }).join('');
+            return `<div class="module-contrast-group">${moduleContrastEscape(child.label)}</div>${options}`;
+        }
+        return '';
+    }).join('');
+
+    shell.innerHTML = `
+      <button type="button" class="module-contrast-trigger" aria-expanded="false" ${select.disabled ? 'disabled' : ''}>
+        <span class="module-contrast-name">${moduleContrastEscape(current.name)}</span>
+        <span class="module-contrast-meta">${moduleContrastEscape(current.meta)}</span>
+        <span class="module-contrast-arrow">▾</span>
+      </button>
+      <div class="module-contrast-menu" hidden>${groups}</div>`;
+
+    select.classList.add('module-contrast-native');
+
+    const trigger = shell.querySelector('.module-contrast-trigger');
+    const menu = shell.querySelector('.module-contrast-menu');
+
+    trigger?.addEventListener('click', () => {
+        document.querySelectorAll('.module-contrast-menu:not([hidden])').forEach(other => {
+            if (other !== menu) {
+                other.hidden = true;
+                other.previousElementSibling?.setAttribute('aria-expanded','false');
+            }
+        });
+        menu.hidden = !menu.hidden;
+        trigger.setAttribute('aria-expanded', String(!menu.hidden));
+    });
+
+    shell.querySelectorAll('.module-contrast-option').forEach(button => {
+        button.addEventListener('click', () => {
+            select.value = button.dataset.value || 'None';
+            select.dispatchEvent(new Event('change', { bubbles:true }));
+            menu.hidden = true;
+            trigger?.setAttribute('aria-expanded','false');
+        });
+    });
+}
+
+function initModuleContrastSelects(root=document) {
+    root.querySelectorAll('select.module-contrast-select').forEach(syncModuleContrastSelect);
+}
+
+document.addEventListener('click', event => {
+    if (event.target.closest('.module-contrast-shell')) return;
+    document.querySelectorAll('.module-contrast-menu:not([hidden])').forEach(menu => {
+        menu.hidden = true;
+        menu.previousElementSibling?.setAttribute('aria-expanded','false');
+    });
+});
 
 // --- DAY / DUSK / NIGHT THEME MANAGEMENT ---
 const MFA_THEMES = ['day', 'dusk', 'night'];
@@ -764,4 +860,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderGadgetAttributes = renderGadgetAttributes; 
     window.updateModuleSlots = updateModuleSlots; // Expose to global scope for HTML inline calls
     window.createArmConfigHtml = createArmConfigHtml; // Unified Fleet Planner reuses protected v5.35 arm controls
+    window.syncModuleContrastSelect = syncModuleContrastSelect;
+    window.initModuleContrastSelects = initModuleContrastSelects;
 });
