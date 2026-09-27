@@ -5066,3 +5066,74 @@ html[data-theme="dusk"] .ops-topbar {
         color:#FFD48A !important;
     }
 }
+
+
+/* =========================================================
+   FLEET ARM TITLE + SELECTED VALUE CONTRAST
+   Color-only corrections; no layout changes.
+   ========================================================= */
+.ship-arm-title {
+    font-weight:800;
+}
+
+html[data-theme="day"] .ship-arm-title {
+    color:#17324D !important;
+}
+
+html[data-theme="dusk"] .ship-arm-title {
+    color:#FFC45E !important;
+}
+
+html[data-theme="night"] .ship-arm-title {
+    color:#79D0FF !important;
+}
+
+/* Prevent the underlying native selected text from ghosting behind the
+   non-interactive color overlay. The option menu itself keeps explicit colors. */
+.select-color-shell > select.module-color-select,
+.select-color-shell > select.laser-color-select {
+    color:transparent !important;
+}
+
+html[data-theme="day"] select.module-color-select option,
+html[data-theme="day"] select.laser-color-select option {
+    color:#17324D !important;
+}
+
+html[data-theme="dusk"] select.module-color-select option,
+html[data-theme="dusk"] select.laser-color-select option {
+    color:#FFF9F0 !important;
+}
+
+html[data-theme="night"] select.module-color-select option,
+html[data-theme="night"] select.laser-color-select option {
+    color:#F8FBFF !important;
+}
+
+/* Keep label/meta distinction vivid in open lists and selected overlays. */
+html[data-theme="day"] .select-option-label,
+html[data-theme="day"] .selected-color-label {
+    color:#17324D !important;
+}
+html[data-theme="day"] .select-option-meta,
+html[data-theme="day"] .selected-color-meta {
+    color:#007AA8 !important;
+}
+
+html[data-theme="dusk"] .select-option-label,
+html[data-theme="dusk"] .selected-color-label {
+    color:#FFF9F0 !important;
+}
+html[data-theme="dusk"] .select-option-meta,
+html[data-theme="dusk"] .selected-color-meta {
+    color:#FFC45E !important;
+}
+
+html[data-theme="night"] .select-option-label,
+html[data-theme="night"] .selected-color-label {
+    color:#F8FBFF !important;
+}
+html[data-theme="night"] .select-option-meta,
+html[data-theme="night"] .selected-color-meta {
+    color:#58C9FF !important;
+}
