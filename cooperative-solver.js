@@ -550,7 +550,52 @@
             '</ul></div>';
     }
 
-    function optionHtml(o,objective,minMargin){
+    function gadgetComparisonHtml(o,state,p,objective,minMargin){
+        // Compare gadgets on the SAME recommended fleet and equipment configuration.
+        // The final winner was already selected by solveIdeal() over all fleet/gadget
+        // combinations. This is an explanatory comparison, not a second optimizer.
+        var arms=proposedArms(o.vesselPlans);
+        var options=gadgetChoices(p).map(function(name){
+            var evaluation=evaluate(state.baseResistance,state.baseInstability,state.mass,arms,name);
+            return {
+                counts:o.counts,
+                vesselPlans:o.vesselPlans,
+                gadget:name,
+                evaluation:evaluation,
+                resources:resourceMetrics(o.vesselPlans,evaluation,name)
+            };
+        });
+        options.sort(compareFor(objective,minMargin));
+        var lines=options.map(function(candidate){
+            var e=candidate.evaluation;
+            var gadget=gadgets.find(function(item){return item.name===candidate.gadget;});
+            var v=gadget&&gadget.verified||{};
+            var selected=candidate.gadget===o.gadget;
+            var margin=Number.isFinite(e.marginPct)
+                ? (e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"%"
+                : "BLOCKED";
+            function pct(value){return value==null?"—":(value>0?"+":"")+value+"%";}
+            return '<tr'+(selected?' class="solver-gadget-selected"':'')+'>'+
+                '<td><strong>'+esc(candidate.gadget)+'</strong>'+(selected?' <em>SELECTED</em>':'')+'</td>'+
+                '<td>'+esc(qualityLabel(candidate,minMargin))+'</td>'+
+                '<td>'+esc(margin)+'</td>'+
+                '<td>'+e.finalResistance.toFixed(1)+'%</td>'+
+                '<td>'+e.finalInstability.toFixed(1)+'%</td>'+
+                '<td>'+esc(pct(v.optimalChargeWindowRatePct))+'</td>'+
+                '<td>'+esc(pct(v.optimalChargeWindowSizePct))+'</td>'+
+                '</tr>';
+        }).join("");
+        return '<details class="solver-gadget-comparison">'+
+            '<summary>Gadget comparison · '+esc(o.gadget)+' selected from '+options.length+' option'+(options.length===1?'':'s')+'</summary>'+
+            '<p>Same vessel and head/module configuration for every row. Gadget resistance and instability modifiers are included in fracture calculations and objective ranking. Only one gadget is modelled per candidate. The selected gadget on the actual Fleet Planner is independent.</p>'+
+            '<div class="solver-gadget-table-wrap"><table><thead><tr>'+
+              '<th>Gadget</th><th>Safety</th><th>Margin</th><th>Resistance</th><th>Instability</th><th>Charge rate</th><th>Window size</th>'+
+            '</tr></thead><tbody>'+lines+'</tbody></table></div>'+
+            '<p class="solver-gadget-model-note">Charge rate, charge-window size and cluster effects are informational reference attributes, not yet part of the audited fracture-power or safety-margin equation. Comparisons rank modelled effects only; they do not establish the safest in-game charge behaviour.</p>'+
+            '</details>';
+    }
+
+    function optionHtml(o,objective,minMargin,state,p){
         var e=o.evaluation,r=o.resources;
         var status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
         var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy each vessel-specific head/module loadout shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
@@ -567,7 +612,7 @@
                 '<span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span>'+
                 '<span>Gadget <strong>'+esc(o.gadget)+'</strong></span>'+
             '</div>'+
-            whyHtml(o,objective,minMargin)+reproduction+
+            whyHtml(o,objective,minMargin)+gadgetComparisonHtml(o,state,p,objective,minMargin)+reproduction+
             '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Ideal recommendation remains unchanged.</em></div>'+
             '<div class="solver-vessels">'+vesselPlansHtml(o,true)+'</div>'+
             '</article>';
@@ -686,7 +731,7 @@
                 (safe?'RECOMMENDED OPERATIONAL LOADOUT':best.evaluation.success?'VIABLE · BELOW SAFETY MARGIN':'CLOSEST PLAN WITHIN CONSTRAINTS')+
             '</strong></div><div>'+esc(strat.name)+'</div></div>'+
             '<div class="solver-or-note"><strong>Fleet Planner independent.</strong> MFA searches vessel-specific loadouts within the recommendation resource limits. Duplicate vessels may use different deterministic variants. The protected 4.10.1 fracture engine evaluates every candidate.</div>'+
-            '<div class="solver-best-option">'+optionHtml(best,objective,solved.minimumMarginPct)+'</div>'+
+            '<div class="solver-best-option">'+optionHtml(best,objective,solved.minimumMarginPct,state,p)+'</div>'+
             portfolioHtml(solved,objective)+
             '<div class="solver-method-note">The highlighted plan is ranked under '+esc(objectiveLabel(objective))+'. Objective alternatives expose materially different plans without changing the selected recommendation. Availability confirmation remains post-recommendation only. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
         updateAvailabilitySummary();
