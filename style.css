@@ -5464,3 +5464,31 @@ html[data-theme="day"] .selected-color-meta {
         text-align:left;
     }
 }
+
+/* Ideal Loadout: explicit per-gadget comparison for the recommended fleet. */
+.solver-gadget-comparison {
+    margin:12px 0;
+    padding:10px 12px;
+    border:1px solid var(--ops-line);
+    border-radius:9px;
+    color:var(--text-muted);
+    background:rgba(46,93,136,.05);
+}
+.solver-gadget-comparison summary {
+    cursor:pointer;
+    font:800 11px var(--font-tech);
+    color:var(--text-strong);
+}
+.solver-gadget-comparison p { font-size:11px; line-height:1.5; }
+.solver-gadget-table-wrap { max-width:100%; overflow-x:auto; }
+.solver-gadget-comparison table { width:100%; min-width:630px; border-collapse:collapse; font-size:10px; }
+.solver-gadget-comparison th,.solver-gadget-comparison td {
+    padding:7px 6px;
+    text-align:right;
+    border-bottom:1px solid var(--ops-line);
+    white-space:nowrap;
+}
+.solver-gadget-comparison th:first-child,.solver-gadget-comparison td:first-child { text-align:left; }
+.solver-gadget-selected { background:rgba(52,181,120,.12); }
+.solver-gadget-selected em { color:#20a677; font:800 9px var(--font-tech); }
+.solver-gadget-model-note { font-style:italic; }
