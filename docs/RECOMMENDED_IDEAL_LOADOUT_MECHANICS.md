@@ -306,6 +306,44 @@ The highlighted recommendation contains a deterministic explanation showing:
 
 No AI-generated explanation is used.
 
+## Gadget evaluation and comparison
+
+When **Allow gadgets** is enabled, the recommendation solver evaluates each
+candidate vessel/head/module configuration with **one** of the supported
+gadgets, including **None**. It calls the protected fracture engine separately
+for each option and ranks the resulting candidate under the selected objective
+and safety-margin constraint.
+
+The gadget selected in **Actual Fleet Planner** applies to the real deployed
+fleet's Fracture Verdict. The recommendation may select a different gadget:
+it is an independent target-driven plan, not a copy of the actual fleet.
+
+The **Gadget comparison** panel under the highlighted ideal loadout holds the
+recommended vessels and head/module loadouts constant. It shows each allowed
+gadget's calculated:
+
+- fracture viability / safety class;
+- power margin;
+- final resistance;
+- final instability.
+
+The selected option is marked in the table. Charge-rate and charge-window
+attributes are shown alongside these metrics as **informational equipment
+reference data**, not as simulated outcomes.
+
+**Calculation boundary:** MFA's audited 4.10.1 fracture-power engine currently
+models gadget resistance and instability modifiers. It does not fully simulate
+charge-window size, charge speed, cluster effects or operator skill. The
+recommendation cannot currently claim to optimize those in-game behaviours;
+they may make a different gadget operationally preferable despite a lower
+modelled margin.
+
+Only **one gadget per evaluated candidate** is currently modelled; effects
+from several simultaneously attached gadgets are not stacked. No additional
+fracture equations are introduced by the comparison table.
+
+---
+
 ## 13. Available to assist
 
 Available to assist remains post-recommendation confirmation.
