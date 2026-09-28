@@ -114,107 +114,66 @@ window.handleFileSelect = function (input) {
     reader.readAsDataURL(input.files[0]);
 };
 
-function preprocessImage(imgElement) {
-    const scale = 3.5;
-    const w = imgElement.width;
-    const h = imgElement.height;
-
-    const sx = w * 0.50;
-    const sy = h * 0.20;
-    const sw = w * 0.45;
-    const sh = h * 0.60;
-
+function cropScanPanel(imgElement) {
+    // Approximate HUD geometry for 16:9, with scan-result labels on the right.
+    // Keep a little padding for scaling variation, but exclude most ship/chat UI.
     const canvas = document.createElement("canvas");
-    canvas.width = sw * scale;
-    canvas.height = sh * scale;
+    const w = imgElement.naturalWidth || imgElement.width;
+    const h = imgElement.naturalHeight || imgElement.height;
+    const sx = Math.floor(w * 0.825), sy = Math.floor(h * 0.345);
+    const sw = Math.min(w - sx, Math.ceil(w * 0.17));
+    const sh = Math.min(h - sy, Math.ceil(h * 0.20));
+    canvas.width = Math.max(1, sw * 3);
+    canvas.height = Math.max(1, sh * 3);
     const ctx = canvas.getContext("2d");
-
-    ctx.imageSmoothingEnabled = false;
     ctx.drawImage(imgElement, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    return canvas;
+}
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    const threshold = 110;
-
-    for (let i = 0; i < data.length; i += 4) {
-        let v = Math.max(data[i], data[i + 1], data[i + 2]);
-        if (v < 50) v = 0;
-        else v = Math.min(255, v * 1.5);
-        const bin = v > threshold ? 0 : 255;
-        data[i] = bin;
-        data[i + 1] = bin;
-        data[i + 2] = bin;
+function preprocessImage(imgElement) {
+    const canvas = cropScanPanel(imgElement);
+    const ctx = canvas.getContext("2d");
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const px = data.data;
+    for (let i = 0; i < px.length; i += 4) {
+        const value = Math.max(px[i], px[i+1], px[i+2]);
+        // Preserve high-contrast HUD lettering against a white background.
+        const bin = value > 120 ? 0 : 255;
+        px[i] = px[i+1] = px[i+2] = bin;
     }
-
-    ctx.putImageData(imageData, 0, 0);
-
+    ctx.putImageData(data, 0, 0);
     const pArea = document.getElementById("ocr-preview-area");
     if (pArea) {
-        pArea.innerHTML = "";
+        pArea.replaceChildren();
         const previewImg = document.createElement("img");
         previewImg.src = canvas.toDataURL();
-        previewImg.style.height = "100%";
-        previewImg.style.maxWidth = "100%";
-        previewImg.style.objectFit = "contain";
-        previewImg.style.border = "1px solid #f00";
+        previewImg.style.cssText = "height:100%;max-width:100%;object-fit:contain;border:1px solid #f00";
         pArea.appendChild(previewImg);
     }
-
-    return canvas.toDataURL("image/jpeg", 1.0);
+    return canvas.toDataURL("image/png");
 }
 
 function parseLegacyText(text) {
-    const lines = String(text || "").split("\n").filter(line => line.trim().length > 0);
-    let resIndex = -1;
-    let mass = null;
-    let resistance = null;
-    let instability = null;
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].replace(/O/g, "0").replace(/l/g, "1").replace(/I/g, "1").replace(/S/g, "5");
-        if (line.includes("%") || line.match(/RES/i)) {
-            const digits = line.match(/(\d+(?:\.\d+)?)/);
-            if (digits) {
-                resIndex = i;
-                resistance = parseFloat(digits[0]);
-                break;
-            }
-        }
+    // Parse only labels from the scan panel; never use free-floating percentages
+    // or nearby numbers because module stats/composition can mimic target values.
+    const normalized = String(text || "")
+        .toUpperCase()
+        .replace(/\r/g, "\n")
+        .replace(/[,]/g, "");
+    function match(label, suffix) {
+        const m = normalized.match(new RegExp(label + "[\\s:.=-]{0,12}([0-9]+" + suffix + ")"));
+        return m ? Number(m[1]) : null;
     }
-
-    if (resIndex !== -1) {
-        if (resIndex > 0) {
-            const prevLine = lines[resIndex - 1].replace(/O/g, "0").replace(/\s/g, "");
-            const massMatch = prevLine.match(/(\d{4,})/);
-            if (massMatch) mass = parseFloat(massMatch[0]);
-        }
-
-        if (resIndex < lines.length - 1) {
-            const nextLine = lines[resIndex + 1].replace(/O/g, "0");
-            const instMatch = nextLine.match(/(\d+\.\d+|\d+)/);
-            if (instMatch) {
-                let value = instMatch[0];
-                if (value.split(".").length > 2) value = value.replace(".", "");
-                instability = parseFloat(value);
-            }
-        }
-    } else {
-        lines.forEach(line => {
-            const clean = line.replace(/O/g, "0").replace(/l/g, "1").replace(/S/g, "5");
-            if (clean.match(/M[A4]SS/i)) {
-                const m = clean.match(/(\d[\d\s]+)/);
-                if (m) mass = parseFloat(m[0].replace(/\s/g, ""));
-            }
-            if (clean.match(/INST/i)) {
-                const m = clean.match(/([\d.]+)/);
-                if (m) instability = parseFloat(m[0]);
-            }
-        });
-    }
-
+    const mass = match("(?:MASS|NASS)", "(?:[.]?[0-9]*)");
+    const resistance = match("(?:RESISTANCE|RESISTANC|RESIST)", "(?:[.][0-9]+)?");
+    const instability = match("(?:INSTABILITY|INSTABILIT|INSTAB)", "(?:[.][0-9]+)?");
+    const hasScanAnchor = /SCAN\\s*RESULTS?/.test(normalized) ||
+        (/MASS/.test(normalized) && /RESIST/.test(normalized) && /INSTAB/.test(normalized));
     return {
         engine: "MFA Legacy Tesseract",
-        valid: Number.isFinite(mass) && Number.isFinite(resistance) && Number.isFinite(instability),
+        valid: hasScanAnchor && Number.isFinite(mass) && mass > 0 &&
+            Number.isFinite(resistance) && resistance >= 0 && resistance <= 100 &&
+            Number.isFinite(instability) && instability >= 0,
         mass,
         resistance,
         instability,
@@ -223,17 +182,14 @@ function parseLegacyText(text) {
 }
 
 async function runLegacyOCR(img) {
-    if (typeof Tesseract === "undefined") {
-        throw new Error("Tesseract.js is not available.");
-    }
-
+    if (typeof Tesseract === "undefined") throw new Error("Tesseract.js is not available.");
     const started = performance.now();
     const processedImg = preprocessImage(img);
     const worker = await Tesseract.createWorker("eng");
-
     try {
         await worker.setParameters({
-            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:% "
+            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:% ",
+            preserve_interword_spaces: "1"
         });
         const result = await worker.recognize(processedImg);
         const parsed = parseLegacyText(result.data.text);
@@ -293,6 +249,17 @@ function applyResult(result, sourceLabel) {
 
     if (!fields.length) return false;
 
+    // Alpha safeguard: visually validate OCR numbers before affecting calculations.
+    const prompt = "OCR " + sourceLabel + " read:\\n" +
+        "Mass: " + result.mass + " kg\\n" +
+        "Resistance: " + result.resistance + "%\\n" +
+        "Instability: " + result.instability + "\\n\\n" +
+        "Compare with the in-game HUD. Apply these values to MFA?";
+    if (!window.confirm(prompt)) {
+        log("REVIEW: OCR values not applied; operator declined confirmation.");
+        return false;
+    }
+
     if (typeof window.calculate === "function") window.calculate();
     window.dispatchEvent(new CustomEvent("mfa:ocr-applied", {
         detail: {
@@ -321,7 +288,7 @@ async function runOCR(img, originalDataUrl) {
         }
 
         try {
-            paddle = await window.MFARegolithOCR.scan(originalDataUrl);
+            paddle = await window.MFARegolithOCR.scan(cropScanPanel(img).toDataURL("image/png"));
             log("PADDLE: " + formatResult(paddle));
             if (paddle.rockType) log("PADDLE ROCK TYPE: " + paddle.rockType);
             if (paddle.composition && paddle.composition.length) {
