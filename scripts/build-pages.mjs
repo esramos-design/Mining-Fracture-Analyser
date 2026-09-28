@@ -55,6 +55,30 @@ if (/process\.binding\s*\(/.test(bundledOcr)) {
   throw new Error("OCR bundle contains unsupported process.binding Node runtime");
 }
 
+// Deploy the WASM binary that matches the installed ONNX runtime JS.
+// Missing WASM assets cause "no available backend found" during Ocr.create().
+const onnxDist = path.resolve("node_modules/onnxruntime-web/dist");
+const wasmOut = path.join(out, "assets", "ort");
+await mkdir(wasmOut, { recursive: true });
+const wasmFiles = [
+  "ort-wasm.wasm",
+  "ort-wasm-simd.wasm",
+  "ort-wasm-threaded.wasm",
+  "ort-wasm-simd-threaded.wasm"
+];
+let copiedWasm = 0;
+for (const file of wasmFiles) {
+  const source = path.join(onnxDist, file);
+  if (existsSync(source)) {
+    await cp(source, path.join(wasmOut, file));
+    copiedWasm++;
+  }
+}
+if (!copiedWasm) {
+  throw new Error("ONNX Runtime WebAssembly artifacts are missing from the installed package");
+}
+console.log("Bundled ONNX Runtime WebAssembly files:", copiedWasm);
+
 for (const dir of ["data", "docs"]) {
   if (existsSync(dir)) {
     await cp(dir, path.join(out, dir), { recursive: true });

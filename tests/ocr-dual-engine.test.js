@@ -91,3 +91,16 @@ test("Paddle rock parser preserves the exact HUD instability value", async () =>
   assert.equal(parsed.resistance,30);
   assert.equal(parsed.instability,574.77);
 });
+
+test("ONNX Runtime WebAssembly assets are shipped with browser OCR", async () => {
+  const build = await readFile(new URL("../scripts/build-pages.mjs", import.meta.url), "utf8");
+  const entry = await readFile(new URL("../src/ocr-browser-entry.js", import.meta.url), "utf8");
+  const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  assert.equal(pkg.dependencies["onnxruntime-web"], "1.17.3");
+  assert.match(entry, /ort\.env\.wasm\.wasmPaths/);
+  assert.match(entry, /ort\.env\.wasm\.numThreads = 1/);
+  assert.match(build, /onnxruntime-web\/dist/);
+  assert.match(build, /assets", "ort"/);
+  assert.match(build, /ort-wasm-simd\.wasm/);
+  assert.match(build, /copiedWasm/);
+});
