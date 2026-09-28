@@ -5492,3 +5492,15 @@ html[data-theme="day"] .selected-color-meta {
 .solver-gadget-selected { background:rgba(52,181,120,.12); }
 .solver-gadget-selected em { color:#20a677; font:800 9px var(--font-tech); }
 .solver-gadget-model-note { font-style:italic; }
+
+
+/* Fleet Planner head/module names: slightly smaller, with all themes and
+   selected-value overlays kept at the same size. No control geometry changes. */
+.vessel-arms-grid .ship-arm-card > div:first-child span {
+    font-size:12px !important;
+}
+.vessel-arms-grid .ship-arm-card select.laser-color-select,
+.vessel-arms-grid .ship-arm-card select.module-color-select,
+.vessel-arms-grid .ship-arm-card .selected-color-overlay {
+    font-size:11px !important;
+}
