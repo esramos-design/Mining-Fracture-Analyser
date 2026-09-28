@@ -49,7 +49,7 @@ await build({
   conditions: ["browser", "import", "default"]
 });
 const bundledOcr = await readFile(path.join(out, "ocr-browser.bundle.js"), "utf8");
-if (/process\\.binding\\s*\\(/.test(bundledOcr)) {
+if (/process\.binding\s*\(/.test(bundledOcr)) {
   throw new Error("OCR bundle contains unsupported process.binding Node runtime");
 }
 
