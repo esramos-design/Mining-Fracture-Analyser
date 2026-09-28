@@ -167,7 +167,7 @@ function parseLegacyText(text) {
     const mass = match("(?:MASS|NASS)", "(?:[.]?[0-9]*)");
     const resistance = match("(?:RESISTANCE|RESISTANC|RESIST)", "(?:[.][0-9]+)?");
     const instability = match("(?:INSTABILITY|INSTABILIT|INSTAB)", "(?:[.][0-9]+)?");
-    const hasScanAnchor = /SCAN\\s*RESULTS?/.test(normalized) ||
+    const hasScanAnchor = /SCAN\s*RESULTS?/.test(normalized) ||
         (/MASS/.test(normalized) && /RESIST/.test(normalized) && /INSTAB/.test(normalized));
     return {
         engine: "MFA Legacy Tesseract",
@@ -233,32 +233,21 @@ function compareResults(primary, legacy) {
 function applyResult(result, sourceLabel) {
     if (!result || !result.valid) return false;
 
-    const fields = [];
-    if (Number.isFinite(result.mass)) {
-        document.getElementById("rockMass").value = result.mass;
-        fields.push("mass");
-    }
-    if (Number.isFinite(result.resistance)) {
-        document.getElementById("resistance").value = result.resistance;
-        fields.push("resistance");
-    }
-    if (Number.isFinite(result.instability)) {
-        document.getElementById("instability").value = result.instability;
-        fields.push("instability");
-    }
-
-    if (!fields.length) return false;
-
-    // Alpha safeguard: visually validate OCR numbers before affecting calculations.
-    const prompt = "OCR " + sourceLabel + " read:\\n" +
-        "Mass: " + result.mass + " kg\\n" +
-        "Resistance: " + result.resistance + "%\\n" +
-        "Instability: " + result.instability + "\\n\\n" +
-        "Compare with the in-game HUD. Apply these values to MFA?";
+    // Alpha: require operator confirmation before changing ANY input field.
+    const prompt = "OCR " + sourceLabel + " read:\n" +
+        "Mass: " + result.mass + " kg\n" +
+        "Resistance: " + result.resistance + "%\n" +
+        "Instability: " + result.instability + "\n\n" +
+        "Compare with the game HUD. Apply these values to MFA?";
     if (!window.confirm(prompt)) {
         log("REVIEW: OCR values not applied; operator declined confirmation.");
         return false;
     }
+
+    const fields = ["mass", "resistance", "instability"];
+    document.getElementById("rockMass").value = result.mass;
+    document.getElementById("resistance").value = result.resistance;
+    document.getElementById("instability").value = result.instability;
 
     if (typeof window.calculate === "function") window.calculate();
     window.dispatchEvent(new CustomEvent("mfa:ocr-applied", {
