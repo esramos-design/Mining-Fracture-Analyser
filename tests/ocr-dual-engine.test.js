@@ -77,3 +77,17 @@ test("legacy fallback respects named fields and operator confirmation precedes w
   const section=source.slice(source.indexOf("function applyResult("),source.indexOf("async function runOCR("));
   assert.ok(section.indexOf("window.confirm(")<section.indexOf('document.getElementById("rockMass").value'));
 });
+
+test("Paddle rock parser preserves the exact HUD instability value", async () => {
+  const source = await readFile(new URL("../regolith-ocr.js", import.meta.url), "utf8");
+  const {runInNewContext} = await import("node:vm");
+  const context={window:{}};
+  runInNewContext(source,context);
+  const parsed=context.window.MFARegolithOCR.parseRockText(
+    "SCAN RESULTS\\nQUANTANIUM (RAW)\\nMASS: 47167\\nRESISTANCE: 30%\\nINSTABILITY: 574.77\\nCOMPOSITION: 18.55 SCU"
+  );
+  assert.equal(parsed.valid,true);
+  assert.equal(parsed.mass,47167);
+  assert.equal(parsed.resistance,30);
+  assert.equal(parsed.instability,574.77);
+});
