@@ -233,17 +233,8 @@ function compareResults(primary, legacy) {
 function applyResult(result, sourceLabel) {
     if (!result || !result.valid) return false;
 
-    // Alpha: require operator confirmation before changing ANY input field.
-    const prompt = "OCR " + sourceLabel + " read:\n" +
-        "Mass: " + result.mass + " kg\n" +
-        "Resistance: " + result.resistance + "%\n" +
-        "Instability: " + result.instability + "\n\n" +
-        "Compare with the game HUD. Apply these values to MFA?";
-    if (!window.confirm(prompt)) {
-        log("REVIEW: OCR values not applied; operator declined confirmation.");
-        return false;
-    }
-
+    // Primary OCR auto-populates target values without interrupting the pilot.
+    // The less reliable fallback remains review-only.
     const fields = ["mass", "resistance", "instability"];
     document.getElementById("rockMass").value = result.mass;
     document.getElementById("resistance").value = result.resistance;
@@ -287,7 +278,14 @@ async function runOCR(img, originalDataUrl) {
             log("PADDLE ERROR: " + error.message);
         }
 
-        // ALPHA shadow comparison: run legacy OCR even after a successful Paddle scan.
+        // Apply complete primary reading immediately, without waiting for the shadow engine.
+        if (paddle && paddle.valid) {
+            applyResult(paddle, "PADDLE OCR");
+            log("AUTO-APPLIED: verify against the HUD when practical.");
+        }
+
+        // ALPHA shadow comparison remains available for debugging, but cannot
+        // overwrite values chosen by the primary engine.
         try {
             log("SHADOW/FALLBACK: running MFA legacy Tesseract...");
             legacy = await runLegacyOCR(img);
@@ -295,18 +293,17 @@ async function runOCR(img, originalDataUrl) {
         } catch (error) {
             log("LEGACY ERROR: " + error.message);
         }
-
         compareResults(paddle, legacy);
 
-        if (paddle && paddle.valid) {
-            applyResult(paddle, "PADDLE OCR");
-        } else if (legacy && legacy.valid) {
-            log("PADDLE did not return a complete rock scan; using legacy fallback.");
-            applyResult(legacy, "TESSERACT FALLBACK");
-        } else {
-            log("FAIL: neither OCR engine produced complete Mass / Resistance / Instability values.");
-            if (paddle && paddle.rawText) log("PADDLE RAW: " + paddle.rawText.replace(/\n/g, " | "));
-            if (legacy && legacy.rawText) log("LEGACY RAW: " + legacy.rawText.replace(/\n/g, " | "));
+        if (!paddle || !paddle.valid) {
+            if (legacy && legacy.valid) {
+                log("REVIEW REQUIRED: Tesseract fallback read " + formatResult(legacy));
+                log("NO AUTO-APPLY: fallback OCR is not sufficiently reliable. Verify values manually.");
+            } else {
+                log("FAIL: neither OCR engine produced a complete scan.");
+                if (paddle && paddle.rawText) log("PADDLE RAW: " + paddle.rawText.replace(/\n/g, " | "));
+                if (legacy && legacy.rawText) log("LEGACY RAW: " + legacy.rawText.replace(/\n/g, " | "));
+            }
         }
     } finally {
         if (load) load.classList.add("hidden");
