@@ -46,7 +46,9 @@ await build({
   packages: "bundle",
   // Browser runtime is resolved from the package's browser export, not a Node CDN shim.
   mainFields: ["browser", "module", "main"],
-  conditions: ["browser", "import", "default"]
+  conditions: ["browser", "import", "default"],
+  // opencv-js embeds Node-only conditional code that never runs in browsers.
+  external: ["fs", "path"]
 });
 const bundledOcr = await readFile(path.join(out, "ocr-browser.bundle.js"), "utf8");
 if (/process\.binding\s*\(/.test(bundledOcr)) {
