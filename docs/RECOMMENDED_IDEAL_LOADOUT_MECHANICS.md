@@ -1,174 +1,140 @@
-# Recommended Ideal Loadout — Public Mechanics Guide
+# Recommended Ideal Loadout v2 — Public Mechanics Guide
 
-**Applies to:** MFA v5.36.x / Star Citizen 4.10.1 LIVE  
-**Scope:** How MFA constructs, evaluates and ranks the **Recommended Ideal Loadout**.
+**Applies to:** MFA v5.36.x Alpha / Star Citizen 4.10.1 LIVE  
+**Scope:** How MFA constructs, evaluates and ranks the Recommended Ideal Loadout v2.
 
-> MFA is a deterministic community tool. The fracture equations and equipment data used here are community-calibrated and audited for MFA; they are not official CIG-published equations.
+> MFA is a deterministic community tool. Its fracture equations and equipment data are community-calibrated and are not official CIG-published equations.
 
----
+## 1. What “ideal” means
 
-## 1. What “Recommended Ideal Loadout” means
+The Recommended Ideal Loadout is the highest-ranked deterministic fracture plan found within the **Recommendation Resource Pool**, selected safety margin and optimization objective.
 
-The Recommended Ideal Loadout is a **target-driven planning result**.
+It remains separate from the actual Fleet Planner:
 
-It answers:
+- **Fleet Planner** — vessels physically present now, their fitted loadouts and Active / Available / Standby state.
+- **Recommendation Resource Pool** — vessel types and maximum quantities the ideal solver is allowed to plan with.
+- **Available to assist** — post-recommendation confirmation that vessels required by the chosen plan can actually deploy.
 
-> Given this rock and the selected mission constraints, what vessel combination and equipment configuration ranks highest under the selected objective?
+The actual Fleet Planner does not bias the ideal recommendation.
 
-It is intentionally separate from the **Fleet Planner**.
+## 2. Inputs
 
-- **Fleet Planner** = what is physically present, fitted and active now.
-- **Vessels available for recommendation** = which vessel types the ideal solver is allowed to consider.
-- **Available to assist** = post-recommendation confirmation that a vessel required by the selected ideal plan can actually deploy.
+The solver reads:
 
-Changing Fleet Planner quantity does **not** add or remove a vessel type from the ideal solver. Recommendation eligibility is controlled only by the recommendation-vessel pool.
+- Rock Mass
+- Base Resistance
+- Base Instability
+- Objective
+- Minimum fracture margin
+- Max fleet
+- Allow Active modules
+- Allow gadgets
+- Recommendation Resource Pool:
+  - ARGO MOLE — eligible + maximum quantity
+  - MISC Prospector — eligible + maximum quantity
+  - Drake Golem — eligible + maximum quantity
 
----
+An unchecked vessel has a recommendation maximum of zero.
 
-## 2. Inputs used by the ideal solver
-
-The ideal solver reads:
-
-- rock mass;
-- base resistance;
-- base instability;
-- optimizer objective;
-- maximum ideal fleet size;
-- whether Active modules are allowed;
-- whether gadgets are allowed;
-- recommendation-vessel eligibility:
-  - ARGO MOLE;
-  - MISC Prospector;
-  - Drake Golem.
-
-The ideal solver does **not** use current Fleet Planner vessel quantities, current Active/Available/Standby state or fitted Fleet Planner loadouts as recommendation constraints.
-
----
-
-## 3. Vessel eligibility
-
-Each recommendation checkbox is authoritative.
-
-If a type is unchecked, its search maximum becomes zero.
-
-Examples:
-
-- MOLE only → only MOLE-based candidates are generated.
-- Prospector only → only Prospector-based candidates are generated.
-- Golem only → only Golem-based candidates are generated.
-- Prospector + Golem → Prospector-only, Golem-only and mixed Prospector/Golem candidates are generated.
-- All unchecked → no ideal vessel candidate can be generated.
-
-The current maximum fleet setting limits the total number of vessels in a candidate.
-
----
-
-## 4. Strategy classification
-
-Before candidate fleets are ranked, MFA selects a deterministic equipment strategy from the target.
-
-Current strategy order:
-
-1. **Hazard / Instability** — base instability > 70
-2. **Resistance Breaker** — base resistance > 60
-3. **Stabilization** — base instability > 45
-4. **Heavy Cluster** — mass > 14,000 kg
-5. **Standard** — all other targets
-
-The first matching rule wins.
-
-Each strategy defines a baseline role/equipment template for MOLE, Prospector and Golem. MFA also generates backup equipment variants from compatible heads/modules.
-
----
-
-## 5. Candidate equipment variants
-
-For each eligible vessel type MFA currently builds three deterministic equipment variants:
-
-- **Primary**
-- **Backup A**
-- **Backup B**
-
-Compatible mining heads are ranked using the target context and role.
-
-Examples of role emphasis:
-
-- **Break / high resistance:** resistance reduction is heavily weighted.
-- **Stabilization / high instability:** instability reduction is heavily weighted.
-- **Extraction:** extraction capability, power and instability are considered.
-- **General:** power, resistance and instability are balanced by the current deterministic scoring rule.
-
-When Active modules are disabled, an Active module in a template is replaced with the nearest permitted passive alternative according to MFA's equipment-distance rule.
-
----
-
-## 6. Fleet-combination search
-
-MFA enumerates every vessel-count combination permitted by:
-
-- recommendation-vessel checkboxes;
-- Max Fleet.
-
-For example, with:
-
-- MOLE unchecked;
-- Prospector checked;
-- Golem checked;
-- Max Fleet = 3;
-
-the composition search includes:
-
-- 1 Prospector;
-- 2 Prospectors;
-- 3 Prospectors;
-- 1 Golem;
-- 2 Golems;
-- 3 Golems;
-- 1 Prospector + 1 Golem;
-- 2 Prospectors + 1 Golem;
-- 1 Prospector + 2 Golems.
-
-For every composition, MFA walks the available Primary / Backup A / Backup B equipment variant choices for every vessel type present.
-
-If gadgets are allowed, the same candidate is evaluated with every available gadget choice. If gadgets are disabled, only **None** is evaluated.
-
----
-
-## 7. Important current limitation: repeated vessels share a variant
-
-If a candidate contains multiple vessels of the same type, the current solver repeats the same selected equipment variant for that vessel type.
+## 3. Recommendation Resource Pool
 
 Example:
 
-- 2 × Prospector using the selected Prospector Primary variant
+```text
+ARGO MOLE          Max 1
+MISC Prospector    Max 2
+Drake Golem        Max 1
+```
 
-is currently searched.
+The solver can combine those types but may never exceed either a per-type maximum or the global Max Fleet value.
 
-But the current solver does **not yet fully optimize**:
+These limits are planning constraints only. They do not create vessels in Fleet Planner.
 
-- Prospector #1 as a Breaker;
-- Prospector #2 as a different Stabilizer;
+## 4. Equipment strategies
 
-as two independently specialized same-type loadouts within one candidate.
+MFA still derives deterministic seed strategies from the target:
 
-Mixed vessel **types** are genuinely searched; independently specialized duplicate vessels are a future optimization area.
+1. Hazard / Instability — instability > 70
+2. Resistance Breaker — resistance > 60
+3. Stabilization — instability > 45
+4. Heavy Cluster — mass > 14,000 kg
+5. Standard — otherwise
 
----
+For each supported vessel type MFA generates Primary, Backup A and Backup B deterministic equipment variants using compatible mining heads and modules.
 
-## 8. Fracture evaluation
+These variants are recommendation-layer search candidates. Every final candidate is still evaluated through the protected 4.10.1 fracture runtime.
 
-Every candidate is evaluated by the same protected MFA 4.10.1 runtime engine used for deterministic fracture calculations.
+## 5. Duplicate-vessel specialization
 
-For each enabled mining head:
+v2 no longer requires multiple vessels of the same type to use the same variant.
 
-1. Base mining-head power is read.
-2. Effective module power multipliers are applied.
-3. Mining-head resistance effects are applied.
-4. Module resistance effects are applied.
-5. Gadget resistance effect is applied.
-6. Effective delivered power is reduced by the resulting resistance.
+For example, a two-Prospector candidate may be:
 
-For a head:
+```text
+Prospector #1 — Primary / Breaker
+Prospector #2 — Backup A / Stabilizer
+```
+
+With three available variants and two identical vessels, MFA searches the six unique unordered assignments:
+
+```text
+Primary + Primary
+Primary + Backup A
+Primary + Backup B
+Backup A + Backup A
+Backup A + Backup B
+Backup B + Backup B
+```
+
+Equivalent permutations are not evaluated twice.
+
+## 6. Candidate resource metrics
+
+Every candidate exposes several operational costs.
+
+### Hulls
+
+Number of vessel hulls in the recommendation.
+
+### Operators
+
+Current Alpha planning metric:
+
+- Prospector = 1 operator
+- Golem = 1 operator
+- MOLE = 1 pilot + number of active recommended mining stations
+
+A MOLE using all three mining stations therefore has a planning operator count of 4.
+
+This is an MFA planning metric, not a claim about game-enforced minimum crew.
+
+### Mining heads
+
+Total active recommended mining heads/systems.
+
+### Consumables
+
+Active-module uses plus one when a gadget is required.
+
+### Margin
+
+Calculated fracture-power margin.
+
+### Final instability
+
+Calculated final instability after the recommended loadout is applied.
+
+## 7. Protected fracture evaluation
+
+The recommendation layer does not implement a separate fracture equation.
+
+Every candidate calls the same protected MFA runtime:
+
+```text
+MFAV535.calculateV535()
+```
+
+For each enabled head:
 
 ```text
 Raw head power = base head power × effective module power multipliers
@@ -178,252 +144,265 @@ Resistance transfer factor = max(0, 1 - effective resistance / 100)
 Effective head power = raw head power × resistance transfer factor
 ```
 
-Cooperative effective power is the sum of all enabled heads:
+Cooperative power:
 
 ```text
 Total effective power = Σ effective head power
 ```
 
-The current maximum breakable mass is:
+Maximum breakable mass:
 
 ```text
 Max breakable mass = 5 × total effective power
 ```
 
-A candidate is viable when:
+A candidate is fracture-viable when:
 
 ```text
-Max breakable mass ≥ target rock mass
+Max breakable mass ≥ rock mass
 ```
 
-The displayed required raw power is derived from target mass and final effective resistance:
+Displayed required raw power remains:
 
 ```text
 Required power = rock mass / (5 × final transfer factor)
 ```
 
-If resistance fully blocks transfer, MFA keeps a numeric baseline requirement available for display rather than replacing the number with only an “Impossible” label.
+## 8. Minimum fracture margin
 
----
+v2 adds a recommendation safety constraint.
 
-## 9. Instability treatment
-
-Each active head contributes its head/module instability multiplier.
-
-MFA combines the active-head multipliers using their geometric mean and then applies the gadget instability multiplier.
-
-This produces the displayed **Final Instability** value used by the recommendation ranking when the selected objective calls for it.
-
----
-
-## 10. Fracture margin
-
-For viable candidates:
+Default Alpha value:
 
 ```text
-Margin % = (available raw power - required raw power)
-           / required raw power × 100
+10%
 ```
 
-A positive margin indicates raw power above the calculated requirement.
+Candidates are classified:
 
-A larger margin does not automatically win unless the selected objective gives margin priority.
+- **SAFE MARGIN** — fracture succeeds and margin meets/exceeds the selected floor.
+- **THIN MARGIN** — fracture succeeds but margin is below the selected floor.
+- **NOT VIABLE** — fracture does not succeed.
 
----
+Ranking always prefers SAFE over THIN, and THIN over NOT VIABLE.
 
-## 11. How the selected objective ranks candidates
+This does not change fracture mechanics; it changes recommendation ranking only.
 
-All objectives first prefer a **viable** candidate over a non-viable one.
+## 9. Objectives
 
-After that, the ordering changes.
+### Balanced operations — default
 
-### Minimum ships
+Priority:
 
-Ranking priority:
+1. SAFE / THIN / NOT VIABLE class
+2. fewer operators
+3. fewer hulls
+4. lower instability
+5. fewer consumables
+6. larger fracture margin
 
-1. viable before non-viable;
-2. fewer vessels;
-3. larger fracture margin.
+### Minimum hulls
 
-This is the default objective.
+Priority:
 
-**Consequence:** if 1 × MOLE is viable, it will normally rank ahead of a 2- or 3-vessel mixed fleet, even if the mixed fleet has a larger margin.
+1. safety class
+2. fewer hulls
+3. fewer operators
+4. larger margin
+5. lower instability
+
+### Minimum crew
+
+Priority:
+
+1. safety class
+2. fewer operators
+3. fewer hulls
+4. larger margin
+5. lower instability
 
 ### Maximum fracture margin
 
-Ranking priority:
+Priority:
 
-1. viable before non-viable;
-2. larger fracture margin;
-3. fewer vessels.
-
-This can select a larger fleet when the larger fleet produces the strongest calculated margin.
+1. safety class
+2. larger margin
+3. fewer hulls
+4. fewer operators
+5. lower instability
 
 ### Minimum instability
 
-Ranking priority:
+Priority:
 
-1. viable before non-viable;
-2. fewer vessels;
-3. lower Final Instability;
-4. larger fracture margin.
+1. safety class
+2. lower Final Instability
+3. fewer hulls
+4. fewer operators
+5. larger margin
 
-This still treats fleet size as more important than instability once viability is established.
+Unlike v1, hull count does not outrank instability under this objective.
 
 ### Minimum consumables
 
-Ranking priority:
+Priority:
 
-1. viable before non-viable;
-2. fewer vessels;
-3. fewer Active modules plus gadget use;
-4. larger fracture margin.
+1. safety class
+2. fewer consumables
+3. fewer hulls
+4. fewer operators
+5. larger margin
 
-A gadget adds one consumable-use cost in this ranking.
+Unlike v1, hull count does not outrank consumables under this objective.
 
----
+## 10. Why a MOLE no longer automatically means “cheapest”
 
-## 12. Deterministic tie-breaking
+Under Minimum Hulls, one MOLE still has a hull-count advantage over two Prospectors.
 
-If candidates remain equal under the selected objective, MFA uses a stable composition order so the same input produces the same output.
+Under Balanced Operations or Minimum Crew, MFA also considers the operator planning count.
 
-The current composition tie-break compares, in order:
-
-1. MOLE count;
-2. Prospector count;
-3. Golem count;
-4. gadget name.
-
-This is a deterministic implementation detail, not a statement that one vessel is operationally superior.
-
----
-
-## 13. Why “1 × MOLE” appears often
-
-Under **Minimum ships**, one viable MOLE is one vessel.
-
-Two Prospectors are two vessels.
-
-Therefore:
+Example:
 
 ```text
-1 vessel < 2 vessels
+1 × MOLE using 3 stations
+Hulls: 1
+Operators: 4
+Heads: 3
+
+2 × Prospector
+Hulls: 2
+Operators: 2
+Heads: 2
 ```
 
-and the MOLE candidate wins before the solver considers the larger fleet's margin.
+Which plan ranks higher depends on objective, safety class, instability, consumables and margin.
 
-The current cost model does **not yet normalize hull count against:**
+## 11. Objective alternatives
 
-- number of mining heads;
-- number of operators;
-- crew requirement;
-- ownership or logistics;
-- travel/arrival time;
-- independent specialization of repeated vessels.
+MFA keeps one highlighted recommendation for the selected objective but also derives best plans for:
 
-This is why “Minimum ships” must be read literally as **minimum vessel hull count**, not minimum crew, minimum heads or minimum operational burden.
+- Balanced
+- Fewest Hulls
+- Fewest Operators
+- Highest Margin
+- Lowest Instability
+- Lowest Consumables
+
+Duplicate plans are collapsed.
+
+This exposes meaningful operational alternatives without turning the display into an unranked list.
+
+## 12. Why this plan
+
+The highlighted recommendation contains a deterministic explanation showing:
+
+- selected objective
+- safety-margin result
+- operator count
+- hull count
+- active mining-head count
+- Final Instability
+- consumable count
+
+No AI-generated explanation is used.
+
+## Gadget evaluation and comparison
+
+When **Allow gadgets** is enabled, the recommendation solver evaluates each
+candidate vessel/head/module configuration with **one** of the supported
+gadgets, including **None**. It calls the protected fracture engine separately
+for each option and ranks the resulting candidate under the selected objective
+and safety-margin constraint.
+
+The gadget selected in **Actual Fleet Planner** applies to the real deployed
+fleet's Fracture Verdict. The recommendation may select a different gadget:
+it is an independent target-driven plan, not a copy of the actual fleet.
+
+The **Gadget comparison** panel under the highlighted ideal loadout holds the
+recommended vessels and head/module loadouts constant. It shows each allowed
+gadget's calculated:
+
+- fracture viability / safety class;
+- power margin;
+- final resistance;
+- final instability.
+
+The selected option is marked in the table. Charge-rate and charge-window
+attributes are shown alongside these metrics as **informational equipment
+reference data**, not as simulated outcomes.
+
+**Calculation boundary:** MFA's audited 4.10.1 fracture-power engine currently
+models gadget resistance and instability modifiers. It does not fully simulate
+charge-window size, charge speed, cluster effects or operator skill. The
+recommendation cannot currently claim to optimize those in-game behaviours;
+they may make a different gadget operationally preferable despite a lower
+modelled margin.
+
+Only **one gadget per evaluated candidate** is currently modelled; effects
+from several simultaneously attached gadgets are not stacked. No additional
+fracture equations are introduced by the comparison table.
 
 ---
 
-## 14. Reading the Recommendation Basis panel
+## 13. Available to assist
 
-The recommendation basis shows the assumptions used for the current result:
-
-- Target mass
-- Resistance
-- Instability
-- Objective
-- Max ideal fleet
-- Active modules allowed / passive only
-- Gadgets allowed / disabled
-- Recommendation vessels
-- Fleet Planner influence
-
-For the target-driven ideal path, Fleet Planner influence should read:
-
-**None · target-driven ideal**
-
-This is an integrity check that the ideal solver has not been biased by the actual operation roster.
-
----
-
-## 15. “Available to assist” does not recalculate the ideal
-
-After the solver chooses the ideal composition, every required vessel is shown with **Available to assist**.
-
-That checkbox is operational confirmation only.
+Available to assist remains post-recommendation confirmation.
 
 It changes:
 
-- NOT CONFIRMED / CONFIRMED AVAILABLE;
-- READY / NOT READY summary.
+- NOT CONFIRMED / CONFIRMED AVAILABLE
+- READY / NOT READY
 
-It does **not** change:
+It does not recalculate the ideal solution.
 
-- selected vessel types;
-- selected vessel counts;
-- mining heads;
-- modules;
-- gadget;
-- calculated margin.
+If a recommended vessel cannot deploy, change the Recommendation Resource Pool or another mission constraint and recalculate.
 
-If a required vessel cannot deploy, change the recommendation-vessel pool or another mission constraint and recalculate.
+## 14. Reproducing the recommendation
 
----
+To reproduce the recommendation in Fleet Planner:
 
-## 16. Reproducing the ideal plan in Fleet Planner
-
-To validate the recommendation against the actual operation:
-
-1. create the exact recommended vessel count in Fleet Planner;
-2. set the recommended vessels to **Active**;
-3. fit the exact mining heads shown;
-4. fit every recommended module;
-5. switch every recommended Active module **ON**;
+1. create the exact recommended vessel quantities;
+2. set those vessels Active;
+3. copy each vessel-specific mining head;
+4. copy every recommended module;
+5. switch recommended Active modules ON;
 6. select the recommended gadget;
-7. do not leave extra vessels Active.
+7. leave additional vessels non-Active.
 
-The Fracture Verdict should then represent the reproduced real fleet configuration.
+The Fracture Verdict then evaluates the real configured fleet through the same protected runtime.
 
----
+## 15. Current Alpha limitations
 
-## 17. What the ideal solver does not currently optimize
+v2 currently expands independent specialization across the existing Primary / Backup A / Backup B candidate set.
 
-The current ideal solver does not yet model:
+It does not yet exhaustively generate every mathematically possible mining-head/module permutation.
 
-- player ownership;
-- exact number of each vessel available for future planning;
-- crew count as an objective cost;
-- mining-head count as a normalized fleet cost;
-- travel time or arrival delay;
+It also does not optimize:
+
+- ownership;
+- travel time;
 - fuel/logistics;
-- risk of losing a particular hull;
-- individual specialization of multiple identical vessel types;
 - player skill;
-- real-time coordination latency.
+- coordination latency;
+- financial value of a hull;
+- risk of vessel loss.
 
-These are operational variables, not part of the current deterministic fracture model.
+These are outside the protected fracture model.
 
----
+## 16. Determinism
 
-## 18. Practical interpretation
+No random search is used.
 
-Use the result as:
+Equivalent duplicate-vessel permutations are removed, and final ties use a stable canonical composition/loadout key. Identical inputs therefore produce identical results.
 
-> the highest-ranked deterministic fracture plan under the mission constraints you selected.
+## 17. Protected boundaries
 
-Do not interpret it as:
+Ideal Loadout v2 does not modify:
 
-> the only valid fleet, the safest human decision, or an official Star Citizen recommendation.
+- `v535-runtime.js` fracture equations
+- `src/core/v535-engine.js`
+- mining head/module/gadget data
+- actual Fleet Planner semantics
+- OCR → Target Acquisition separation
 
-Different objectives can legitimately choose different plans from the same target.
-
----
-
-## 19. Public auditability
-
-The readable development source remains on the protected `alpha` branch.
-
-The LIVE deployment is produced from `main` through the production build. Production JavaScript may be minified/obfuscated for casual source hardening, but MFA remains open-source and the readable implementation remains available in the repository.
-
-The calculation authority and data-integrity contracts remain the controlling references for protected mechanics and mining data.
+v2 changes only recommendation candidate generation, constraints, ranking, explanation and presentation.

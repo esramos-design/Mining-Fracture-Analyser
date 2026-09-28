@@ -11,9 +11,11 @@
 
     function prefs(){
         return window.MFAOps && MFAOps.getPreferences ? MFAOps.getPreferences() : {
-            optimizerObjective:"minimum-ships", maxFleetSize:6, allowActiveModules:true,
+            optimizerObjective:"balanced-operations", maxFleetSize:6, minimumMarginPct:10, allowActiveModules:true,
             allowGadgets:true,
-            recommendMole:true, recommendProspector:true, recommendGolem:true,
+            recommendMole:true, recommendMoleMax:1,
+            recommendProspector:true, recommendProspectorMax:2,
+            recommendGolem:true, recommendGolemMax:1,
             fleetEnabledMole:true, fleetEnabledProspector:true, fleetEnabledGolem:true,
             fleetAvailableMole:1, fleetAvailableProspector:2, fleetAvailableGolem:1
         };
@@ -47,10 +49,14 @@
     }
 
     function recommendationCaps(p,maxFleet){
+        function cap(enabled,value,fallback){
+            if(enabled===false)return 0;
+            return Math.max(0,Math.min(maxFleet,Math.floor(n(value,fallback))));
+        }
         return {
-            mole:p.recommendMole===false?0:maxFleet,
-            prospector:p.recommendProspector===false?0:maxFleet,
-            golem:p.recommendGolem===false?0:maxFleet
+            mole:cap(p.recommendMole,p.recommendMoleMax,1),
+            prospector:cap(p.recommendProspector,p.recommendProspectorMax,2),
+            golem:cap(p.recommendGolem,p.recommendGolemMax,1)
         };
     }
 
@@ -280,16 +286,116 @@
         ];
     }
 
-    function repeat(v,count){var out=[];for(var i=0;i<count;i++)v.arms.forEach(function(a){out.push(Object.assign({},a,{vesselIndex:i+1}));});return out;}
     function gadgetChoices(p){
         if(!p.allowGadgets)return["None"];
         return gadgets.map(function(g){return g.name;});
     }
     function compText(c){var b=[];if(c.mole)b.push(c.mole+"× MOLE");if(c.prospector)b.push(c.prospector+"× Prospector");if(c.golem)b.push(c.golem+"× Golem");return b.join(" + ");}
 
+    function variantAssignments(list,count){
+        if(count<=0)return[[]];
+        var out=[];
+        function walk(depth,start,pick){
+            if(depth===count){out.push(pick.slice());return;}
+            for(var i=start;i<list.length;i++){
+                pick.push(list[i]);
+                walk(depth+1,i,pick);
+                pick.pop();
+            }
+        }
+        walk(0,0,[]);
+        return out;
+    }
+
+    function buildVesselPlans(counts,vars){
+        var active=ORDER.filter(function(id){return counts[id]>0;});
+        var choices={};
+        active.forEach(function(id){choices[id]=variantAssignments(vars[id],counts[id]);});
+        var out=[];
+        function walk(i,pick){
+            if(i===active.length){
+                var plans=[];
+                active.forEach(function(id){
+                    (pick[id]||[]).forEach(function(v,index){
+                        plans.push({shipId:id,vesselIndex:index+1,variant:v});
+                    });
+                });
+                out.push(plans);
+                return;
+            }
+            var id=active[i];
+            choices[id].forEach(function(combo){
+                pick[id]=combo;
+                walk(i+1,pick);
+            });
+            delete pick[id];
+        }
+        walk(0,{});
+        return out;
+    }
+
+    function proposedArms(plans){
+        var out=[];
+        (plans||[]).forEach(function(plan){
+            plan.variant.arms.forEach(function(a){
+                out.push(Object.assign({},a,{vesselIndex:plan.vesselIndex}));
+            });
+        });
+        return out;
+    }
+
+    function resourceMetrics(plans,evaluation,gadget){
+        var heads=0,operators=0;
+        (plans||[]).forEach(function(plan){
+            var activeHeads=plan.variant.arms.length;
+            heads+=activeHeads;
+            operators+=plan.shipId==="mole" ? 1+activeHeads : 1;
+        });
+        return {
+            hulls:(plans||[]).length,
+            heads:heads,
+            operators:operators,
+            consumables:evaluation.activeModules+(gadget==="None"?0:1)
+        };
+    }
+
+    function safetyClass(o,minMargin){
+        if(!o.evaluation.success)return 2;
+        return o.evaluation.marginPct>=minMargin?0:1;
+    }
+
+    function objectiveTuple(o,objective,minMargin){
+        var q=safetyClass(o,minMargin),r=o.resources,e=o.evaluation;
+        if(objective==="minimum-hulls")return[q,r.hulls,r.operators,-e.marginPct,e.finalInstability];
+        if(objective==="minimum-crew")return[q,r.operators,r.hulls,-e.marginPct,e.finalInstability];
+        if(objective==="maximum-margin")return[q,-e.marginPct,r.hulls,r.operators,e.finalInstability];
+        if(objective==="minimum-instability")return[q,e.finalInstability,r.hulls,r.operators,-e.marginPct];
+        if(objective==="minimum-consumables")return[q,r.consumables,r.hulls,r.operators,-e.marginPct];
+        return[q,r.operators,r.hulls,e.finalInstability,r.consumables,-e.marginPct];
+    }
+
+    function stableKey(o){
+        var plans=(o.vesselPlans||[]).map(function(plan){
+            return plan.shipId+"#"+plan.vesselIndex+":"+plan.variant.key;
+        }).join("|");
+        return [o.counts.mole,o.counts.prospector,o.counts.golem,plans,o.gadget].join("/");
+    }
+
+    function compareFor(objective,minMargin){
+        return function(a,b){
+            var x=objectiveTuple(a,objective,minMargin),y=objectiveTuple(b,objective,minMargin);
+            for(var i=0;i<Math.max(x.length,y.length);i++){
+                var d=(x[i]||0)-(y[i]||0);
+                if(d)return d;
+            }
+            return stableKey(a).localeCompare(stableKey(b));
+        };
+    }
+
     function solveIdeal(s,p,strat){
-        var vars={}, options=[];
+        var vars={},options=[];
         var maxFleet=Math.max(1,Math.floor(n(p.maxFleetSize,6)));
+        var minMargin=Math.max(0,n(p.minimumMarginPct,10));
         var caps=recommendationCaps(p,maxFleet);
         ORDER.forEach(function(id){vars[id]=variants(id,strat,p,s);});
 
@@ -297,96 +403,52 @@
             for(var pr=0;pr<=caps.prospector;pr++){
                 for(var g=0;g<=caps.golem;g++){
                     var total=m+pr+g;
-                    if(total<1 || total>maxFleet) continue;
-
+                    if(total<1 || total>maxFleet)continue;
                     var counts={mole:m,prospector:pr,golem:g,added:total};
-                    var active=ORDER.filter(function(id){return counts[id]>0;});
-
-                    function walk(i,pick){
-                        if(i<active.length){
-                            var id=active[i];
-                            vars[id].forEach(function(v){
-                                pick[id]=v;
-                                walk(i+1,pick);
-                            });
-                            delete pick[id];
-                            return;
-                        }
-
-                        var proposed=[];
-                        ORDER.forEach(function(id){
-                            if(counts[id]&&pick[id]){
-                                proposed=proposed.concat(repeat(pick[id],counts[id]));
-                            }
-                        });
-
+                    buildVesselPlans(counts,vars).forEach(function(plans){
+                        var arms=proposedArms(plans);
                         gadgetChoices(p).forEach(function(gadget){
+                            var evaluation=evaluate(s.baseResistance,s.baseInstability,s.mass,arms,gadget);
                             options.push({
                                 counts:counts,
-                                selection:Object.assign({},pick),
+                                vesselPlans:plans,
                                 gadget:gadget,
-                                evaluation:evaluate(
-                                    s.baseResistance,
-                                    s.baseInstability,
-                                    s.mass,
-                                    proposed,
-                                    gadget
-                                )
+                                evaluation:evaluation,
+                                resources:resourceMetrics(plans,evaluation,gadget)
                             });
                         });
-                    }
-
-                    walk(0,{});
+                    });
                 }
             }
         }
 
-        function tuple(o){
-            if(p.optimizerObjective==="maximum-margin"){
-                return[o.evaluation.success?0:1,-o.evaluation.marginPct,o.counts.added];
-            }
-            if(p.optimizerObjective==="minimum-instability"){
-                return[o.evaluation.success?0:1,o.counts.added,o.evaluation.finalInstability,-o.evaluation.marginPct];
-            }
-            if(p.optimizerObjective==="minimum-consumables"){
-                return[
-                    o.evaluation.success?0:1,
-                    o.counts.added,
-                    o.evaluation.activeModules+(o.gadget==="None"?0:1),
-                    -o.evaluation.marginPct
-                ];
-            }
-            return[o.evaluation.success?0:1,o.counts.added,-o.evaluation.marginPct];
-        }
-
-        options.sort(function(a,b){
-            var x=tuple(a),y=tuple(b);
-            for(var i=0;i<Math.max(x.length,y.length);i++){
-                var d=(x[i]||0)-(y[i]||0);
-                if(d)return d;
-            }
-
-            // Stable deterministic composition tie-break.
-            return (a.counts.mole-b.counts.mole) ||
-                (a.counts.prospector-b.counts.prospector) ||
-                (a.counts.golem-b.counts.golem) ||
-                String(a.gadget).localeCompare(String(b.gadget));
-        });
-
-        var seen={}, unique=[];
+        var unique=[],seen={};
         options.forEach(function(o){
-            var selectionKey=ORDER.map(function(id){
-                return o.selection[id]?o.selection[id].key:"-";
-            }).join("/");
-            var k=o.counts.mole+"/"+o.counts.prospector+"/"+o.counts.golem+"/"+selectionKey+"/"+o.gadget;
-            if(!seen[k]){
-                seen[k]=true;
-                unique.push(o);
-            }
+            var key=stableKey(o);
+            if(!seen[key]){seen[key]=true;unique.push(o);}
         });
 
-        var good=unique.filter(function(o){return o.evaluation.success;});
-        return {variants:vars,options:(good.length?good:unique).slice(0,5)};
+        var objective=p.optimizerObjective||"balanced-operations";
+        unique.sort(compareFor(objective,minMargin));
+
+        var portfolio={};
+        [
+            "balanced-operations",
+            "minimum-hulls",
+            "minimum-crew",
+            "maximum-margin",
+            "minimum-instability",
+            "minimum-consumables"
+        ].forEach(function(name){
+            portfolio[name]=unique.slice().sort(compareFor(name,minMargin))[0]||null;
+        });
+
+        return {
+            variants:vars,
+            options:unique.slice(0,5),
+            portfolio:portfolio,
+            minimumMarginPct:minMargin
+        };
     }
 
     function normalizedSlots(a){
@@ -438,69 +500,146 @@
         var slots=normalizedSlots(a).map(function(slot){return slot.name;});
         return esc(a.laser)+(slots.length?" + "+esc(slots.join(" + ")):"");
     }
-    function vesselHtml(id,count,v){
-        if(!count||!v)return"";
-        var rows=[];
-        for(var vesselIndex=1;vesselIndex<=count;vesselIndex++){
-            var assistId="assist-"+id+"-"+vesselIndex;
-            rows.push('<div class="solver-vessel solver-required-vessel assist-missing">'+
-                '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>REQUIRED LOADOUT</em></div>'+
-                '<label class="solver-assist-availability" for="'+assistId+'">'+
-                    '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
-                    '<span class="solver-assist-box" aria-hidden="true"></span>'+
-                    '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small><b class="solver-assist-state">NOT CONFIRMED</b></span>'+
-                '</label>'+
-                v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
-                '</div>');
-        }
-        return rows.join("");
+    function vesselPlanHtml(plan,withAssist){
+        var id=plan.shipId,v=plan.variant,vesselIndex=plan.vesselIndex;
+        var assistId="assist-"+id+"-"+vesselIndex;
+        return '<div class="solver-vessel solver-required-vessel '+(withAssist?'assist-missing':'')+'">'+
+            '<div class="solver-vessel-title"><span>'+esc(LABEL[id])+' #'+vesselIndex+'</span><em>'+esc(v.label)+' · REQUIRED LOADOUT</em></div>'+
+            (withAssist?'<label class="solver-assist-availability" for="'+assistId+'">'+
+                '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
+                '<span class="solver-assist-box" aria-hidden="true"></span>'+
+                '<span class="solver-assist-copy"><strong>Available to assist</strong><small>Confirm this recommended vessel can join the operation.</small><b class="solver-assist-state">NOT CONFIRMED</b></span>'+
+            '</label>':'')+
+            v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+
+            '</div>';
     }
 
-    function currentFleetLoadoutHtml(arms,gadgetName){
-        if(!arms.length)return"";
-        var groups={},order=[];
-        arms.forEach(function(a){
-            var key=a.vesselKey||a.shipId||"vessel";
-            if(!groups[key]){groups[key]={name:a.vesselName||LABEL[a.shipId]||"Vessel",arms:[]};order.push(key);}
-            groups[key].arms.push(a);
+    function vesselPlansHtml(o,withAssist){
+        return (o.vesselPlans||[]).map(function(plan){return vesselPlanHtml(plan,withAssist);}).join("");
+    }
+
+    function qualityLabel(o,minMargin){
+        if(!o.evaluation.success)return"NOT VIABLE";
+        if(o.evaluation.marginPct>=minMargin)return"SAFE MARGIN";
+        return"THIN MARGIN";
+    }
+
+    function objectiveLabel(name){
+        return {
+            "balanced-operations":"Balanced operations",
+            "minimum-hulls":"Minimum hulls",
+            "minimum-crew":"Minimum crew",
+            "maximum-margin":"Maximum fracture margin",
+            "minimum-instability":"Minimum instability",
+            "minimum-consumables":"Minimum consumables"
+        }[name]||"Balanced operations";
+    }
+
+    function whyHtml(o,objective,minMargin){
+        var e=o.evaluation,r=o.resources,safe=e.success&&e.marginPct>=minMargin;
+        var points=[
+            (safe?"Meets":"Does not meet")+" "+minMargin.toFixed(0)+"% minimum margin",
+            r.operators+" operator"+(r.operators===1?"":"s"),
+            r.hulls+" hull"+(r.hulls===1?"":"s"),
+            r.heads+" active mining head"+(r.heads===1?"":"s"),
+            "Final instability "+e.finalInstability.toFixed(1)+"%",
+            r.consumables+" consumable action"+(r.consumables===1?"":"s")
+        ];
+        return '<div class="solver-why"><strong>WHY THIS PLAN · '+esc(objectiveLabel(objective))+'</strong><ul>'+
+            points.map(function(x){return'<li>'+esc(x)+'</li>';}).join("")+
+            '</ul></div>';
+    }
+
+    function gadgetComparisonHtml(o,state,p,objective,minMargin){
+        // Compare gadgets on the SAME recommended fleet and equipment configuration.
+        // The final winner was already selected by solveIdeal() over all fleet/gadget
+        // combinations. This is an explanatory comparison, not a second optimizer.
+        var arms=proposedArms(o.vesselPlans);
+        var options=gadgetChoices(p).map(function(name){
+            var evaluation=evaluate(state.baseResistance,state.baseInstability,state.mass,arms,name);
+            return {
+                counts:o.counts,
+                vesselPlans:o.vesselPlans,
+                gadget:name,
+                evaluation:evaluation,
+                resources:resourceMetrics(o.vesselPlans,evaluation,name)
+            };
         });
-        return '<div class="solver-current-loadouts">'+
-            '<div class="solver-loadout-heading"><span>ACTIVE VESSEL LOADOUTS</span><strong>Exact configuration currently producing this verdict</strong><em>Gadget: '+esc(gadgetName||"None")+'</em></div>'+
-            '<div class="solver-vessels">'+order.map(function(key,index){
-                var g=groups[key];
-                return '<div class="solver-vessel solver-current-vessel">'+
-                    '<div class="solver-vessel-title"><span>'+esc(g.name)+' #'+(index+1)+'</span><em>CURRENT FITTED</em></div>'+
-                    g.arms.sort(function(a,b){return n(a.armIndex)-n(b.armIndex);}).map(function(a,i){
-                        return armLoadoutHtml(a,i);
-                    }).join("")+
-                    '</div>';
-            }).join("")+'</div></div>';
+        options.sort(compareFor(objective,minMargin));
+        var lines=options.map(function(candidate){
+            var e=candidate.evaluation;
+            var gadget=gadgets.find(function(item){return item.name===candidate.gadget;});
+            var v=gadget&&gadget.verified||{};
+            var selected=candidate.gadget===o.gadget;
+            var margin=Number.isFinite(e.marginPct)
+                ? (e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"%"
+                : "BLOCKED";
+            function pct(value){return value==null?"—":(value>0?"+":"")+value+"%";}
+            return '<tr'+(selected?' class="solver-gadget-selected"':'')+'>'+
+                '<td><strong>'+esc(candidate.gadget)+'</strong>'+(selected?' <em>SELECTED</em>':'')+'</td>'+
+                '<td>'+esc(qualityLabel(candidate,minMargin))+'</td>'+
+                '<td>'+esc(margin)+'</td>'+
+                '<td>'+e.finalResistance.toFixed(1)+'%</td>'+
+                '<td>'+e.finalInstability.toFixed(1)+'%</td>'+
+                '<td>'+esc(pct(v.optimalChargeWindowRatePct))+'</td>'+
+                '<td>'+esc(pct(v.optimalChargeWindowSizePct))+'</td>'+
+                '</tr>';
+        }).join("");
+        return '<details class="solver-gadget-comparison">'+
+            '<summary>Gadget comparison · '+esc(o.gadget)+' selected from '+options.length+' option'+(options.length===1?'':'s')+'</summary>'+
+            '<p>Same vessel and head/module configuration for every row. Gadget resistance and instability modifiers are included in fracture calculations and objective ranking. Only one gadget is modelled per candidate. The selected gadget on the actual Fleet Planner is independent.</p>'+
+            '<div class="solver-gadget-table-wrap"><table><thead><tr>'+
+              '<th>Gadget</th><th>Safety</th><th>Margin</th><th>Resistance</th><th>Instability</th><th>Charge rate</th><th>Window size</th>'+
+            '</tr></thead><tbody>'+lines+'</tbody></table></div>'+
+            '<p class="solver-gadget-model-note">Charge rate, charge-window size and cluster effects are informational reference attributes, not yet part of the audited fracture-power or safety-margin equation. Comparisons rank modelled effects only; they do not establish the safest in-game charge behaviour.</p>'+
+            '</details>';
     }
 
-    function alternativeHtml(o,vars,s){
-        var rows=[];
-        ORDER.forEach(function(id){
-            if(!o.counts[id])return;
-            vars[id].filter(function(v){return v.key!==o.selection[id].key;}).forEach(function(v){
-                var proposed=[];
-                ORDER.forEach(function(t){if(o.counts[t])proposed=proposed.concat(repeat(t===id?v:o.selection[t],o.counts[t]));});
-                var e=evaluate(s.baseResistance,s.baseInstability,s.mass,proposed,o.gadget);
-                rows.push('<div class="solver-backup"><div><strong>'+esc(LABEL[id])+' · '+esc(v.label)+'</strong><span>'+
-                    (e.success?'Still viable · '+(e.marginPct>=0?'+':'')+e.marginPct.toFixed(1)+'% margin':'Not sufficient in this option · '+e.marginPct.toFixed(1)+'% margin')+
-                    '</span></div><div class="solver-backup-arms comprehensive">'+v.arms.map(function(a,i){return armLoadoutHtml(a,i);}).join("")+'</div></div>');
-            });
-        });
-        return rows.length?'<details class="solver-alternatives"><summary>Secondary equipment alternatives</summary><div class="solver-alternative-list">'+rows.join("")+'</div></details>':"";
-    }
-
-    function optionHtml(o,vars,s){
-        var e=o.evaluation, status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
-        var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy every head/module shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
-        return '<article class="solver-option '+(e.success?'viable':'short')+'"><div class="solver-option-head"><div><span class="solver-option-label">BEST SOLUTION</span><h4>'+esc(compText(o.counts))+'</h4></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
-            '<div class="solver-option-metrics"><span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span><span>Required <strong class="'+(e.displayRequired>e.power?'power-shortfall':'')+'">'+Math.round(e.displayRequired).toLocaleString()+' MW</strong></span><span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span><span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span><span>Gadget <strong>'+esc(o.gadget)+'</strong></span></div>'+
-            reproduction+
+    function optionHtml(o,objective,minMargin,state,p){
+        var e=o.evaluation,r=o.resources;
+        var status=e.success?((e.marginPct>=0?"+":"")+e.marginPct.toFixed(1)+"% margin"):(Math.abs(e.marginPct).toFixed(1)+"% short");
+        var reproduction='<div class="solver-reproduction-note"><strong>TO REPRODUCE THIS RESULT IN FLEET PLANNER</strong><span>Set exactly '+esc(compText(o.counts))+' to Active, copy each vessel-specific head/module loadout shown, switch every recommended Active module ON, and select gadget <b>'+esc(o.gadget)+'</b>. Extra Active vessels will change the Fracture Verdict.</span></div>';
+        return '<article class="solver-option '+(e.success?(e.marginPct>=minMargin?'viable':'thin'):'short')+'">'+
+            '<div class="solver-option-head"><div><span class="solver-option-label">RECOMMENDED · '+esc(objectiveLabel(objective))+'</span><h4>'+esc(compText(o.counts))+'</h4><small>'+esc(qualityLabel(o,minMargin))+'</small></div><div class="solver-option-status">'+esc(status)+'</div></div>'+
+            '<div class="solver-option-metrics">'+
+                '<span>Hulls <strong>'+r.hulls+'</strong></span>'+
+                '<span>Operators <strong>'+r.operators+'</strong></span>'+
+                '<span>Mining heads <strong>'+r.heads+'</strong></span>'+
+                '<span>Consumables <strong>'+r.consumables+'</strong></span>'+
+                '<span>Combined <strong>'+Math.round(e.power).toLocaleString()+' MW</strong></span>'+
+                '<span>Required <strong class="'+(e.displayRequired>e.power?'power-shortfall':'')+'">'+Math.round(e.displayRequired).toLocaleString()+' MW</strong></span>'+
+                '<span>Resistance <strong>'+e.finalResistance.toFixed(1)+'%</strong></span>'+
+                '<span>Instability <strong>'+e.finalInstability.toFixed(1)+'%</strong></span>'+
+                '<span>Gadget <strong>'+esc(o.gadget)+'</strong></span>'+
+            '</div>'+
+            whyHtml(o,objective,minMargin)+gadgetComparisonHtml(o,state,p,objective,minMargin)+reproduction+
             '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Ideal recommendation remains unchanged.</em></div>'+
-            '<div class="solver-vessels">'+ORDER.map(function(id){return vesselHtml(id,o.counts[id],o.selection[id]);}).join("")+'</div>'+alternativeHtml(o,vars,s)+'</article>';
+            '<div class="solver-vessels">'+vesselPlansHtml(o,true)+'</div>'+
+            '</article>';
+    }
+
+    function portfolioHtml(solved,selectedObjective){
+        var order=[
+            ["balanced-operations","Balanced"],
+            ["minimum-hulls","Fewest hulls"],
+            ["minimum-crew","Fewest operators"],
+            ["maximum-margin","Highest margin"],
+            ["minimum-instability","Lowest instability"],
+            ["minimum-consumables","Lowest consumables"]
+        ];
+        var selected=solved.portfolio[selectedObjective]||solved.options[0],seen={},rows=[];
+        if(selected)seen[stableKey(selected)]=true;
+        order.forEach(function(item){
+            var o=solved.portfolio[item[0]];
+            if(!o)return;
+            var key=stableKey(o);
+            if(seen[key])return;
+            seen[key]=true;
+            rows.push('<div class="solver-portfolio-alt"><div><strong>'+esc(item[1])+'</strong><span>'+esc(compText(o.counts))+'</span></div>'+
+                '<div><span>'+o.resources.operators+' ops · '+o.resources.hulls+' hulls · '+o.resources.consumables+' consumables</span><strong>'+
+                (o.evaluation.marginPct>=0?"+":"")+o.evaluation.marginPct.toFixed(1)+'% margin · '+o.evaluation.finalInstability.toFixed(1)+'% inst</strong></div></div>');
+        });
+        return rows.length?'<details class="solver-more-plans"><summary>Objective alternatives</summary><div class="solver-other-list">'+rows.join("")+'</div></details>':"";
     }
 
     function updateAvailabilitySummary(){
@@ -542,27 +681,22 @@
 
     function targetBasisHtml(ctx,p){
         var material=el("materialName")?el("materialName").value.trim():"";
-        var objectiveLabels={
-            "minimum-ships":"Minimum ships",
-            "maximum-margin":"Maximum margin",
-            "minimum-instability":"Minimum instability",
-            "minimum-consumables":"Minimum consumables"
-        };
-
+        var caps=recommendationCaps(p,Math.max(1,Math.floor(n(p.maxFleetSize,6))));
         return '<div class="solver-target-basis">'+
             '<div><span>Target mass</span><strong>'+Math.round(n(ctx.mass)).toLocaleString()+' kg</strong></div>'+
             '<div><span>Resistance</span><strong>'+n(ctx.baseResistance).toFixed(1)+'%</strong></div>'+
             '<div><span>Instability</span><strong>'+n(ctx.baseInstability).toFixed(1)+'%</strong></div>'+
             (material?'<div><span>Material</span><strong>'+esc(material)+'</strong></div>':'')+
-            '<div><span>Objective</span><strong>'+esc(objectiveLabels[p.optimizerObjective]||"Minimum ships")+'</strong></div>'+
+            '<div><span>Objective</span><strong>'+esc(objectiveLabel(p.optimizerObjective))+'</strong></div>'+
+            '<div><span>Minimum margin</span><strong>'+Math.max(0,n(p.minimumMarginPct,10)).toFixed(0)+'%</strong></div>'+
             '<div><span>Max ideal fleet</span><strong>'+Math.max(1,Math.floor(n(p.maxFleetSize,6)))+'</strong></div>'+
             '<div><span>Active modules</span><strong>'+(p.allowActiveModules?'Allowed':'Passive only')+'</strong></div>'+
             '<div><span>Gadgets</span><strong>'+(p.allowGadgets?'Search allowed':'Disabled')+'</strong></div>'+
-            '<div><span>Recommendation vessels</span><strong>'+esc([
-                p.recommendMole!==false?'MOLE':null,
-                p.recommendProspector!==false?'Prospector':null,
-                p.recommendGolem!==false?'Golem':null
-            ].filter(Boolean).join(' + ')||'None selected')+'</strong></div>'+
+            '<div><span>Recommendation resources</span><strong>'+esc([
+                caps.mole?'MOLE ≤ '+caps.mole:null,
+                caps.prospector?'Prospector ≤ '+caps.prospector:null,
+                caps.golem?'Golem ≤ '+caps.golem:null
+            ].filter(Boolean).join(' · ')||'None selected')+'</strong></div>'+
             '<div><span>Fleet Planner influence</span><strong>None · target-driven ideal</strong></div>'+
             '</div>';
     }
@@ -588,17 +722,20 @@
             return;
         }
 
-        var best=solved.options[0];
+        var objective=p.optimizerObjective||"balanced-operations";
+        var best=solved.portfolio[objective]||solved.options[0];
+        var safe=best.evaluation.success&&best.evaluation.marginPct>=solved.minimumMarginPct;
 
         box.innerHTML=basis+
-            '<div class="solver-portfolio-head"><div><span>TARGET-DRIVEN IDEAL SOLUTION</span><strong>'+
-                (best.evaluation.success?'RECOMMENDED IDEAL LOADOUT':'CLOSEST PLAN WITHIN CONSTRAINTS')+
+            '<div class="solver-portfolio-head"><div><span>IDEAL LOADOUT v2 · TARGET-DRIVEN</span><strong>'+
+                (safe?'RECOMMENDED OPERATIONAL LOADOUT':best.evaluation.success?'VIABLE · BELOW SAFETY MARGIN':'CLOSEST PLAN WITHIN CONSTRAINTS')+
             '</strong></div><div>'+esc(strat.name)+'</div></div>'+
-            '<div class="solver-or-note"><strong>Fleet Planner independent.</strong> MFA evaluates candidate solutions internally and shows only the best result for the Target Acquisition requirements. Your actual vessels and fitted loadouts do not bias this recommendation.</div>'+
-            '<div class="solver-best-option">'+optionHtml(best,solved.variants,state)+'</div>'+
-            '<div class="solver-method-note">Only the highest-ranked solution is presented. Availability checkboxes confirm whether the recommended vessels can actually assist; they do not alter the ideal calculation. Secondary equipment alternatives remain collapsed inside the recommended card for cases where preferred equipment is unavailable. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
+            '<div class="solver-or-note"><strong>Fleet Planner independent.</strong> MFA searches vessel-specific loadouts within the recommendation resource limits. Duplicate vessels may use different deterministic variants. The protected 4.10.1 fracture engine evaluates every candidate.</div>'+
+            '<div class="solver-best-option">'+optionHtml(best,objective,solved.minimumMarginPct,state,p)+'</div>'+
+            portfolioHtml(solved,objective)+
+            '<div class="solver-method-note">The highlighted plan is ranked under '+esc(objectiveLabel(objective))+'. Objective alternatives expose materially different plans without changing the selected recommendation. Availability confirmation remains post-recommendation only. The Fracture Verdict continues to represent your actual active Fleet Planner configuration.</div>';
         updateAvailabilitySummary();
     }
 
-    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,recommendationCaps:recommendationCaps,updateAvailabilitySummary:updateAvailabilitySummary};
+    window.MFACoopSolver={render:render,evaluate:evaluate,solveIdeal:solveIdeal,recommendationCaps:recommendationCaps,resourceMetrics:resourceMetrics,objectiveTuple:objectiveTuple,variantAssignments:variantAssignments,updateAvailabilitySummary:updateAvailabilitySummary};
 })();

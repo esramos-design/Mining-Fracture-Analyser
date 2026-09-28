@@ -36,5 +36,7 @@ jobs:
         run: node scripts/validate-operations-console.mjs
       - name: Validate target-driven recommendation architecture
         run: node scripts/validate-target-driven-solver.mjs
+      - name: Install Pages build dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
       - name: Validate Cloudflare Pages build
         run: npm run build:pages

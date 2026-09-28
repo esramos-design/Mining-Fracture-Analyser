@@ -249,13 +249,17 @@
         return {
             inputMode,
             fleetMode,
-            optimizerObjective: byId("optimizerObjective")?.value || "minimum-ships",
+            optimizerObjective: byId("optimizerObjective")?.value || "balanced-operations",
             maxFleetSize: Number(byId("maxFleetSize")?.value || 6),
+            minimumMarginPct: Number(byId("minimumMarginPct")?.value ?? 10),
             allowActiveModules: !!byId("allowActiveModules")?.checked,
             allowGadgets: !!byId("allowGadgets")?.checked,
             recommendMole: byId("recommendMole") ? !!byId("recommendMole").checked : true,
+            recommendMoleMax: Number(byId("recommendMoleMax")?.value ?? 1),
             recommendProspector: byId("recommendProspector") ? !!byId("recommendProspector").checked : true,
+            recommendProspectorMax: Number(byId("recommendProspectorMax")?.value ?? 2),
             recommendGolem: byId("recommendGolem") ? !!byId("recommendGolem").checked : true,
+            recommendGolemMax: Number(byId("recommendGolemMax")?.value ?? 1),
             fleetEnabledMole: !!byId("fleetEnabledMole")?.checked,
             fleetEnabledProspector: !!byId("fleetEnabledProspector")?.checked,
             fleetEnabledGolem: !!byId("fleetEnabledGolem")?.checked,
@@ -274,13 +278,27 @@
     function loadPreferences() {
         try {
             const saved = JSON.parse(localStorage.getItem("mfa.ops.preferences") || "{}");
-            if (saved.optimizerObjective && byId("optimizerObjective")) byId("optimizerObjective").value = saved.optimizerObjective;
+            if (byId("optimizerObjective")) {
+                const objectiveMap = {
+                    "minimum-ships": "minimum-hulls",
+                    "maximum-margin": "maximum-margin",
+                    "minimum-instability": "minimum-instability",
+                    "minimum-consumables": "minimum-consumables"
+                };
+                const requested = saved.optimizerObjective ? (objectiveMap[saved.optimizerObjective] || saved.optimizerObjective) : "balanced-operations";
+                const valid = [...byId("optimizerObjective").options].some(option => option.value === requested);
+                byId("optimizerObjective").value = valid ? requested : "balanced-operations";
+            }
             if (saved.maxFleetSize && byId("maxFleetSize")) byId("maxFleetSize").value = saved.maxFleetSize;
+            if (Number.isFinite(saved.minimumMarginPct) && byId("minimumMarginPct")) byId("minimumMarginPct").value = saved.minimumMarginPct;
             if (typeof saved.allowActiveModules === "boolean" && byId("allowActiveModules")) byId("allowActiveModules").checked = saved.allowActiveModules;
             if (typeof saved.allowGadgets === "boolean" && byId("allowGadgets")) byId("allowGadgets").checked = saved.allowGadgets;
             if (typeof saved.recommendMole === "boolean" && byId("recommendMole")) byId("recommendMole").checked = saved.recommendMole;
+            if (Number.isFinite(saved.recommendMoleMax) && byId("recommendMoleMax")) byId("recommendMoleMax").value = saved.recommendMoleMax;
             if (typeof saved.recommendProspector === "boolean" && byId("recommendProspector")) byId("recommendProspector").checked = saved.recommendProspector;
+            if (Number.isFinite(saved.recommendProspectorMax) && byId("recommendProspectorMax")) byId("recommendProspectorMax").value = saved.recommendProspectorMax;
             if (typeof saved.recommendGolem === "boolean" && byId("recommendGolem")) byId("recommendGolem").checked = saved.recommendGolem;
+            if (Number.isFinite(saved.recommendGolemMax) && byId("recommendGolemMax")) byId("recommendGolemMax").value = saved.recommendGolemMax;
             if (typeof saved.fleetEnabledMole === "boolean" && byId("fleetEnabledMole")) byId("fleetEnabledMole").checked = saved.fleetEnabledMole;
             if (typeof saved.fleetEnabledProspector === "boolean" && byId("fleetEnabledProspector")) byId("fleetEnabledProspector").checked = saved.fleetEnabledProspector;
             if (typeof saved.fleetEnabledGolem === "boolean" && byId("fleetEnabledGolem")) byId("fleetEnabledGolem").checked = saved.fleetEnabledGolem;
@@ -290,11 +308,28 @@
             syncFleetPresence("mole");
             syncFleetPresence("prospector");
             syncFleetPresence("golem");
+            syncRecommendationPool("mole");
+            syncRecommendationPool("prospector");
+            syncRecommendationPool("golem");
             setInputMode(saved.inputMode || "manual");
             setFleetMode(saved.fleetMode || "auto");
         } catch (_) {
             setInputMode("manual");
             setFleetMode("auto");
+        }
+    }
+
+    function syncRecommendationPool(shipId) {
+        const key = shipId.charAt(0).toUpperCase() + shipId.slice(1);
+        const enabled = byId("recommend" + key);
+        const max = byId("recommend" + key + "Max");
+        if (!enabled || !max) return;
+        max.disabled = !enabled.checked;
+        if (!enabled.checked) {
+            if (Number(max.value) > 0) max.dataset.previousValue = max.value;
+            max.value = "0";
+        } else if (Number(max.value) < 1) {
+            max.value = max.dataset.previousValue || ({ Mole: 1, Prospector: 2, Golem: 1 }[key] || 1);
         }
     }
 
@@ -440,6 +475,7 @@
         markOcr,
         markSource,
         setFleetMode,
+        syncRecommendationPool,
         toggleAdvanced,
         showAdvanced,
         savePreferences,
