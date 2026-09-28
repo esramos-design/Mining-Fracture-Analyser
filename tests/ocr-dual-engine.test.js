@@ -18,7 +18,8 @@ test("dual OCR scanner uses Paddle as primary and Tesseract as fallback", async 
   assert.match(scanner, /MFARegolithOCR\.scan/);
   assert.match(scanner, /runLegacyOCR/);
   assert.match(scanner, /if \(paddle && paddle\.valid\)/);
-  assert.match(scanner, /else if \(legacy && legacy\.valid\)/);
+  assert.match(scanner, /if \(legacy && legacy\.valid\)/);
+  assert.doesNotMatch(scanner, /applyResult\(legacy,/);
   assert.match(scanner, /Paddle remains primary in ALPHA/);
 });
 
@@ -62,7 +63,7 @@ test("OCR browser runtime is built locally and not fetched from esm.sh", async (
   assert.match(build, /ocr-browser\.bundle\.js/);
   assert.equal(pkg.dependencies["@gutenye/ocr-browser"], "1.4.8");
 });
-test("legacy fallback respects named fields and operator confirmation precedes writes", async () => {
+test("legacy fallback parses only named fields and primary application is nonblocking", async () => {
   const source = await readFile(new URL("../scanner.js", import.meta.url), "utf8");
   const vm = await import("node:vm");
   const ctx = {window:{},Tesseract:{},document:{createElement(){},getElementById(){return null}},console};
@@ -75,7 +76,11 @@ test("legacy fallback respects named fields and operator confirmation precedes w
   assert.equal(result.instability,574.77);
   assert.equal(parse("COMPOSITION\nQUANTANIUM 78.04%\nSHIP 47167").valid,false);
   const section=source.slice(source.indexOf("function applyResult("),source.indexOf("async function runOCR("));
-  assert.ok(section.indexOf("window.confirm(")<section.indexOf('document.getElementById("rockMass").value'));
+  assert.doesNotMatch(section, /window\.confirm\(/);
+  const run = source.slice(source.indexOf("async function runOCR("));
+  assert.ok(run.indexOf('applyResult(paddle, "PADDLE OCR")') < run.indexOf('runLegacyOCR(img)'));
+  assert.doesNotMatch(run, /applyResult\(legacy,/);
+  assert.match(run, /NO AUTO-APPLY/);
 });
 
 test("Paddle rock parser preserves the exact HUD instability value", async () => {
