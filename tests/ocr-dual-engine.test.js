@@ -75,10 +75,10 @@ test("legacy fallback parses only named fields and primary application is nonblo
   assert.equal(result.instability,574.77);
   assert.equal(parse("COMPOSITION\nQUANTANIUM 78.04%\nSHIP 47167").valid,false);
   const section=source.slice(source.indexOf("function applyResult("),source.indexOf("async function runOCR("));
-  assert.doesNotMatch(section, /window\\.confirm\\(/);
+  assert.doesNotMatch(section, /window\.confirm\(/);
   const run = source.slice(source.indexOf("async function runOCR("));
   assert.ok(run.indexOf('applyResult(paddle, "PADDLE OCR")') < run.indexOf('runLegacyOCR(img)'));
-  assert.doesNotMatch(run, /applyResult\\(legacy,/);
+  assert.doesNotMatch(run, /applyResult\(legacy,/);
   assert.match(run, /NO AUTO-APPLY/);
 });
 
