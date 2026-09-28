@@ -99,7 +99,7 @@ test("ONNX Runtime WebAssembly assets are shipped with browser OCR", async () =>
   assert.equal(pkg.dependencies["onnxruntime-web"], "1.17.3");
   assert.match(entry, /ort\\.env\\.wasm\\.wasmPaths/);
   assert.match(entry, /ort\\.env\\.wasm\\.numThreads = 1/);
-  assert.match(build, /onnxruntime-web\\/dist/);
+  assert.match(build, /onnxruntime-web\/dist/);
   assert.match(build, /assets", "ort"/);
   assert.match(build, /ort-wasm-simd\\.wasm/);
   assert.match(build, /copiedWasm/);
