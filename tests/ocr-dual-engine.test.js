@@ -18,7 +18,8 @@ test("dual OCR scanner uses Paddle as primary and Tesseract as fallback", async 
   assert.match(scanner, /MFARegolithOCR\.scan/);
   assert.match(scanner, /runLegacyOCR/);
   assert.match(scanner, /if \(paddle && paddle\.valid\)/);
-  assert.match(scanner, /else if \(legacy && legacy\.valid\)/);
+  assert.match(scanner, /if \(legacy && legacy\.valid\)/);
+  assert.doesNotMatch(scanner, /applyResult\(legacy,/);
   assert.match(scanner, /Paddle remains primary in ALPHA/);
 });
 
