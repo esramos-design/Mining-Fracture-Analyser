@@ -84,7 +84,7 @@ test("Paddle rock parser preserves the exact HUD instability value", async () =>
   const context={window:{}};
   runInNewContext(source,context);
   const parsed=context.window.MFARegolithOCR.parseRockText(
-    "SCAN RESULTS\\nQUANTANIUM (RAW)\\nMASS: 47167\\nRESISTANCE: 30%\\nINSTABILITY: 574.77\\nCOMPOSITION: 18.55 SCU"
+    "SCAN RESULTS\nQUANTANIUM (RAW)\nMASS: 47167\nRESISTANCE: 30%\nINSTABILITY: 574.77\nCOMPOSITION: 18.55 SCU"
   );
   assert.equal(parsed.valid,true);
   assert.equal(parsed.mass,47167);
