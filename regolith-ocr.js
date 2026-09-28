@@ -11,7 +11,7 @@
 (function () {
     "use strict";
 
-    const ENGINE_URL = "https://esm.sh/@gutenye/ocr-browser@1.4.8?bundle";
+    const ENGINE_URL = "./ocr-browser.bundle.js";
     const MODEL_BASE = "https://cdn.jsdelivr.net/npm/@gutenye/ocr-models@1.4.2/assets";
     const MODEL_URLS = {
         detectionPath: MODEL_BASE + "/ch_PP-OCRv4_det_infer.onnx",
@@ -73,7 +73,7 @@
 
         for (const line of lines) {
             if (mass === null) {
-                const m = line.match(/(?:MASS|NASS)\s*[:=\s]\s*([\d,]+(?:\.\d+)?)/i);
+                const m = line.match(/\b(?:MASS|NASS)\b\s*[:=]?\s*([\d,]+(?:\.\d+)?)/i);
                 if (m) {
                     const value = Number(m[1].replace(/,/g, ""));
                     if (Number.isFinite(value)) mass = Math.round(value);
@@ -81,15 +81,15 @@
             }
 
             if (instability === null) {
-                const m = line.match(/(?:INSTAB|INSTABILITY|INSTABILIT|ABIT|STAB)[^\d]*([\d,.]+)/i);
+                const m = line.match(/\b(?:INSTAB(?:ILITY|ILIT)?|INSTAB|STAB)\b[^\d]{0,15}([\d,]+(?:\.\d+)?)/i);
                 if (m) {
                     const value = Number(m[1].replace(/,/g, ""));
-                    if (Number.isFinite(value)) instability = normalizePercent(value);
+                    if (Number.isFinite(value)) instability = round(value, 2);
                 }
             }
 
             if (resistance === null) {
-                const m = line.match(/(?:RESIST|RESISTANCE|RESISTANC|SISTAN)[^\d]*([\d,.]+)/i);
+                const m = line.match(/\b(?:RESIST(?:ANCE|ANC)?|SISTAN)\b[^\d]{0,15}([\d,]+(?:\.\d+)?)/i);
                 if (m) {
                     const value = Number(m[1].replace(/,/g, ""));
                     if (Number.isFinite(value)) resistance = normalizePercent(value);
@@ -116,7 +116,7 @@
         }
 
         return {
-            valid: mass !== null && resistance !== null && instability !== null,
+            valid: mass !== null && mass > 0 && resistance !== null && resistance >= 0 && resistance <= 100 && instability !== null && instability >= 0,
             anchorCount,
             mass,
             resistance,
