@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "javascript-obfuscator": "5.8.0",
-    "@gutenye/ocr-browser": "1.4.8"
+    "@gutenye/ocr-browser": "1.4.8",
+    "onnxruntime-web": "1.17.3"
   },
   "engines": {
     "node": ">=20"
