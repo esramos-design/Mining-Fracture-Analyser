@@ -32,6 +32,27 @@ for (const file of files) {
   await cp(file, path.join(out, file));
 }
 
+// Bundle the actual browser entry: importing the npm module through esm.sh
+// previously pulled a Node shim and failed on process.binding in the browser.
+const { build } = await import("esbuild");
+await build({
+  entryPoints: ["src/ocr-browser-entry.js"],
+  bundle: true,
+  platform: "browser",
+  format: "esm",
+  target: ["es2020"],
+  outfile: path.join(out, "ocr-browser.bundle.js"),
+  logLevel: "warning",
+  packages: "bundle",
+  // Browser runtime is resolved from the package's browser export, not a Node CDN shim.
+  mainFields: ["browser", "module", "main"],
+  conditions: ["browser", "import", "default"]
+});
+const bundledOcr = await readFile(path.join(out, "ocr-browser.bundle.js"), "utf8");
+if (/process\\.binding\\s*\\(/.test(bundledOcr)) {
+  throw new Error("OCR bundle contains unsupported process.binding Node runtime");
+}
+
 for (const dir of ["data", "docs"]) {
   if (existsSync(dir)) {
     await cp(dir, path.join(out, dir), { recursive: true });
