@@ -8,6 +8,8 @@ test("Fleet Planner selected-value overlay fully masks native selected text", as
   assert.match(css,/select\.laser-color-select selectedcontent/);
   assert.match(css,/visibility:hidden/);
   assert.match(css,/color:transparent !important/);
+  assert.match(css,/\.selected-color-overlay \{[\s\S]*top:2px;[\s\S]*bottom:2px;/);
+  assert.doesNotMatch(css,/\.selected-color-overlay \{[\s\S]*transform:translateY\(-50%\)/);
   assert.match(css,/option,[\s\S]*optgroup/);
   assert.match(css,/color:var\(--theme-select-menu-text\) !important/);
 });
