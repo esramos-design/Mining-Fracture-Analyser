@@ -4855,19 +4855,21 @@ html[data-theme="night"] .fleet-search-wrap input::placeholder {
 .selected-color-overlay {
     position:absolute;
     z-index:2;
-    left:10px;
+    left:2px;
     right:28px;
-    top:50%;
-    transform:translateY(-50%);
+    top:2px;
+    bottom:2px;
     display:flex;
     align-items:center;
     gap:3px;
     min-width:0;
+    padding-left:8px;
     overflow:hidden;
     pointer-events:none;
     white-space:nowrap;
     line-height:1.2;
     background:var(--theme-input);
+    border-radius:5px 0 0 5px;
 }
 
 .selected-color-label,
