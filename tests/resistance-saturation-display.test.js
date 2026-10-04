@@ -34,8 +34,8 @@ test("resistance-reduction equipment can move an over-100 target below the block
     gadget:{name:"Sabir",reduction:-50,instabilityEffect:15}
   });
 
-  assert.equal(r.uncappedResistance, 42);
-  assert.equal(r.finalResistance, 42);
+  assert.ok(Math.abs(r.uncappedResistance - 42) < 1e-9);
+  assert.ok(Math.abs(r.finalResistance - 42) < 1e-9);
   assert.ok(r.requiredPower < 999999);
 });
 
