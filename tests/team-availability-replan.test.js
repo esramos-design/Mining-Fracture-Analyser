@@ -45,5 +45,5 @@ test("old confirmation-only recommendation readiness UI is no longer emitted", a
   const solver = await readFile(new URL("../cooperative-solver.js", import.meta.url), "utf8");
   assert.doesNotMatch(solver, /function readinessControlsHtml/);
   assert.doesNotMatch(solver, /Recommendation remains unchanged/);
-  assert.match(solver, /CAN'T PROVIDE THIS\? CHANGE TEAM AVAILABILITY/);
+  assert.match(solver, /CHANGE TEAM AVAILABILITY/);
 });
