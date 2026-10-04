@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 
-test("recommendation vessel pool is shown inside Recommended Solutions", async () => {
+test("recommendation resource pool is shown inside Recommended Plan", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
-  const solutionIndex = html.indexOf("<h2>Recommended Solutions</h2>");
-  const poolIndex = html.indexOf("Recommendation Fleet Pool");
+  const solutionIndex = html.indexOf("<h2>Recommended Plan</h2>");
+  const poolIndex = html.indexOf("Planning Resources");
   const configsIndex = html.indexOf('id="configs"');
 
   assert.ok(solutionIndex >= 0);
@@ -22,9 +22,9 @@ test("recommendation vessel pool is shown inside Recommended Solutions", async (
   assert.equal((html.match(/id="recommendGolem"/g) || []).length, 1);
 });
 
-test("copy distinguishes solver eligibility from post-recommendation assist confirmation", async () => {
+test("copy distinguishes recommendation planning limits from actual fleet status", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(html, /Changing these immediately recalculates the Recommended Ideal Loadout/);
-  assert.match(html, /Available to assist/);
-  assert.match(html, /only confirms whether a vessel already recommended by MFA can actually deploy/);
+  assert.match(html, /What MFA is allowed to recommend/);
+  assert.match(html, /planning limits only/);
+  assert.match(html, /Actual Fleet Planner quantities and status remain independent/);
 });
