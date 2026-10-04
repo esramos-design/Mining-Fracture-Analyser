@@ -5906,3 +5906,49 @@ html[data-theme="day"] .selected-color-meta {
     .solver-command-details > summary em { display:none; }
     .solver-command-details > summary:after { grid-column:3; }
 }
+
+/* =========================================================
+   TEAM AVAILABILITY — LIVE RECOMMENDATION CONSTRAINT
+   ========================================================= */
+#teamAvailabilityPanel {
+    border-width:2px;
+    border-color:color-mix(in srgb,var(--theme-primary) 48%,var(--theme-border));
+}
+#teamAvailabilityPanel > summary {
+    background:color-mix(in srgb,var(--theme-primary) 9%,var(--theme-card-alt));
+}
+#teamAvailabilityPanel[open] > summary {
+    border-bottom:1px solid var(--theme-border);
+}
+#teamAvailabilityPanel .recommendation-resource-body {
+    padding-top:9px;
+}
+#teamAvailabilityPanel .recommendation-vessel-pool-note {
+    background:color-mix(in srgb,var(--theme-primary) 6%,var(--theme-card));
+    border-radius:7px;
+    padding:8px 9px;
+}
+#teamAvailabilityPanel .recommendation-vessel-pool-note b {
+    display:block;
+    margin-bottom:3px;
+    color:var(--theme-primary);
+}
+#teamAvailabilityPanel .recommend-cap {
+    text-transform:none;
+}
+.solver-change-team {
+    width:100%;
+    margin-top:10px;
+    padding:8px 10px;
+    border:1px solid color-mix(in srgb,var(--theme-primary) 58%,var(--theme-border));
+    border-radius:8px;
+    background:color-mix(in srgb,var(--theme-primary) 9%,var(--theme-card));
+    color:var(--theme-primary);
+    font:900 8px var(--font-tech);
+    letter-spacing:.045em;
+    cursor:pointer;
+}
+.solver-change-team:hover {
+    background:color-mix(in srgb,var(--theme-primary) 16%,var(--theme-card));
+    border-color:var(--theme-primary);
+}

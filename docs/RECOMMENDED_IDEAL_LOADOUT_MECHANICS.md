@@ -7,13 +7,12 @@
 
 ## 1. What “ideal” means
 
-The Recommended Ideal Loadout is the highest-ranked deterministic fracture plan found within the **Recommendation Resource Pool**, selected safety margin and optimization objective.
+The Recommended Ideal Loadout is the highest-ranked deterministic fracture plan found within the **Team Availability**, selected safety margin and optimization objective.
 
 It remains separate from the actual Fleet Planner:
 
 - **Fleet Planner** — vessels physically present now, their fitted loadouts and Active / Available / Standby state.
-- **Recommendation Resource Pool** — vessel types and maximum quantities the ideal solver is allowed to plan with.
-- **Available to assist** — post-recommendation confirmation that vessels required by the chosen plan can actually deploy.
+- **Team Availability** — vessel types and quantities your team can actually provide for this operation. It is a live solver constraint.
 
 The actual Fleet Planner does not bias the ideal recommendation.
 
@@ -29,26 +28,26 @@ The solver reads:
 - Max fleet
 - Allow Active modules
 - Allow gadgets
-- Recommendation Resource Pool:
+- Team Availability:
   - ARGO MOLE — eligible + maximum quantity
   - MISC Prospector — eligible + maximum quantity
   - Drake Golem — eligible + maximum quantity
 
 An unchecked vessel has a recommendation maximum of zero.
 
-## 3. Recommendation Resource Pool
+## 3. Team Availability
 
 Example:
 
 ```text
-ARGO MOLE          Max 1
-MISC Prospector    Max 2
-Drake Golem        Max 1
+ARGO MOLE          Available 1
+MISC Prospector    Available 2
+Drake Golem        Available 1
 ```
 
-The solver can combine those types but may never exceed either a per-type maximum or the global Max Fleet value.
+The solver can combine those types but may never exceed either the available quantity or the global Max Fleet value.
 
-These limits are planning constraints only. They do not create vessels in Fleet Planner.
+Changing a checkbox or quantity immediately reruns the recommendation. For example, if the first result is 1 × MOLE but no MOLE is available, uncheck MOLE and set the available Prospectors/Golems. MFA then searches only those vessels and returns the best feasible replacement plan. These availability values do not create vessels in the Actual Fleet Planner.
 
 ## 4. Equipment strategies
 
@@ -344,18 +343,31 @@ fracture equations are introduced by the comparison table.
 
 ---
 
-## 13. Available to assist
+## 13. Replanning when the ideal vessel is unavailable
 
-Available to assist remains post-recommendation confirmation.
+The initial recommendation is not a dead end.
 
-It changes:
+Use **Team Availability** in the Recommended Plan column to state what support is actually available now. Each vessel type has:
 
-- NOT CONFIRMED / CONFIRMED AVAILABLE
-- READY / NOT READY
+- a checkbox — whether MFA may use that type;
+- an Available quantity — the maximum number MFA may use.
 
-It does not recalculate the ideal solution.
+Any change immediately recalculates the recommendation.
 
-If a recommended vessel cannot deploy, change the Recommendation Resource Pool or another mission constraint and recalculate.
+Example:
+
+```text
+Initial result: 1 × MOLE
+
+Team actually available:
+MOLE             unchecked / 0
+Prospector       checked / 2
+Golem            checked / 1
+```
+
+MFA then evaluates Prospector-only, Golem-only and mixed Prospector + Golem combinations, subject to Max Fleet, objective and minimum safety margin. It must never return a MOLE while MOLE is unchecked.
+
+This remains separate from **Actual Fleet Planner**, which represents ships already present and their fitted equipment.
 
 ## 14. Reproducing the recommendation
 

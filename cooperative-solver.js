@@ -586,7 +586,7 @@
                 '</tr>';
         }).join("");
         return '<details class="solver-command-details solver-gadget-comparison">'+
-            '<summary><span>04 · COMPARE</span><strong>Gadget options</strong><em>'+esc(o.gadget)+' selected · '+options.length+' option'+(options.length===1?'':'s')+'</em></summary>'+
+            '<summary><span>03 · COMPARE</span><strong>Gadget options</strong><em>'+esc(o.gadget)+' selected · '+options.length+' option'+(options.length===1?'':'s')+'</em></summary>'+
             '<p>Same vessel and head/module configuration for every row. Gadget resistance and instability modifiers are included in fracture calculations and objective ranking. Only one gadget is modelled per candidate. The selected gadget on the actual Fleet Planner is independent.</p>'+
             '<div class="solver-gadget-table-wrap"><table><thead><tr>'+
               '<th>Gadget</th><th>Safety</th><th>Margin</th><th>Resistance</th><th>Instability</th><th>Charge rate</th><th>Window size</th>'+
@@ -605,6 +605,7 @@
             '<div class="solver-command-title-row"><div><h3>'+esc(compText(o.counts))+'</h3><span>'+esc(state)+' · '+r.operators+' operator'+(r.operators===1?'':'s')+' · '+r.heads+' mining head'+(r.heads===1?'':'s')+'</span></div>'+
             '<div class="solver-command-margin"><small>POWER MARGIN</small><strong>'+esc(margin)+'</strong></div></div>'+
             '<div class="solver-command-badges"><span>Gadget <b>'+esc(o.gadget)+'</b></span><span>Strategy <b>'+esc(qualityLabel(o,minMargin))+'</b></span><span>Fleet Planner <b>Independent</b></span></div>'+
+            '<button type="button" class="solver-change-team" onclick="var p=document.getElementById(\'teamAvailabilityPanel\');if(p){p.open=true;p.scrollIntoView({behavior:\'smooth\',block:\'nearest\'});}">CAN\'T PROVIDE THIS? CHANGE TEAM AVAILABILITY</button>'+
             '</div>';
     }
 
@@ -629,26 +630,9 @@
             '</section>';
     }
 
-    function readinessControlsHtml(o){
-        var rows=(o.vesselPlans||[]).map(function(plan){
-            var id=plan.shipId,vesselIndex=plan.vesselIndex;
-            var assistId="assist-"+id+"-"+vesselIndex;
-            return '<label class="solver-assist-availability solver-readiness-vessel" for="'+assistId+'">'+
-                '<input type="checkbox" id="'+assistId+'" class="solver-assist-check" data-ship="'+esc(id)+'" data-vessel-index="'+vesselIndex+'" onchange="window.MFACoopSolver.updateAvailabilitySummary()">'+
-                '<span class="solver-assist-box" aria-hidden="true"></span>'+
-                '<span class="solver-assist-copy"><strong>'+esc(LABEL[id])+' #'+vesselIndex+'</strong><small>Confirm this recommended vessel can deploy.</small><b class="solver-assist-state">NOT CONFIRMED</b></span>'+
-                '</label>';
-        }).join("");
-        return '<section class="solver-command-section solver-command-readiness">'+
-            '<div class="solver-command-section-head"><div><span>02 · DEPLOY</span><strong>Deployment readiness</strong></div><em>Confirmation only</em></div>'+
-            '<div id="solverAvailabilitySummary" class="solver-availability-summary"><span>ASSISTANCE AVAILABILITY</span><strong>0 of '+o.counts.added+' required vessels confirmed</strong><em>Recommendation remains unchanged.</em></div>'+
-            '<div class="solver-readiness-grid">'+rows+'</div>'+
-            '</section>';
-    }
-
     function whyPlanHtml(o,objective,minMargin){
         return '<section class="solver-command-section solver-command-why">'+
-            '<div class="solver-command-section-head"><div><span>03 · UNDERSTAND</span><strong>Why MFA chose this plan</strong></div><em>'+esc(objectiveLabel(objective))+'</em></div>'+
+            '<div class="solver-command-section-head"><div><span>02 · UNDERSTAND</span><strong>Why MFA chose this plan</strong></div><em>'+esc(objectiveLabel(objective))+'</em></div>'+
             whyHtml(o,objective,minMargin)+
             '</section>';
     }
@@ -660,7 +644,6 @@
             planSummaryHtml(o)+
             exactLoadoutHtml(o)+
             reproduction+
-            readinessControlsHtml(o)+
             whyPlanHtml(o,objective,minMargin)+
             gadgetComparisonHtml(o,state,p,objective,minMargin)+
             '</article>';
@@ -687,7 +670,7 @@
                 '<div><span>'+o.resources.operators+' ops · '+o.resources.hulls+' hulls · '+o.resources.consumables+' consumables</span><strong>'+
                 (o.evaluation.marginPct>=0?"+":"")+o.evaluation.marginPct.toFixed(1)+'% margin · '+o.evaluation.finalInstability.toFixed(1)+'% inst</strong></div></div>');
         });
-        return rows.length?'<details class="solver-command-details solver-more-plans"><summary><span>05 · EXPLORE</span><strong>Alternative objectives</strong><em>What-if plans</em></summary><div class="solver-other-list">'+rows.join("")+'</div></details>':"";
+        return rows.length?'<details class="solver-command-details solver-more-plans"><summary><span>04 · EXPLORE</span><strong>Alternative objectives</strong><em>What-if plans</em></summary><div class="solver-other-list">'+rows.join("")+'</div></details>':"";
     }
 
     function updateAvailabilitySummary(){
@@ -778,8 +761,8 @@
             '<div class="solver-command-integrity"><span>DETERMINISTIC</span><span>TARGET-DRIVEN</span><span>FLEET PLANNER INDEPENDENT</span><span>'+esc(strat.name).toUpperCase()+'</span></div>'+
             '<div class="solver-best-option">'+optionHtml(best,objective,solved.minimumMarginPct,state,p)+'</div>'+
             portfolioHtml(solved,objective)+
-            '<details class="solver-command-details solver-basis-shell"><summary><span>06 · AUDIT</span><strong>Recommendation basis</strong><em>Inputs & constraints</em></summary>'+basis+
-                '<div class="solver-method-note">Ranked under '+esc(objectiveLabel(objective))+'. Availability confirmation is post-recommendation only. The Fracture Verdict continues to represent the actual active Fleet Planner configuration.</div></details>';
+            '<details class="solver-command-details solver-basis-shell"><summary><span>05 · AUDIT</span><strong>Recommendation basis</strong><em>Inputs & constraints</em></summary>'+basis+
+                '<div class="solver-method-note">Ranked under '+esc(objectiveLabel(objective))+'. Team Availability is a live solver constraint: changing a checked vessel type or quantity recalculates this recommendation. The Fracture Verdict continues to represent the actual active Fleet Planner configuration.</div></details>';
         updateAvailabilitySummary();
     }
 
