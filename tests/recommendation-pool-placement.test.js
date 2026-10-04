@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 
-test("recommendation resource pool is shown inside Recommended Plan", async () => {
+test("Team Availability is shown inside Recommended Plan", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
   const solutionIndex = html.indexOf("<h2>Recommended Plan</h2>");
-  const poolIndex = html.indexOf("Planning Resources");
+  const poolIndex = html.indexOf("Team Availability");
   const configsIndex = html.indexOf('id="configs"');
 
   assert.ok(solutionIndex >= 0);
@@ -22,9 +22,9 @@ test("recommendation resource pool is shown inside Recommended Plan", async () =
   assert.equal((html.match(/id="recommendGolem"/g) || []).length, 1);
 });
 
-test("copy distinguishes recommendation planning limits from actual fleet status", async () => {
+test("copy explains live Team Availability replanning separately from Actual Fleet Planner", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(html, /What MFA is allowed to recommend/);
-  assert.match(html, /planning limits only/);
+  assert.match(html, /Select what your team can actually provide right now/);
+  assert.match(html, /immediately recalculates the best loadout/);
   assert.match(html, /Actual Fleet Planner quantities and status remain independent/);
 });
