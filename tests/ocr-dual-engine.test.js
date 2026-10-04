@@ -109,3 +109,23 @@ test("ONNX Runtime WebAssembly assets are shipped with browser OCR", async () =>
   assert.match(build, /ort-wasm-simd\.wasm/);
   assert.match(build, /copiedWasm/);
 });
+
+test("wide MOLE Savrilium HUD crop preserves scan labels and parser reference vector", async () => {
+  const scanner = await readFile(new URL("../scanner.js", import.meta.url), "utf8");
+  const adapter = await readFile(new URL("../regolith-ocr.js", import.meta.url), "utf8");
+  assert.match(scanner, /aspect >= 2\.05/);
+  assert.match(scanner, /const rx = wide \? 0\.70 : 0\.68/);
+  assert.match(scanner, /const ry = wide \? 0\.20 : 0\.22/);
+  assert.match(scanner, /const rw = wide \? 0\.20 : 0\.24/);
+
+  const {runInNewContext} = await import("node:vm");
+  const context={window:{}};
+  runInNewContext(adapter,context);
+  const parsed=context.window.MFARegolithOCR.parseRockText(
+    "SCAN RESULTS\nSAVRILIUM (ORE)\nMASS: 59415\nRESISTANCE: 27%\nINSTABILITY: 693.24\nCOMPOSITION: 28.79 SCU"
+  );
+  assert.equal(parsed.valid,true);
+  assert.equal(parsed.mass,59415);
+  assert.equal(parsed.resistance,27);
+  assert.equal(parsed.instability,693.24);
+});
