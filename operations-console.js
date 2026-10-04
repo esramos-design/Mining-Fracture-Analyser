@@ -107,7 +107,10 @@
         const hasFleet = (Number(currentSimState.activeArms) || 0) > 0;
 
         setText("available-power", formatPower(available));
-        setText("final-resistance", Number.isFinite(currentSimState.resistance) ? currentSimState.resistance.toFixed(1) + "%" : "—");
+        const resistanceDisplay = Number.isFinite(currentSimState.displayResistance)
+            ? currentSimState.displayResistance
+            : currentSimState.resistance;
+        setText("final-resistance", Number.isFinite(resistanceDisplay) ? resistanceDisplay.toFixed(1) + "%" : "—");
         setText("final-instability", Number.isFinite(currentSimState.instability) ? currentSimState.instability.toFixed(1) + "%" : "—");
         setText("required-power", formatPower(required));
 
