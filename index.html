@@ -290,24 +290,26 @@
                 <div class="section-heading">
                     <div>
                         <span class="step-number">04</span>
-                        <h2>Recommended Solutions</h2>
+                        <h2>Recommended Plan</h2>
                     </div>
                     <span class="mode-badge">DETERMINISTIC</span>
                 </div>
-                <p class="section-copy">MFA calculates the ideal vessel and loadout plan from Target Acquisition values and mission constraints using the audited 4.10.1 community-calibrated fracture model. Your actual Fleet Planner configuration is evaluated separately.</p>
+                <p class="section-copy">MFA turns the scanned target and your mission constraints into one operational plan. The current Fleet Planner remains separate and is never overwritten.</p>
 
-                <div class="recommendation-vessel-pool recommendation-vessel-pool-inline">
-                    <div class="recommendation-vessel-pool-head">
-                        <strong>Recommendation Fleet Pool</strong>
-                        <span>Select the vessel types your team can provide. MFA can combine any selected types in the ideal solution.</span>
+                <details class="recommendation-vessel-pool recommendation-vessel-pool-inline recommendation-resource-panel">
+                    <summary>
+                        <span><strong>Planning Resources</strong><small>What MFA is allowed to recommend</small></span>
+                        <em>Adjust</em>
+                    </summary>
+                    <div class="recommendation-resource-body">
+                        <div class="recommendation-vessel-pool-options recommendation-vessel-caps">
+                            <label><span><input id="recommendMole" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('mole');MFAOps.savePreferences();calculate()"> ARGO MOLE</span><span class="recommend-cap">Max <input id="recommendMoleMax" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()"></span></label>
+                            <label><span><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('prospector');MFAOps.savePreferences();calculate()"> MISC Prospector</span><span class="recommend-cap">Max <input id="recommendProspectorMax" type="number" min="0" max="20" value="2" onchange="MFAOps.savePreferences();calculate()"></span></label>
+                            <label><span><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('golem');MFAOps.savePreferences();calculate()"> Drake Golem</span><span class="recommend-cap">Max <input id="recommendGolemMax" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()"></span></label>
+                        </div>
+                        <div class="recommendation-vessel-pool-note">These are planning limits only. Actual Fleet Planner quantities and status remain independent.</div>
                     </div>
-                    <div class="recommendation-vessel-pool-options recommendation-vessel-caps">
-                        <label><span><input id="recommendMole" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('mole');MFAOps.savePreferences();calculate()"> ARGO MOLE</span><span class="recommend-cap">Max <input id="recommendMoleMax" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()"></span></label>
-                        <label><span><input id="recommendProspector" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('prospector');MFAOps.savePreferences();calculate()"> MISC Prospector</span><span class="recommend-cap">Max <input id="recommendProspectorMax" type="number" min="0" max="20" value="2" onchange="MFAOps.savePreferences();calculate()"></span></label>
-                        <label><span><input id="recommendGolem" type="checkbox" checked onchange="MFAOps.syncRecommendationPool('golem');MFAOps.savePreferences();calculate()"> Drake Golem</span><span class="recommend-cap">Max <input id="recommendGolemMax" type="number" min="0" max="20" value="1" onchange="MFAOps.savePreferences();calculate()"></span></label>
-                    </div>
-                    <div class="recommendation-vessel-pool-note">Changing these immediately recalculates the Recommended Ideal Loadout. The later <b>Available to assist</b> checkbox only confirms whether a vessel already recommended by MFA can actually deploy.</div>
-                </div>
+                </details>
 
                 <section id="configs" class="solution-output"><p class="empty-state">/// AWAITING CALCULATION ///</p></section>
             </section>
