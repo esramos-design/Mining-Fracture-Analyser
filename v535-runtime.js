@@ -28,6 +28,7 @@
 
         var totalPwr = 0;
         var effectivePwr = 0;
+        var weightedRawResistance = 0;
         var totalInstMult = 1.0;
         var activeArms = 0;
 
@@ -62,6 +63,7 @@
 
             totalPwr += armPower;
             effectivePwr += armPower * transferFactor;
+            weightedRawResistance += armPower * armResistancePct;
             totalInstMult *= armInstMult;
         });
 
@@ -71,12 +73,16 @@
 
         var finalInst = Math.max(0, baseInst * totalInstMult * gadgetInstMult);
 
+        var rawEquivalentResistance = totalPwr > 0
+            ? Math.max(0, weightedRawResistance / totalPwr)
+            : Math.max(0, baseRes * gadgetResMult);
+
         var finalRes;
         if (totalPwr > 0) {
             var combinedTransferFactor = effectivePwr / totalPwr;
             finalRes = Math.max(0, 100 * (1 - combinedTransferFactor));
         } else {
-            finalRes = Math.max(0, baseRes * gadgetResMult);
+            finalRes = rawEquivalentResistance;
         }
 
         var transferFactor = Math.max(0, 1 - (finalRes / 100));
@@ -102,6 +108,7 @@
             effectivePower: effectivePwr,
             maxBreakableMass: maxBreakableMass,
             finalResistance: finalRes,
+            uncappedResistance: rawEquivalentResistance,
             finalInstability: finalInst,
             requiredPower: reqPwr,
             baselineRequiredPower: baselineRequiredPower,
