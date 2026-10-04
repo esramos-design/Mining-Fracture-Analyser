@@ -115,14 +115,24 @@ window.handleFileSelect = function (input) {
 };
 
 function cropScanPanel(imgElement) {
-    // Approximate HUD geometry for 16:9, with scan-result labels on the right.
-    // Keep a little padding for scaling variation, but exclude most ship/chat UI.
+    // Star Citizen mining HUD geometry varies materially with aspect ratio/cockpit.
+    // Use a wider, label-preserving ROI on the right side so MASS / RESISTANCE /
+    // INSTABILITY stay in-frame; the parser remains label-anchored for safety.
     const canvas = document.createElement("canvas");
     const w = imgElement.naturalWidth || imgElement.width;
     const h = imgElement.naturalHeight || imgElement.height;
-    const sx = Math.floor(w * 0.825), sy = Math.floor(h * 0.345);
-    const sw = Math.min(w - sx, Math.ceil(w * 0.17));
-    const sh = Math.min(h - sy, Math.ceil(h * 0.20));
+    const aspect = h > 0 ? w / h : 16 / 9;
+
+    // Ultrawide / cropped-wide captures place Scan Results farther left and higher.
+    const wide = aspect >= 2.05;
+    const rx = wide ? 0.70 : 0.68;
+    const ry = wide ? 0.20 : 0.22;
+    const rw = wide ? 0.20 : 0.24;
+    const rh = wide ? 0.34 : 0.34;
+
+    const sx = Math.floor(w * rx), sy = Math.floor(h * ry);
+    const sw = Math.min(w - sx, Math.ceil(w * rw));
+    const sh = Math.min(h - sy, Math.ceil(h * rh));
     canvas.width = Math.max(1, sw * 3);
     canvas.height = Math.max(1, sh * 3);
     const ctx = canvas.getContext("2d");
