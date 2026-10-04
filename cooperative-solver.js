@@ -585,8 +585,8 @@
                 '<td>'+esc(pct(v.optimalChargeWindowSizePct))+'</td>'+
                 '</tr>';
         }).join("");
-        return '<details class="solver-gadget-comparison">'+
-            '<summary>Gadget comparison · '+esc(o.gadget)+' selected from '+options.length+' option'+(options.length===1?'':'s')+'</summary>'+
+        return '<details class="solver-command-details solver-gadget-comparison">'+
+            '<summary><span>04 · COMPARE</span><strong>Gadget options</strong><em>'+esc(o.gadget)+' selected · '+options.length+' option'+(options.length===1?'':'s')+'</em></summary>'+
             '<p>Same vessel and head/module configuration for every row. Gadget resistance and instability modifiers are included in fracture calculations and objective ranking. Only one gadget is modelled per candidate. The selected gadget on the actual Fleet Planner is independent.</p>'+
             '<div class="solver-gadget-table-wrap"><table><thead><tr>'+
               '<th>Gadget</th><th>Safety</th><th>Margin</th><th>Resistance</th><th>Instability</th><th>Charge rate</th><th>Window size</th>'+
@@ -662,7 +662,7 @@
             reproduction+
             readinessControlsHtml(o)+
             whyPlanHtml(o,objective,minMargin)+
-            '<details class="solver-command-details solver-gadget-shell"><summary><span>04 · COMPARE</span><strong>Gadget options</strong><em>'+esc(o.gadget)+' selected</em></summary>'+gadgetComparisonHtml(o,state,p,objective,minMargin)+'</details>'+
+            gadgetComparisonHtml(o,state,p,objective,minMargin)+
             '</article>';
     }
 
@@ -687,7 +687,7 @@
                 '<div><span>'+o.resources.operators+' ops · '+o.resources.hulls+' hulls · '+o.resources.consumables+' consumables</span><strong>'+
                 (o.evaluation.marginPct>=0?"+":"")+o.evaluation.marginPct.toFixed(1)+'% margin · '+o.evaluation.finalInstability.toFixed(1)+'% inst</strong></div></div>');
         });
-        return rows.length?'<details class="solver-more-plans"><summary>Objective alternatives</summary><div class="solver-other-list">'+rows.join("")+'</div></details>':"";
+        return rows.length?'<details class="solver-command-details solver-more-plans"><summary><span>05 · EXPLORE</span><strong>Alternative objectives</strong><em>What-if plans</em></summary><div class="solver-other-list">'+rows.join("")+'</div></details>':"";
     }
 
     function updateAvailabilitySummary(){
@@ -777,7 +777,7 @@
         box.innerHTML=
             '<div class="solver-command-integrity"><span>DETERMINISTIC</span><span>TARGET-DRIVEN</span><span>FLEET PLANNER INDEPENDENT</span><span>'+esc(strat.name).toUpperCase()+'</span></div>'+
             '<div class="solver-best-option">'+optionHtml(best,objective,solved.minimumMarginPct,state,p)+'</div>'+
-            '<details class="solver-command-details solver-alternative-shell"><summary><span>05 · EXPLORE</span><strong>Alternative objectives</strong><em>What-if plans</em></summary>'+portfolioHtml(solved,objective)+'</details>'+
+            portfolioHtml(solved,objective)+
             '<details class="solver-command-details solver-basis-shell"><summary><span>06 · AUDIT</span><strong>Recommendation basis</strong><em>Inputs & constraints</em></summary>'+basis+
                 '<div class="solver-method-note">Ranked under '+esc(objectiveLabel(objective))+'. Availability confirmation is post-recommendation only. The Fracture Verdict continues to represent the actual active Fleet Planner configuration.</div></details>';
         updateAvailabilitySummary();
