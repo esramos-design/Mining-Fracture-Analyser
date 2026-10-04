@@ -183,6 +183,7 @@
             displayRequired:calc.requiredPower>=999999?calc.baselineRequiredPower:calc.requiredPower,
             resistanceBlocked:calc.requiredPower>=999999,
             finalResistance:calc.finalResistance,
+            displayResistance:Number.isFinite(calc.uncappedResistance)?calc.uncappedResistance:calc.finalResistance,
             finalInstability:calc.finalInstability,
             marginPct:margin,
             activeModules:activeModules
@@ -579,7 +580,7 @@
                 '<td><strong>'+esc(candidate.gadget)+'</strong>'+(selected?' <em>SELECTED</em>':'')+'</td>'+
                 '<td>'+esc(qualityLabel(candidate,minMargin))+'</td>'+
                 '<td>'+esc(margin)+'</td>'+
-                '<td>'+e.finalResistance.toFixed(1)+'%</td>'+
+                '<td>'+(Number.isFinite(e.displayResistance)?e.displayResistance:e.finalResistance).toFixed(1)+'%</td>'+
                 '<td>'+e.finalInstability.toFixed(1)+'%</td>'+
                 '<td>'+esc(pct(v.optimalChargeWindowRatePct))+'</td>'+
                 '<td>'+esc(pct(v.optimalChargeWindowSizePct))+'</td>'+
@@ -618,7 +619,7 @@
             '<div><span>Consumables</span><strong>'+r.consumables+'</strong></div>'+
             '<div><span>Combined</span><strong>'+Math.round(e.power).toLocaleString()+' MW</strong></div>'+
             '<div><span>Required</span><strong class="'+(e.displayRequired>e.power?'power-shortfall':'')+'">'+Math.round(e.displayRequired).toLocaleString()+' MW</strong></div>'+
-            '<div><span>Resistance</span><strong>'+e.finalResistance.toFixed(1)+'%</strong></div>'+
+            '<div><span>Resistance</span><strong>'+(Number.isFinite(e.displayResistance)?e.displayResistance:e.finalResistance).toFixed(1)+'%</strong></div>'+
             '<div><span>Instability</span><strong>'+e.finalInstability.toFixed(1)+'%</strong></div>'+
             '</div>';
     }

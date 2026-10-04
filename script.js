@@ -418,6 +418,7 @@ window.calculate = function() {
 
     const totalPwr = calc.totalPower;
     const finalRes = calc.finalResistance;
+    const displayRes = Number.isFinite(calc.uncappedResistance) ? calc.uncappedResistance : finalRes;
     const finalInst = calc.finalInstability;
     const reqPwr = calc.requiredPower;
     const success = calc.success;
@@ -430,6 +431,7 @@ window.calculate = function() {
         mass: rockMass,
         baseResistance: baseRes,
         resistance: finalRes,
+        displayResistance: displayRes,
         instability: finalInst,
         power: totalPwr,
         requiredPower: reqPwr,
@@ -449,7 +451,7 @@ window.calculate = function() {
         banner = `<div class="p-4 rounded-lg bg-red-800 animate-status shadow-lg border border-red-500/50"><div class="flex items-center justify-center gap-2 mb-1"><span class="text-2xl">❌</span><h3 class="text-xl font-black text-white tracking-wider">FRACTURE FAILED.</h3></div><h4 class="text-lg font-bold text-white mb-1">Power short.</h4><p class="text-sm text-red-100 font-bold italic">${short} kg short of the target mass.</p><p class="text-xs text-red-200/70 font-mono mt-1">Target Rock Mass: ${rockMass.toLocaleString()} kg</p></div>`;
     }
 
-    document.getElementById('results').innerHTML = `<div class="space-y-6 text-[var(--text-main)] text-center result-pop"><div class="grid grid-cols-2 gap-4"><div class="p-3 bg-[var(--bg-card)] rounded border border-[var(--border-main)] shadow-inner"><p class="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">Final Resistance</p><p class="text-3xl font-bold text-red-400 font-tech">${finalRes.toFixed(1)}%</p></div><div class="p-3 bg-[var(--bg-card)] rounded border border-[var(--border-main)] shadow-inner"><p class="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">Modified Instability</p><p class="text-3xl font-bold text-purple-400 font-tech">${finalInst.toFixed(1)}%</p></div></div><div class="p-4 bg-[var(--bg-card)] rounded border border-blue-500/30 shadow-[0_0_15px_rgba(37,99,235,0.1)]"><p class="text-[10px] uppercase tracking-widest text-blue-300 mb-1">Total Combined Effective Laser Power</p><p class="text-4xl font-black text-yellow-500 font-tech text-glow">${formattedPwr} MW</p></div>${banner}<div class="p-2 bg-[var(--bg-card)] rounded border border-[var(--border-main)]"><p class="${diff.color} text-xs font-bold font-mono">${diff.text}</p></div></div>`;
+    document.getElementById('results').innerHTML = `<div class="space-y-6 text-[var(--text-main)] text-center result-pop"><div class="grid grid-cols-2 gap-4"><div class="p-3 bg-[var(--bg-card)] rounded border border-[var(--border-main)] shadow-inner"><p class="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">Effective Resistance</p><p class="text-3xl font-bold text-red-400 font-tech">${displayRes.toFixed(1)}%</p></div><div class="p-3 bg-[var(--bg-card)] rounded border border-[var(--border-main)] shadow-inner"><p class="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">Modified Instability</p><p class="text-3xl font-bold text-purple-400 font-tech">${finalInst.toFixed(1)}%</p></div></div><div class="p-4 bg-[var(--bg-card)] rounded border border-blue-500/30 shadow-[0_0_15px_rgba(37,99,235,0.1)]"><p class="text-[10px] uppercase tracking-widest text-blue-300 mb-1">Total Combined Effective Laser Power</p><p class="text-4xl font-black text-yellow-500 font-tech text-glow">${formattedPwr} MW</p></div>${banner}<div class="p-2 bg-[var(--bg-card)] rounded border border-[var(--border-main)]"><p class="${diff.color} text-xs font-bold font-mono">${diff.text}</p></div></div>`;
 
     try {
         updateCharts(totalPwr, reqPwr, finalRes, finalInst, rockMass);

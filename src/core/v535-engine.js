@@ -33,6 +33,7 @@ export function calculateV535({
 
   let totalPwr = 0;
   let effectivePwr = 0;
+  let weightedRawResistance = 0;
   let totalInstMult = 1.0;
   let activeArms = 0;
 
@@ -67,6 +68,7 @@ export function calculateV535({
 
     totalPwr += armPower;
     effectivePwr += armPower * transferFactor;
+    weightedRawResistance += armPower * armResistancePct;
     totalInstMult *= armInstMult;
   }
 
@@ -78,12 +80,16 @@ export function calculateV535({
 
   // Equivalent combined resistance is power-weighted so that:
   // 5 * totalPower * (1 - finalResistance) === sum(per-head capacity).
+  const rawEquivalentResistance = totalPwr > 0
+    ? Math.max(0, weightedRawResistance / totalPwr)
+    : Math.max(0, baseRes * gadgetResMult);
+
   let finalRes;
   if (totalPwr > 0) {
     const combinedTransferFactor = effectivePwr / totalPwr;
     finalRes = Math.max(0, 100 * (1 - combinedTransferFactor));
   } else {
-    finalRes = Math.max(0, baseRes * gadgetResMult);
+    finalRes = rawEquivalentResistance;
   }
 
   const transferFactor = Math.max(0, 1 - (finalRes / 100));
@@ -109,6 +115,7 @@ export function calculateV535({
     effectivePower: effectivePwr,
     maxBreakableMass,
     finalResistance: finalRes,
+    uncappedResistance: rawEquivalentResistance,
     finalInstability: finalInst,
     requiredPower: reqPwr,
     baselineRequiredPower,
