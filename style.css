@@ -4892,6 +4892,31 @@ html[data-theme="night"] .fleet-search-wrap input::placeholder {
     opacity:.3;
 }
 
+/* Chromium/Brave customizable selects render a native <selectedcontent>
+   underneath our non-interactive colour overlay. Hide only that collapsed
+   selected-value clone so no text fragment can bleed above the overlay.
+   The picker options, arrow, focus, keyboard and click behaviour remain native. */
+@supports (appearance: base-select) {
+    .select-color-shell > select.module-color-select selectedcontent,
+    .select-color-shell > select.laser-color-select selectedcontent {
+        visibility:hidden;
+    }
+}
+
+/* Fallback native-select face: make only the collapsed value transparent.
+   Options/optgroups restore their normal themed text colours below. */
+.select-color-shell > select.module-color-select,
+.select-color-shell > select.laser-color-select {
+    color:transparent !important;
+    text-shadow:none !important;
+}
+.select-color-shell > select.module-color-select option,
+.select-color-shell > select.module-color-select optgroup,
+.select-color-shell > select.laser-color-select option,
+.select-color-shell > select.laser-color-select optgroup {
+    color:var(--theme-select-menu-text) !important;
+}
+
 /* Ensure the original selected text is visually covered, while the native
    control, arrow, focus, click, keyboard and option list remain untouched. */
 html[data-theme="night"] .selected-color-overlay {
