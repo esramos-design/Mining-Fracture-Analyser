@@ -157,6 +157,8 @@ A full operational guide is available here:
 
 👉 [Recommended Ideal Loadout — Public Mechanics Guide](docs/RECOMMENDED_IDEAL_LOADOUT_MECHANICS.md)
 
+👉 [MFA 5.37.0 Daily Validation Checklist](docs/MFA_5.37_DAILY_VALIDATION_CHECKLIST.md)
+
 Quick workflow:
 
 1. Open the web app.
