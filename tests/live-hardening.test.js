@@ -7,9 +7,9 @@ test("public mechanics guide documents current ideal-solver semantics", async ()
   const html = await readFile(new URL("../mechanics-guide.html", import.meta.url), "utf8");
 
   assert.match(guide, /Balanced operations/);
-  assert.match(guide, /Recommendation Resource Pool/);
+  assert.match(guide, /Team Availability/);
   assert.match(guide, /Duplicate-vessel specialization/);
-  assert.match(guide, /Available to assist/);
+  assert.match(guide, /Replanning when the ideal vessel is unavailable/);
   assert.match(guide, /MFAV535\.calculateV535/);
   assert.match(html, /Recommended Ideal Loadout Mechanics/);
 });
