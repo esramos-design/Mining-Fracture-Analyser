@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 
-test("Recommended Plan exposes independent recommendation resource pool", async () => {
+test("Recommended Plan exposes live Team Availability constraints", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   const ops = await readFile(new URL("../operations-console.js", import.meta.url), "utf8");
 
   assert.match(html, /id="recommendMole"[^>]*checked/);
   assert.match(html, /id="recommendProspector"[^>]*checked/);
   assert.match(html, /id="recommendGolem"[^>]*checked/);
-  assert.match(html, /What MFA is allowed to recommend/);
+  assert.match(html, /Select what your team can actually provide right now/);
   assert.match(html, /id="recommendMoleMax"[^>]*value="1"/);
   assert.match(html, /id="recommendProspectorMax"[^>]*value="2"/);
   assert.match(html, /id="recommendGolemMax"[^>]*value="1"/);
