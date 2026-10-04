@@ -6,24 +6,22 @@ test("Recommended Plan uses decision-first command hierarchy", async () => {
   const html=await readFile(new URL("../index.html",import.meta.url),"utf8");
   const solver=await readFile(new URL("../cooperative-solver.js",import.meta.url),"utf8");
   assert.match(html,/<h2>Recommended Plan<\/h2>/);
-  assert.match(html,/Planning Resources/);
+  assert.match(html,/Team Availability/);
   assert.match(html,/recommendation-resource-panel/);
   assert.match(solver,/function decisionHeroHtml/);
   assert.match(solver,/function planSummaryHtml/);
   assert.match(solver,/01 · FIT THIS/);
-  assert.match(solver,/02 · DEPLOY/);
-  assert.match(solver,/03 · UNDERSTAND/);
-  assert.match(solver,/04 · COMPARE/);
-  assert.match(solver,/05 · EXPLORE/);
-  assert.match(solver,/06 · AUDIT/);
+  assert.match(solver,/02 · UNDERSTAND/);
+  assert.match(solver,/03 · COMPARE/);
+  assert.match(solver,/04 · EXPLORE/);
+  assert.match(solver,/05 · AUDIT/);
 });
 
-test("loadout and deployment readiness are separated without changing solver semantics", async () => {
+test("loadout and live team availability remain separate from Actual Fleet Planner", async () => {
   const solver=await readFile(new URL("../cooperative-solver.js",import.meta.url),"utf8");
   assert.match(solver,/vesselPlansHtml\(o,false\)/);
-  assert.match(solver,/function readinessControlsHtml/);
-  assert.match(solver,/solver-assist-check/);
-  assert.match(solver,/updateAvailabilitySummary/);
+  assert.doesNotMatch(solver,/function readinessControlsHtml/);
+  assert.match(solver,/teamAvailabilityPanel/);
   assert.match(solver,/solveIdeal\(state,p,strat\)/);
   assert.match(solver,/optionHtml\(best,objective,solved\.minimumMarginPct,state,p\)/);
   assert.match(solver,/portfolioHtml\(solved,objective\)/);
