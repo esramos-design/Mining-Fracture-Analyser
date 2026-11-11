@@ -12,6 +12,8 @@ await mkdir(out, { recursive: true });
 
 const files = [
   "index.html",
+  "ore-quality-scout.html",
+  "ore-quality-scout.js",
   "mechanics-guide.html",
   "v535-runtime.js",
   "fleet.html",
@@ -94,6 +96,7 @@ if (production) {
     "script.js",
     "regolith-ocr.js",
     "scanner.js",
+    "ore-quality-scout.js",
     "fleet.js",
     "operations-console.js",
     "cooperative-solver.js",

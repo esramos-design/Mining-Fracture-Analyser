@@ -5952,3 +5952,47 @@ html[data-theme="day"] .selected-color-meta {
     background:color-mix(in srgb,var(--theme-primary) 16%,var(--theme-card));
     border-color:var(--theme-primary);
 }
+
+/* Ore Quality Scout — local OCR review notebook */
+.ore-scout-shell { max-width:1800px; }
+.ore-scout-main { display:grid; gap:16px; margin-top:18px; }
+.ore-scout-intro { display:grid; grid-template-columns:auto 1fr; gap:13px; align-items:start; border-radius:16px; padding:20px; }
+.ore-scout-intro h2 { margin:0; font:800 17px/1.25 var(--font-ui); color:var(--text-strong); }
+.ore-scout-intro p { margin:8px 0 0; color:var(--text-main); font-size:13px; }
+.ore-scout-intro .ore-scout-note { border-left:3px solid var(--ops-amber); padding:8px 11px; background:color-mix(in srgb,var(--ops-amber) 8%,var(--bg-panel)); }
+.ore-scout-grid { display:grid; grid-template-columns:minmax(300px,.9fr) minmax(0,1.4fr); gap:16px; align-items:start; }
+.ore-scout-panel { min-width:0; border-radius:16px; padding:20px; }
+.ore-scout-field { display:grid; gap:6px; margin:0 0 12px; padding:10px; border:1px solid var(--ops-line); border-radius:10px; background:color-mix(in srgb,var(--bg-panel) 75%,transparent); }
+.ore-scout-field span { color:var(--text-muted); font:700 10px var(--font-tech); text-transform:uppercase; letter-spacing:.04em; }
+.ore-scout-field input { width:100%; min-width:0; padding:9px; border-radius:7px; }
+.ore-scout-upload { display:grid; grid-template-columns:auto 1fr; gap:4px 10px; align-items:center; padding:15px; border:1px dashed color-mix(in srgb,var(--ops-blue) 50%,var(--ops-line)); border-radius:12px; background:color-mix(in srgb,var(--ops-blue) 7%,transparent); cursor:pointer; }
+.ore-scout-upload:hover { border-color:var(--ops-blue); }
+.ore-scout-upload .capture-icon { grid-row:1/3; }
+.ore-scout-upload strong { color:var(--text-strong); font:800 11px var(--font-tech); text-transform:uppercase; }
+.ore-scout-upload small { color:var(--text-muted); }
+.scout-review { margin-top:13px; padding:14px; border:1px solid var(--ops-line); border-radius:11px; background:color-mix(in srgb,var(--bg-panel) 75%,transparent); }
+.scout-review h3 { margin:0; color:var(--text-strong); font:800 12px var(--font-tech); text-transform:uppercase; }
+.scout-review p { color:var(--text-muted); font-size:12px; }
+.scout-candidate-list { display:grid; gap:6px; margin:12px 0; }
+.scout-candidate-row { padding:9px; border:1px solid var(--ops-line); border-radius:8px; }
+.scout-candidate-check { display:flex; gap:9px; align-items:center; color:var(--text-main); font-size:12px; }
+.scout-candidate-check input { accent-color:var(--ops-blue); }
+.scout-save-button { width:100%; }
+.scout-error { border-color:rgba(248,113,113,.55); color:#fecaca; }
+.ore-scout-manual { margin-top:16px; padding:12px; border:1px solid var(--ops-line); border-radius:10px; color:var(--text-main); }
+.ore-scout-manual summary { cursor:pointer; color:var(--text-strong); font:800 10px var(--font-tech); text-transform:uppercase; }
+.ore-scout-manual form { margin-top:12px; }
+.ore-scout-filters { display:grid; grid-template-columns:minmax(130px,.7fr) minmax(160px,1fr); gap:10px; }
+.scout-empty { padding:22px 12px; border:1px dashed var(--ops-line); border-radius:10px; color:var(--text-muted); text-align:center; font-size:12px; }
+.sighting-list { display:grid; gap:9px; }
+.sighting-card { padding:12px; border:1px solid var(--ops-line); border-radius:11px; background:color-mix(in srgb,var(--bg-panel) 73%,transparent); }
+.sighting-card-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.sighting-card-head strong { color:var(--text-strong); font-size:14px; }
+.sighting-score { flex:none; padding:5px 8px; border:1px solid color-mix(in srgb,var(--ops-green) 48%,var(--ops-line)); border-radius:999px; color:var(--ops-green); font:900 11px var(--font-tech); }
+.sighting-card p { margin:6px 0; color:var(--text-muted); font-size:11px; }
+.sighting-state { display:inline-block; color:var(--ops-amber); font:800 9px var(--font-tech); letter-spacing:.04em; }
+.sighting-state.confirmed { color:var(--ops-green); }
+.sighting-actions,.ore-scout-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; }
+.ore-scout-actions { justify-content:flex-end; margin-top:14px; }
+@media (max-width:900px) { .ore-scout-grid { grid-template-columns:1fr; } }
+@media (max-width:600px) { .ore-scout-intro { grid-template-columns:1fr; } .ore-scout-filters { grid-template-columns:1fr; } }
