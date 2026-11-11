@@ -69,6 +69,14 @@ OCR remains input-only:
 
 Always visually verify OCR-derived values during Alpha validation, especially across Prospector, MOLE and Golem cockpit layouts, resolutions and HUD colours.
 
+### Ore Quality Scout
+
+Open **Ore Quality Scout** from the top bar to record ore composition readings separately from fracture planning. Choose a screenshot of the mining scan panel. MFA reuses its existing PaddleOCR engine and crops the scan-results area using the same crop function as Target Acquisition.
+
+Review the OCR mineral names and percentages against the in-game screen before saving. OCR findings are labelled **Unverified** until you confirm them. The scout converts the composition percentage to a derived 0–1000 search score (`percentage × 10`); for example, 95% becomes 950. This is not a separate score displayed by Star Citizen and does not feed fracture calculations.
+
+Sightings, confirmation state and optional location notes are stored in this browser only. Screenshots are processed locally and are not retained. Export the notebook as CSV to move it to another device. Location is a pilot-entered note; the app does not infer in-game coordinates.
+
 ---
 
 ## 4. Select an active gadget
