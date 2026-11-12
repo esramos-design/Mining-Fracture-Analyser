@@ -130,6 +130,11 @@ function cropScanPanel(imgElement) {
     return canvas;
 }
 
+// Shared by the separate Ore Quality Scout page. Keeping one crop definition
+// prevents the acquisition scanner and scout from drifting apart.
+window.MFAOCR = window.MFAOCR || {};
+window.MFAOCR.cropScanPanel = cropScanPanel;
+
 function preprocessImage(imgElement) {
     const canvas = cropScanPanel(imgElement);
     const ctx = canvas.getContext("2d");
@@ -310,8 +315,8 @@ async function runOCR(img, originalDataUrl) {
     }
 }
 
-window.MFAOCR = {
+window.MFAOCR = Object.assign(window.MFAOCR || {}, {
     runOCR,
     parseLegacyText,
     compareResults
-};
+});
