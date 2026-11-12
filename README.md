@@ -73,6 +73,10 @@ Target values currently include:
 - Active Gadget
 - Mission constraints
 
+### ⛏️ Ore Quality Scout (Alpha)
+
+Ore Quality Scout reuses MFA's browser OCR to read material-composition percentages from a user-selected mining screenshot. It converts a percentage to a clearly labelled derived score (`percentage × 10`, so 95% = 950/1000), keeps sightings in browser-local storage, and requires pilot review before an OCR result is marked confirmed. The score is a search convenience, not an official Star Citizen quality field. Screenshots are processed in the browser and are not stored or uploaded.
+
 **Manual entry is the authoritative/recommended acquisition method for v5.36.0.**
 
 The screenshot OCR scanner remains available as an experimental helper, but it is not yet considered reliable across all Prospector, MOLE and Golem HUD layouts, resolutions and HUD colours. A dedicated 4.10.1 Target Acquisition/OCR rebuild is planned using team-captured screenshots.
@@ -169,6 +173,8 @@ Quick workflow:
 8. If MFA recommends additional ships, confirm which recommended vessels are actually available.
 9. Reproduce the recommendation exactly in Fleet Planner if you want to verify parity before the operation.
 
+Use **Ore Quality Scout** in the top bar to build a local list of composition sightings and filter for values such as 900+.
+
 ---
 
 ## Target Acquisition / OCR status
@@ -184,6 +190,8 @@ The legacy screenshot scanner currently uses fixed crop/anchor assumptions and c
 - composition blocks containing multiple materials.
 
 Until the planned scanner rebuild is validated against real 4.10.1 screenshots, **critical target values should be visually verified before relying on the solver**.
+
+Ore Quality Scout is an experimental, separate workflow. It does not alter the fracture target or solver. OCR readings are saved as unverified until the pilot confirms them. The optional site/location field is entered by the pilot; MFA does not infer coordinates or planetary locations.
 
 Planned validation fixtures:
 

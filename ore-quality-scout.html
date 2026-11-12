@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Local Star Citizen ore composition scanner and quality notebook for Mining Fracture Analyser.">
+    <title>Ore Quality Scout — Mining Fracture Analyser</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="ops-shell ore-scout-shell">
+    <header class="ops-topbar glass-panel">
+        <div class="ops-brand">
+            <img src="https://github.com/esramos-design/mfa.github.io/blob/main/mfa.jpg?raw=true" alt="MFA" class="ops-logo" onerror="this.style.display='none'">
+            <div>
+                <div class="ops-kicker">MINING OPERATIONS CONSOLE</div>
+                <h1>Ore Quality Scout</h1>
+            </div>
+        </div>
+        <div class="ops-status-strip">
+            <span class="status-chip"><span class="status-dot status-ok"></span>LOCAL NOTEBOOK</span>
+            <span class="status-chip"><span class="status-dot status-warn"></span>OCR REQUIRES REVIEW</span>
+        </div>
+        <div class="ops-actions">
+            <a href="index.html" class="ops-button secondary">Back to Analyser</a>
+            <button class="ops-button secondary" type="button" data-scout-theme="day">Day</button>
+            <button class="ops-button secondary" type="button" data-scout-theme="dusk">Dusk</button>
+            <button class="ops-button secondary" type="button" data-scout-theme="night">Night</button>
+        </div>
+    </header>
+
+    <main class="ore-scout-main">
+        <section class="glass-panel ore-scout-intro">
+            <span class="step-number">01</span>
+            <div>
+                <h2>Find high-composition rocks</h2>
+                <p>Import a mining scan screenshot. MFA reads material composition with its existing PaddleOCR engine, then lets you review each reading before saving it on this device.</p>
+                <p class="ore-scout-note"><strong>Score definition:</strong> composition percent × 10. A score of 950 means the OCR read 95% composition. This is a derived search score, not an official in-game “quality / 1000” field. Sightings and notes stay in this browser; screenshots are not saved or uploaded.</p>
+            </div>
+        </section>
+
+        <div class="ore-scout-grid">
+            <section class="glass-panel ore-scout-panel">
+                <div class="section-heading">
+                    <div><span class="step-number">02</span><h2>Scan a screenshot</h2></div>
+                    <span class="mode-badge">MANUAL CAPTURE</span>
+                </div>
+                <label class="target-field ore-scout-field">
+                    <span>Site / location notes (optional)</span>
+                    <input id="scoutLocation" type="text" maxlength="100" placeholder="e.g. Aaron Halo · belt 5">
+                </label>
+                <label class="ore-scout-upload" for="scoutFile">
+                    <span class="capture-icon">⌗</span>
+                    <strong>Choose mining scan screenshot</strong>
+                    <small>PNG, JPG or WebP · up to 20 MB</small>
+                </label>
+                <input id="scoutFile" class="hidden" type="file" accept="image/png,image/jpeg,image/webp">
+                <div id="scoutProgress" class="ocr-status hidden" role="status" aria-live="polite"></div>
+                <div id="scoutReview" class="scout-review hidden" aria-live="polite"></div>
+
+                <details class="ore-scout-manual">
+                    <summary>Enter a reading manually</summary>
+                    <form id="manualSightingForm">
+                        <label class="target-field ore-scout-field"><span>Ore / mineral</span><input id="manualOre" type="text" maxlength="60" required placeholder="e.g. Quantanium"></label>
+                        <label class="target-field ore-scout-field"><span>Composition (%)</span><input id="manualPercent" type="number" min="0" max="100" step="0.01" required placeholder="95"></label>
+                        <button class="primary-action" type="submit">SAVE READING</button>
+                    </form>
+                </details>
+            </section>
+
+            <section class="glass-panel ore-scout-panel">
+                <div class="section-heading">
+                    <div><span class="step-number">03</span><h2>Quality sightings</h2></div>
+                    <span id="scoutCount" class="mode-badge">0 SAVED</span>
+                </div>
+                <div class="ore-scout-filters">
+                    <label class="target-field ore-scout-field"><span>Minimum score</span><input id="minimumScore" type="number" min="0" max="1000" step="10" value="900"></label>
+                    <label class="target-field ore-scout-field"><span>Find ore</span><input id="oreFilter" type="search" placeholder="Any material"></label>
+                </div>
+                <div id="scoutEmpty" class="scout-empty">No saved sightings yet. Scan an image or enter a reading to start your local notebook.</div>
+                <div id="sightingList" class="sighting-list"></div>
+                <div class="ore-scout-actions">
+                    <button id="exportSightings" class="ops-button secondary" type="button">Export CSV</button>
+                    <button id="clearSightings" class="ops-button secondary" type="button">Clear notebook</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <span>MFA · Ore Quality Scout · Alpha</span>
+        <span>Local screenshot analysis · manual confirmation required</span>
+    </footer>
+</div>
+<script src="regolith-ocr.js"></script>
+<script src="scanner.js"></script>
+<script src="ore-quality-scout.js"></script>
+</body>
+</html>
